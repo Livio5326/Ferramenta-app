@@ -1,0 +1,54 @@
+import { Product } from './store';
+
+const BASE = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/api';
+
+async function req<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(BASE + path, {
+    ...init,
+    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`${res.status}: ${txt}`);
+  }
+  return res.json();
+}
+
+export const api = {
+  listProducts: (params: { q?: string; categoria?: string; marca?: string; sotto_scorta?: boolean } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.q) qs.set('q', params.q);
+    if (params.categoria) qs.set('categoria', params.categoria);
+    if (params.marca) qs.set('marca', params.marca);
+    if (params.sotto_scorta) qs.set('sotto_scorta', 'true');
+    const s = qs.toString();
+    return req<Product[]>('/products' + (s ? '?' + s : ''));
+  },
+  getProduct: (id: string) => req<Product>(`/products/${id}`),
+  getByBarcode: (b: string) => req<Product>(`/products/barcode/${encodeURIComponent(b)}`),
+  createProduct: (p: Partial<Product>) =>
+    req<Product>('/products', { method: 'POST', body: JSON.stringify(p) }),
+  updateProduct: (id: string, p: Partial<Product>) =>
+    req<Product>(`/products/${id}`, { method: 'PUT', body: JSON.stringify(p) }),
+  deleteProduct: (id: string) => req<{ ok: boolean }>(`/products/${id}`, { method: 'DELETE' }),
+  adjustStock: (id: string, delta: number) =>
+    req<Product>(`/products/${id}/adjust-stock`, { method: 'POST', body: JSON.stringify({ delta }) }),
+  bulkImport: (items: Partial<Product>[]) =>
+    req<{ inserted: number }>('/products/bulk', { method: 'POST', body: JSON.stringify(items) }),
+  seed: () => req<{ seeded: boolean; count?: number }>('/seed', { method: 'POST' }),
+  meta: () => req<{ categorie: string[]; marche: string[]; fornitori: string[] }>('/meta'),
+  stats: () =>
+    req<{
+      total_products: number;
+      total_pieces: number;
+      valore_magazzino: number;
+      valore_vendita_potenziale: number;
+      sotto_scorta_count: number;
+      sotto_scorta: Product[];
+      categorie: { nome: string; count: number }[];
+      vendite_totali: number;
+      numero_vendite: number;
+    }>('/stats'),
+  createSale: (items: { product_id: string; descrizione: string; prezzo_vendita: number; quantita: number }[]) =>
+    req<{ id: string; totale: number }>('/sales', { method: 'POST', body: JSON.stringify({ items }) }),
+};

@@ -1,0 +1,156 @@
+{
+  "app_name": "Ferramenta Manager",
+  "personality": "5 Brutalist Mobile structure with rustic wood/earthy palette",
+  "personality_one_liner": "An industrial, highly functional bento-style inventory command center built with warm rustic wood and earthy tones.",
+  "color": {
+    "surface": "#F4EFE6",
+    "onSurface": "#2C221B",
+    "surfaceSecondary": "#E8DFD1",
+    "onSurfaceSecondary": "#4A3C31",
+    "surfaceTertiary": "#DCD0BF",
+    "onSurfaceTertiary": "#2C221B",
+    "surfaceInverse": "#3E2A1E",
+    "onSurfaceInverse": "#F4EFE6",
+    "brand": "#8C5A35",
+    "brandPrimary": "#8C5A35",
+    "onBrandPrimary": "#F4EFE6",
+    "brandSecondary": "#6B4423",
+    "onBrandSecondary": "#F4EFE6",
+    "brandTertiary": "#D5B59C",
+    "onBrandTertiary": "#3E2A1E",
+    "success": "#4A6B48",
+    "onSuccess": "#FFFFFF",
+    "warning": "#C27A30",
+    "onWarning": "#FFFFFF",
+    "error": "#A84432",
+    "onError": "#FFFFFF",
+    "border": "#DCD0BF",
+    "borderStrong": "#8C5A35",
+    "divider": "#DCD0BF"
+  },
+  "typography": {
+    "displayFontFamily": "Space Grotesk",
+    "textFontFamily": "IBM Plex Mono",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Use sharp, rigid bento grids. No accidental empty space. Exposed structural padding.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 0,
+    "md": 0,
+    "lg": 0,
+    "pill": 0
+  },
+  "shadow_tier": "0",
+  "navigation": "bottom_tabs",
+  "icon_set": "Phosphor",
+  "glassmorphism": {
+    "enabled": false,
+    "do's": [],
+    "dont's": [
+      "No blur or glassmorphism. This is a Brutalist hardware store app. High contrast, raw structural layouts only."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "solid surfaceSecondary",
+      "android": "solid surfaceSecondary",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "none",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Dashboard",
+      "purpose": "Command center for the manager to see stats at a glance and jump into quick actions.",
+      "states": {
+        "loading": "Centered oversized mono spinner.",
+        "empty": "N/A",
+        "error": "Mono text error block with 'RETRY' button."
+      },
+      "layout": "Top sticky header with a hard toggle for 'Gestore / Cliente' mode. Below, a bento-style grid: 2 large cards for 'Valore Magazzino' and 'Articoli sotto scorta' featuring oversized Grotesk numbers. Below that, 2 solid quick-action tiles: 'Scan Barcode' and 'Vendita Rapida'."
+    },
+    {
+      "name": "Catalogo",
+      "purpose": "Search-first inventory browser with robust filtering.",
+      "states": {
+        "loading": "Skeleton of bento list rows.",
+        "empty": "Stark mono message 'NESSUN PRODOTTO TROVATO' + reset filters button.",
+        "error": "Error block with bold retry button."
+      },
+      "layout": "Top bar: sticky search input and scan icon. Category strip (e.g., Utensili, Viti, Elettricità) below it. Main view: 2-column bento grid of products. Each card has a strict 1pt border, product image, Grotesk title, and Mono-spaced price/stock count. Bottom sheet for filtering by Marca/Categoria."
+    },
+    {
+      "name": "Dettaglio Prodotto",
+      "purpose": "Show full CRUD details and specs of a single item.",
+      "states": {
+        "loading": "Spinner.",
+        "empty": "N/A",
+        "error": "Item not found error block."
+      },
+      "layout": "Edge-to-edge product image at the top with a vertical gradient scrim and large Grotesk title overlay. Below: a rigid, exposed-border list of specs (BARCODE, MARCA, CATEGORIA, P. ACQUISTO, P. VENDITA, QTA, FORNITORE, NOTE) all aligned left in Mono font. Sticky bottom section with heavy + / - quantity buttons and 'Salva'."
+    },
+    {
+      "name": "Vendita",
+      "purpose": "Quick POS checkout system for hardware items.",
+      "states": {
+        "loading": "Spinner.",
+        "empty": "Stark mono message 'CARRELLO VUOTO' + large 'INIZIA SCANSIONE' button.",
+        "error": "Checkout error block."
+      },
+      "layout": "List view of scanned items with exposed dividers. Each row shows item name, QTY adjusters, and subtotal. A massive sticky block at the bottom showing 'TOTALE' in oversized typography and a full-width 'COMPLETA VENDITA' button."
+    },
+    {
+      "name": "Scanner",
+      "purpose": "Full-screen camera to scan product barcodes.",
+      "states": {
+        "loading": "Camera initializing.",
+        "empty": "N/A",
+        "error": "Camera permission denied message."
+      },
+      "layout": "Full camera view with a brutalist targeting frame (sharp corner brackets, no rounded edges). Raw mono text reading 'IN ATTESA DI BARCODE...' overlaid on a dark semi-transparent block at the bottom."
+    }
+  ],
+  "images": {
+    "dashboard_wood_bg": {
+      "url": "https://images.unsplash.com/photo-1583418007992-a8e33a92e7ad?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDZ8MHwxfHNlYXJjaHwyfHxydXN0aWMlMjB3b29kJTIwdGV4dHVyZXxlbnwwfHx8fDE3ODExMDA2NDJ8MA&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1611600700192-d87eaeed4f81?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDZ8MHwxfHNlYXJjaHwxfHxydXN0aWMlMjB3b29kJTIwdGV4dHVyZXxlbnwwfHx8fDE3ODExMDA2NDJ8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "rustic wood texture"
+    },
+    "category_tools": {
+      "url": "https://images.unsplash.com/reserve/oIpwxeeSPy1cnwYpqJ1w_Dufer%20Collateral%20test.jpg?crop=entropy&cs=srgb&fm=jpg&ixid=M3w7NDQ2MzR8MHwxfHNlYXJjaHwxfHxoYXJkd2FyZSUyMHRvb2xzfGVufDB8fHx8MTc4MTEwMDY0Mnww&ixlib=rb-4.1.0&q=85",
+      "alt": "hardware tools on wood"
+    },
+    "product_drill": {
+      "url": "https://images.unsplash.com/photo-1645651964715-d200ce0939cc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwxfHxwb3dlciUyMGRyaWxsJTIwdG9vbHxlbnwwfHx8fDE3ODExMDA2NDJ8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "power drill tool"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Implement a global state (e.g. Zustand) for 'Mode: Gestore / Cliente'.",
+    "When in 'Cliente' mode, STRICTLY hide the following fields across all screens: P. ACQUISTO, FORNITORE, Statistiche/Valore Magazzino, Add/Edit product buttons, and the 'Vendita Rapida' flow.",
+    "Use 1pt sharp borders (`borderStrong`) around bento cards and list items to create the Brutalist structural feel. Set all border radii to 0.",
+    "Format all numbers (BARCODE, QUANTITÀ, PREZZO, TOTALE) strictly using the `textFontFamily` (IBM Plex Mono) to emphasize the raw/hardware POS aesthetic.",
+    "The Home Dashboard should use a bento-style layout with strong dividing lines, avoiding soft spacing or floating cards.",
+    "Mock the Excel Import feature with a simple button that populates the Zustand store with dummy hardware data (including the 'product_drill' image URL).",
+    "Ensure 'Vendita Rapida' uses a massive sticky CTA at the bottom, per the thumb zone and sticky primary CTA rules."
+  ]
+}
