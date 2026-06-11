@@ -1,0 +1,5132 @@
+[
+  {
+    "_id": {
+      "$oid": "6a2a7277b080e6030891a040"
+    },
+    "id": "5883adef-6a8d-4ceb-9766-1964668cda72",
+    "barcode": "5011402713929",
+    "descrizione": "Filo Nylon 37,5 mt spessore 1,5 mm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5011402713929.jpg",
+    "note": "Codice fornitore: A6046-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:51.986366+00:00",
+    "updated_at": "2026-06-11T08:31:51.986386+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7277b080e6030891a041"
+    },
+    "id": "eb50c1e4-af87-4d88-a38d-090e647f485a",
+    "barcode": "5035048561508",
+    "descrizione": "Catena cromata 25 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048561508.jpg",
+    "note": "Codice fornitore: A6125CSL-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:51.988571+00:00",
+    "updated_at": "2026-06-11T08:31:51.988589+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7277b080e6030891a042"
+    },
+    "id": "537419c9-e944-47da-bd5b-7a01873d92be",
+    "barcode": "5035048561522",
+    "descrizione": "Catena cromata 30 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048561522.jpg",
+    "note": "Codice fornitore: A6130CSL-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:51.990218+00:00",
+    "updated_at": "2026-06-11T08:31:51.990234+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7277b080e6030891a043"
+    },
+    "id": "938ee4f8-bb29-47c6-b2f7-6282a90c4b61",
+    "barcode": "5035048148907",
+    "descrizione": "Catena cromata 10 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048148907.jpg",
+    "note": "Codice fornitore: A6150-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:51.991805+00:00",
+    "updated_at": "2026-06-11T08:31:51.991820+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7277b080e6030891a044"
+    },
+    "id": "0b4bbc11-0522-4b27-83dd-381bb92e8875",
+    "barcode": "5035048143032",
+    "descrizione": "Catena cromata 20 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048143032.jpg",
+    "note": "Codice fornitore: A6158-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:51.993364+00:00",
+    "updated_at": "2026-06-11T08:31:51.993378+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7277b080e6030891a045"
+    },
+    "id": "0b0d75a5-58c7-4947-b262-f59a9c911401",
+    "barcode": "5035048561584",
+    "descrizione": "Catena cromata 25 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048561584.jpg",
+    "note": "Codice fornitore: A6225CS-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:51.995078+00:00",
+    "updated_at": "2026-06-11T08:31:51.995094+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7277b080e6030891a046"
+    },
+    "id": "2cbf2203-cec6-42c7-85db-0ee734a1d61c",
+    "barcode": "5035048627808",
+    "descrizione": "Catena cromata 35cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048627808.jpg",
+    "note": "Codice fornitore: A6235CS-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:51.996686+00:00",
+    "updated_at": "2026-06-11T08:31:51.996701+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7277b080e6030891a047"
+    },
+    "id": "5c5d3284-8713-4575-a964-7f532adb2f48",
+    "barcode": "5035048627822",
+    "descrizione": "Catena cromata 40 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048627822.jpg",
+    "note": "Codice fornitore: A6240CS-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:51.998279+00:00",
+    "updated_at": "2026-06-11T08:31:51.998294+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a048"
+    },
+    "id": "396895b0-631a-4455-90f1-eb3f2303edfe",
+    "barcode": "5035048561546",
+    "descrizione": "Catena cromata 45 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048561546.jpg",
+    "note": "Codice fornitore: A6245CS-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:51.999845+00:00",
+    "updated_at": "2026-06-11T08:31:51.999859+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a049"
+    },
+    "id": "b10c88cc-a678-4d2d-9d61-f2d0dc27de0e",
+    "barcode": "5035048692509",
+    "descrizione": "Lama per rasaerba BEMW 32 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048692509.jpg",
+    "note": "Codice fornitore: A6319-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.002757+00:00",
+    "updated_at": "2026-06-11T08:31:52.002777+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a04a"
+    },
+    "id": "208640c9-0963-4aab-be58-49de2f75740c",
+    "barcode": "5035048692516",
+    "descrizione": "Lama per rasaerba BEMW 34 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048692516.jpg",
+    "note": "Codice fornitore: A6320-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.005747+00:00",
+    "updated_at": "2026-06-11T08:31:52.005766+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a04b"
+    },
+    "id": "0ba04842-6ec3-4d95-bdd9-decf2c3dd55c",
+    "barcode": "5035048692523",
+    "descrizione": "Lama per rasaerba BEMW 38 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048692523.jpg",
+    "note": "Codice fornitore: A6321-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.007428+00:00",
+    "updated_at": "2026-06-11T08:31:52.007443+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a04c"
+    },
+    "id": "a1ff620d-e76e-4b69-94e3-be965500f0c9",
+    "barcode": "5035048692530",
+    "descrizione": "Lama per rasaerba BEMW 42 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048692530.jpg",
+    "note": "Codice fornitore: A6322-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.009036+00:00",
+    "updated_at": "2026-06-11T08:31:52.009051+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a04d"
+    },
+    "id": "dde037df-b031-4267-8967-47f67d32d750",
+    "barcode": "5035048715307",
+    "descrizione": "Lama per rasaerba BEMW 32 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048715307.jpg",
+    "note": "Codice fornitore: A6323-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.010631+00:00",
+    "updated_at": "2026-06-11T08:31:52.010647+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a04e"
+    },
+    "id": "109fcd73-d29b-4624-b37d-3b1cfb12932e",
+    "barcode": "5035048715321",
+    "descrizione": "Pack da 10 lame per rasaerba a cuscino d'aria (cod. BEMWH551-QS)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048715321.jpg",
+    "note": "Codice fornitore: A6324X10-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.012219+00:00",
+    "updated_at": "2026-06-11T08:31:52.012233+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a04f"
+    },
+    "id": "9f97e8ee-9449-43d4-a792-db1031c42a0f",
+    "barcode": "5035048715345",
+    "descrizione": "Pack da 20 lame per rasaerba a cuscino d'aria (cod. BEMWH551-QS)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048715345.jpg",
+    "note": "Codice fornitore: A6324X20-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.014224+00:00",
+    "updated_at": "2026-06-11T08:31:52.014241+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a050"
+    },
+    "id": "3bd90315-7341-4ebc-9cf2-70231c2a6530",
+    "barcode": "5035048734070",
+    "descrizione": "Lama per rasaerba 32 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048734070.jpg",
+    "note": "Codice fornitore: A6324-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.015878+00:00",
+    "updated_at": "2026-06-11T08:31:52.015893+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a051"
+    },
+    "id": "8ddf933c-3c5d-4640-8a35-766bd0117213",
+    "barcode": "5054905337506",
+    "descrizione": "Lama per rasaerba 34 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337506.jpg",
+    "note": "Codice fornitore: A6328-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.017524+00:00",
+    "updated_at": "2026-06-11T08:31:52.017540+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a052"
+    },
+    "id": "56b5f57c-baf7-49f7-b1aa-fefddf4d9521",
+    "barcode": "5054905337513",
+    "descrizione": "Lama per rasaerba 40 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337513.jpg",
+    "note": "Codice fornitore: A6329-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.019114+00:00",
+    "updated_at": "2026-06-11T08:31:52.019129+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a053"
+    },
+    "id": "5a707c32-4071-48fd-863b-72ff0216d5df",
+    "barcode": "5054905337520",
+    "descrizione": "Rullo per scarificazione 30 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337520.jpg",
+    "note": "Codice fornitore: A6330-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.020745+00:00",
+    "updated_at": "2026-06-11T08:31:52.020760+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a054"
+    },
+    "id": "853236dc-cc5c-4ad4-999d-dcacb279ebf8",
+    "barcode": "5054905337537",
+    "descrizione": "Rullo per areazione 30 cm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337537.jpg",
+    "note": "Codice fornitore: A6331-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.022372+00:00",
+    "updated_at": "2026-06-11T08:31:52.022387+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a055"
+    },
+    "id": "952d582c-4b3e-40f4-9ea3-fdab2f7577ea",
+    "barcode": "5035048009338",
+    "descrizione": "Filo nylon 25mt spessore 1.5 mm per modelli ad alimentazione REFLEX PLUS",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048009338.jpg",
+    "note": "Codice fornitore: A6440-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.023965+00:00",
+    "updated_at": "2026-06-11T08:31:52.023980+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a056"
+    },
+    "id": "665ae931-bfd8-4a0f-9982-3a7be2102d59",
+    "barcode": "5035048023235",
+    "descrizione": "Rocchetto e filo nylon 10 mt 2 mm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048023235.jpg",
+    "note": "Codice fornitore: A6482-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.025546+00:00",
+    "updated_at": "2026-06-11T08:31:52.025560+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a057"
+    },
+    "id": "2cf2c319-7d04-451f-8d4f-da2b12de66be",
+    "barcode": "5035048010402",
+    "descrizione": "10 unit\u00e0 di filo HDL 3.0 mm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048010402.jpg",
+    "note": "Codice fornitore: A6487-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.027108+00:00",
+    "updated_at": "2026-06-11T08:31:52.027122+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a058"
+    },
+    "id": "66e10fbb-05fe-4d53-a378-f11c67c73478",
+    "barcode": "5035048023228",
+    "descrizione": "10 unit\u00e0 di filo HDL 2.5 mm",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048023228.jpg",
+    "note": "Codice fornitore: A6489-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.028697+00:00",
+    "updated_at": "2026-06-11T11:03:56.936936+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a059"
+    },
+    "id": "b56978f4-2203-4380-ae3b-443df6aec1e6",
+    "barcode": "5035048736142",
+    "descrizione": "Tappo rocchetto GL HPP",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048736142.jpg",
+    "note": "Codice fornitore: A6502-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.030290+00:00",
+    "updated_at": "2026-06-11T08:31:52.030304+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a05a"
+    },
+    "id": "8d74f645-2ac9-4522-8f11-f92af905f098",
+    "barcode": "5035048736210",
+    "descrizione": "Tappo rocchetto AFS",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048736210.jpg",
+    "note": "Codice fornitore: A6504-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.031890+00:00",
+    "updated_at": "2026-06-11T08:31:52.031905+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a05b"
+    },
+    "id": "5cb2d64f-0002-4e1b-8b83-80ef7ed686fb",
+    "barcode": "5035048736227",
+    "descrizione": "Tappo rocchetto PC",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048736227.jpg",
+    "note": "Codice fornitore: A6505-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.033460+00:00",
+    "updated_at": "2026-06-11T08:31:52.033475+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a05c"
+    },
+    "id": "d5aa5c19-23e9-46cd-9144-fb003115338a",
+    "barcode": "5035048009000",
+    "descrizione": "Giftset Accessori - Set cricchetto 45 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048009000.jpg",
+    "note": "Codice fornitore: A7039-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.035024+00:00",
+    "updated_at": "2026-06-11T08:31:52.035039+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a05d"
+    },
+    "id": "829e73b8-3851-4277-a426-374b3cc9698c",
+    "barcode": "5035048010341",
+    "descrizione": "Giftset Accessori - Set cricchetto 40 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048010341.jpg",
+    "note": "Codice fornitore: A7062-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.036683+00:00",
+    "updated_at": "2026-06-11T08:31:52.036699+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a05e"
+    },
+    "id": "e84ba7b9-a7a6-4dcc-a584-fa78112dbe69",
+    "barcode": "5035048010396",
+    "descrizione": "Giftset Accessori - Set alcaline",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048010396.jpg",
+    "note": "Codice fornitore: A7073-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.038291+00:00",
+    "updated_at": "2026-06-11T08:31:52.038306+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a05f"
+    },
+    "id": "43dfda61-75d4-45c6-a81e-2d4e8a70be36",
+    "barcode": "5035048010624",
+    "descrizione": "Giftset Accessori - Set cricchetto 56 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048010624.jpg",
+    "note": "Codice fornitore: A7104-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.039881+00:00",
+    "updated_at": "2026-06-11T08:31:52.039895+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a060"
+    },
+    "id": "161e1c5c-c804-41f6-b71e-714fb6d9157c",
+    "barcode": "5035048010822",
+    "descrizione": "Giftset Accessori - Set cricchetto + bussole 33 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048010822.jpg",
+    "note": "Codice fornitore: A7142-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.041444+00:00",
+    "updated_at": "2026-06-11T08:31:52.041473+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a061"
+    },
+    "id": "a74eadd9-1022-4193-8fd7-23b5e6e3bd7d",
+    "barcode": "5035048022610",
+    "descrizione": "Giftset Accessori - Set 16 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048022610.jpg",
+    "note": "Codice fornitore: A7186-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.043060+00:00",
+    "updated_at": "2026-06-11T08:31:52.043074+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a062"
+    },
+    "id": "230622ae-d5d2-4de1-b2c2-8eb3e0ed4a44",
+    "barcode": "5035048022634",
+    "descrizione": "Giftset Accessori - Set 50 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048022634.jpg",
+    "note": "Codice fornitore: A7188-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.044658+00:00",
+    "updated_at": "2026-06-11T08:31:52.044672+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a063"
+    },
+    "id": "384838b4-4f95-466c-88ce-8e20cea6a3d3",
+    "barcode": "5035048087275",
+    "descrizione": "Giftset Accessori - Set 109 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048087275.jpg",
+    "note": "Codice fornitore: A7200-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.046231+00:00",
+    "updated_at": "2026-06-11T08:31:52.046245+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a064"
+    },
+    "id": "eafb5a21-94b7-4971-b714-e1ba16b157e3",
+    "barcode": "5035048087299",
+    "descrizione": "Giftset Accessori - Set 38 pezzi inserti lunghi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048087299.jpg",
+    "note": "Codice fornitore: A7202-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.047823+00:00",
+    "updated_at": "2026-06-11T08:31:52.047837+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a065"
+    },
+    "id": "843014c2-680f-4f56-89f4-900504224efb",
+    "barcode": "5035048024478",
+    "descrizione": "Giftset Accessori - Set 32 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048024478.jpg",
+    "note": "Codice fornitore: A7216-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.049392+00:00",
+    "updated_at": "2026-06-11T08:31:52.049406+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a066"
+    },
+    "id": "2c95690c-d585-4275-8a7e-bc90ae985573",
+    "barcode": "5035048661642",
+    "descrizione": "Giftset Accessori - Set 31 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048661642.jpg",
+    "note": "Codice fornitore: A7228-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.050977+00:00",
+    "updated_at": "2026-06-11T08:31:52.050991+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a067"
+    },
+    "id": "c2c62ab1-edd5-463f-9e77-c172a9616440",
+    "barcode": "5035048540985",
+    "descrizione": "Giftset Accessori - Set 104 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048540985.jpg",
+    "note": "Codice fornitore: A7230-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.052972+00:00",
+    "updated_at": "2026-06-11T08:31:52.052989+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a068"
+    },
+    "id": "921a9a6a-cfcb-4e25-9576-05e5ce9fcba4",
+    "barcode": "5035048541005",
+    "descrizione": "Giftset Accessori - Set 50 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048541005.jpg",
+    "note": "Codice fornitore: A7232-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.054622+00:00",
+    "updated_at": "2026-06-11T08:31:52.054637+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a069"
+    },
+    "id": "029efe7b-c4b0-4b40-9dca-4844c0e72859",
+    "barcode": "5035048541012",
+    "descrizione": "Giftset Accessori - Set 31 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048541012.jpg",
+    "note": "Codice fornitore: A7233-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.056210+00:00",
+    "updated_at": "2026-06-11T08:31:52.056224+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a06a"
+    },
+    "id": "4598ab9d-8854-4bc8-9b45-6f211e97f3cb",
+    "barcode": "5035048541029",
+    "descrizione": "Giftset Accessori - Set 45 pezzi",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048541029.jpg",
+    "note": "Codice fornitore: A7234-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.057800+00:00",
+    "updated_at": "2026-06-11T08:31:52.057814+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a06b"
+    },
+    "id": "45566685-4226-470c-96e4-f2c605dcade0",
+    "barcode": "5035048269497",
+    "descrizione": "Compressore portatile",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048269497.jpg",
+    "note": "Codice fornitore: ASI200-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.059402+00:00",
+    "updated_at": "2026-06-11T08:31:52.059417+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a06c"
+    },
+    "id": "4a457a1b-9936-408e-b794-f99a7c148d23",
+    "barcode": "5035048200056",
+    "descrizione": "Compressore portatile",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048200056.jpg",
+    "note": "Codice fornitore: ASI300-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.061038+00:00",
+    "updated_at": "2026-06-11T08:31:52.061053+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a06d"
+    },
+    "id": "7ad24e8a-be29-4152-b861-d51e68da0bf0",
+    "barcode": "5054905026011",
+    "descrizione": "Compressore portatile",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905026011.jpg",
+    "note": "Codice fornitore: ASI400-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.062645+00:00",
+    "updated_at": "2026-06-11T08:31:52.062659+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a06e"
+    },
+    "id": "08acb04b-1f4a-46ac-86e4-f64d43871048",
+    "barcode": "5054905244644",
+    "descrizione": "Soffiatore Assiale a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 61.4,
+    "prezzo_vendita": 74.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905244644.jpg",
+    "note": "Codice fornitore: BCBL200B-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.064248+00:00",
+    "updated_at": "2026-06-11T08:31:52.064262+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a06f"
+    },
+    "id": "cfc9f2e5-a455-4cb3-a3f9-34721d134a39",
+    "barcode": "5035048710043",
+    "descrizione": "Soffiatore Assiale a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048710043.jpg",
+    "note": "Codice fornitore: BCBL200L-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.065926+00:00",
+    "updated_at": "2026-06-11T08:31:52.065942+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a070"
+    },
+    "id": "33b308f3-dc45-43c4-98ec-ff59f5a9e8f5",
+    "barcode": "5035048727935",
+    "descrizione": "Soffiatore - Aspiratore - Trituratore a batteria 36V Brushless",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 196.7,
+    "prezzo_vendita": 240.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048727935.jpg",
+    "note": "Codice fornitore: BCBLV3625L1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.067560+00:00",
+    "updated_at": "2026-06-11T08:31:52.067574+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a071"
+    },
+    "id": "def3ec1b-e0db-4fea-acf2-3e0e668890fd",
+    "barcode": "5035048832912",
+    "descrizione": "Trapano avvitatore a batteria 18V 2.0 Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 58.9,
+    "prezzo_vendita": 71.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048832912.jpg",
+    "note": "Codice fornitore: BCD382D1XC-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.069154+00:00",
+    "updated_at": "2026-06-11T08:31:52.069169+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a072"
+    },
+    "id": "d1dab253-4038-4339-bf80-bdd07cd0c588",
+    "barcode": "5035048833384",
+    "descrizione": "Trapano avvitatore a batteria 18V 2.0 Ah in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 67.6,
+    "prezzo_vendita": 82.5,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048833384.jpg",
+    "note": "Codice fornitore: BCD382D1XK-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.070741+00:00",
+    "updated_at": "2026-06-11T08:31:52.070754+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a073"
+    },
+    "id": "28ed50a8-577a-4824-b681-407d34f2fcd1",
+    "barcode": "5035048833544",
+    "descrizione": "Trapano avvitatore con doppia batteria 18V 2.0 Ah in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 83.5,
+    "prezzo_vendita": 101.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048833544.jpg",
+    "note": "Codice fornitore: BCD382D2XK-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.072319+00:00",
+    "updated_at": "2026-06-11T08:31:52.072334+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a074"
+    },
+    "id": "ba34cd27-1464-4b88-8b4a-e664a3c70bb8",
+    "barcode": "5035048832844",
+    "descrizione": "Trapano avvitatore a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 40.9,
+    "prezzo_vendita": 49.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048832844.jpg",
+    "note": "Codice fornitore: BCD382XN-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.073903+00:00",
+    "updated_at": "2026-06-11T08:31:52.073917+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a075"
+    },
+    "id": "815b2dfd-52c2-4e4b-acc2-88fb1ce0e9ab",
+    "barcode": "5035048833322",
+    "descrizione": "Trapano avvitatore a percussione con batteria 18V 2.0 Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.9,
+    "prezzo_vendita": 80.4,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048833322.jpg",
+    "note": "Codice fornitore: BCD383D1XC-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.075502+00:00",
+    "updated_at": "2026-06-11T08:31:52.075516+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a076"
+    },
+    "id": "7935bca9-0290-4866-8c4d-ea1e68ab4825",
+    "barcode": "5035048833414",
+    "descrizione": "Trapano avvitatore a percussione con batteria 18V 2.0 Ah in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 74.5,
+    "prezzo_vendita": 90.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048833414.jpg",
+    "note": "Codice fornitore: BCD383D1XK-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.077094+00:00",
+    "updated_at": "2026-06-11T08:31:52.077107+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a077"
+    },
+    "id": "ab062c89-0780-4920-8693-42237809206a",
+    "barcode": "5035048833513",
+    "descrizione": "Trapano avvitatore a percussione con doppia batteria 18V 2.0 Ah in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 90.9,
+    "prezzo_vendita": 110.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048833513.jpg",
+    "note": "Codice fornitore: BCD383D2XK-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.078708+00:00",
+    "updated_at": "2026-06-11T08:31:52.078723+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a078"
+    },
+    "id": "d32977c1-5b26-4dc9-b879-0e20b420d380",
+    "barcode": "5035048832882",
+    "descrizione": "Trapano avvitatore a percussione con batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048832882.jpg",
+    "note": "Codice fornitore: BCD383XN-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.080310+00:00",
+    "updated_at": "2026-06-11T08:31:52.080324+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a079"
+    },
+    "id": "8afde36b-2b48-4ff9-840f-6cab6b2853c5",
+    "barcode": "5035048705032",
+    "descrizione": "Tassellatore a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048705032.jpg",
+    "note": "Codice fornitore: BCD900B-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.081924+00:00",
+    "updated_at": "2026-06-11T08:31:52.081937+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a07a"
+    },
+    "id": "427d3fcd-0ec4-4352-9469-510d270d0782",
+    "barcode": "5035048728666",
+    "descrizione": "Tassellatore a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 131.1,
+    "prezzo_vendita": 159.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048728666.jpg",
+    "note": "Codice fornitore: BCD900D1S-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.083639+00:00",
+    "updated_at": "2026-06-11T08:31:52.083654+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a07b"
+    },
+    "id": "6f2f8cbb-c534-4c4f-bdc8-da5685778793",
+    "barcode": "5035048726822",
+    "descrizione": "Tassellatore a batteria 18V in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 180.1,
+    "prezzo_vendita": 219.7,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048726822.jpg",
+    "note": "Codice fornitore: BCD900E2K-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.085259+00:00",
+    "updated_at": "2026-06-11T08:31:52.085273+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a07c"
+    },
+    "id": "fbe68063-cb2c-40a2-aa4f-7372ac020e1a",
+    "barcode": "5035048728697",
+    "descrizione": "Tassellatore a batteria 18V in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 163.9,
+    "prezzo_vendita": 200.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048728697.jpg",
+    "note": "Codice fornitore: BCD900M1K-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.086864+00:00",
+    "updated_at": "2026-06-11T08:31:52.086878+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a07d"
+    },
+    "id": "11540c93-2f1e-4d76-b11b-d0471f865177",
+    "barcode": "5035048716182",
+    "descrizione": "Svitavvita a ricarica rapida",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 32.9,
+    "prezzo_vendita": 40.1,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048716182.jpg",
+    "note": "Codice fornitore: BCF611CK-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.088482+00:00",
+    "updated_at": "2026-06-11T08:31:52.088496+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a07e"
+    },
+    "id": "4e11c77d-9ab7-4061-8e1b-d22c2e292423",
+    "barcode": "5035048836484",
+    "descrizione": "Smerigliatrice angolare 115 mm Brushless a batteria 18V 2.0 Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 98.3,
+    "prezzo_vendita": 119.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048836484.jpg",
+    "note": "Codice fornitore: BCG6L8D1S-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.090091+00:00",
+    "updated_at": "2026-06-11T08:31:52.090105+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a07f"
+    },
+    "id": "6bfba3e3-e398-444a-afa3-d98b6438df2c",
+    "barcode": "5035048836545",
+    "descrizione": "Smerigliatrice angolare 115 mm Brushless a batteria 18V 4.0 Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 114.6,
+    "prezzo_vendita": 139.8,
+    "quantita": 1,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048836545.jpg",
+    "note": "Codice fornitore: BCG6L8F1S-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.091695+00:00",
+    "updated_at": "2026-06-11T09:04:18.604740+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a080"
+    },
+    "id": "4f977194-a28e-4b2f-bb10-c69bea3d0dfb",
+    "barcode": "5035048836378",
+    "descrizione": "Smerigliatrice angolare 115 mm Brushless (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048836378.jpg",
+    "note": "Codice fornitore: BCG6L8N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.093285+00:00",
+    "updated_at": "2026-06-11T08:31:52.093299+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a081"
+    },
+    "id": "3af70f2d-a1a0-4ffc-af22-4bc5ffe9d763",
+    "barcode": "5035048788660",
+    "descrizione": "Pistola incollatrice",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048788660.jpg",
+    "note": "Codice fornitore: BCGL115-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.094888+00:00",
+    "updated_at": "2026-06-11T08:31:52.094903+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a082"
+    },
+    "id": "bb8b43bd-e77d-4376-9f05-4d91313a4552",
+    "barcode": "5035048727980",
+    "descrizione": "Tagliasiepi a batteria 36V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 180.3,
+    "prezzo_vendita": 220.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048727980.jpg",
+    "note": "Codice fornitore: BCHTS3625L1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.096548+00:00",
+    "updated_at": "2026-06-11T08:31:52.096563+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a083"
+    },
+    "id": "c53c008a-a8ff-44c8-8efb-f36ccefea54b",
+    "barcode": "5035048735190",
+    "descrizione": "Dustbuster 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "CURA DELLA CASA",
+    "prezzo_acquisto": 40.9,
+    "prezzo_vendita": 49.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048735190.jpg",
+    "note": "Codice fornitore: BCHV001B-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.098171+00:00",
+    "updated_at": "2026-06-11T08:31:52.098186+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a084"
+    },
+    "id": "b6a789c6-7431-4a1f-8bdb-680a37e1bc70",
+    "barcode": "5035048735183",
+    "descrizione": "Dustbuster 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "CURA DELLA CASA",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048735183.jpg",
+    "note": "Codice fornitore: BCHV001C1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.100012+00:00",
+    "updated_at": "2026-06-11T08:31:52.100028+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a085"
+    },
+    "id": "479e40ea-b6ec-4c4f-a33c-018a21f3ed55",
+    "barcode": "5035048723272",
+    "descrizione": "Rasaerba con doppia batteria 36V(18x2)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 255.0,
+    "prezzo_vendita": 311.1,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048723272.jpg",
+    "note": "Codice fornitore: BCMW33184L2-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.101694+00:00",
+    "updated_at": "2026-06-11T08:31:52.101709+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a086"
+    },
+    "id": "aeb7496c-bd2a-4634-bff2-2651c13af6ae",
+    "barcode": "5035048723241",
+    "descrizione": "Rasaerba con doppia batteria 36V(18x2)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 222.5,
+    "prezzo_vendita": 271.5,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048723241.jpg",
+    "note": "Codice fornitore: BCMW3318L2-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.103328+00:00",
+    "updated_at": "2026-06-11T08:31:52.103343+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a087"
+    },
+    "id": "98170a4e-a281-4d25-95ed-97b9e9c0d07b",
+    "barcode": "5035048723234",
+    "descrizione": "Rasaerba a batteria 36V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 172.5,
+    "prezzo_vendita": 210.5,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048723234.jpg",
+    "note": "Codice fornitore: BCMW3318N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.104956+00:00",
+    "updated_at": "2026-06-11T08:31:52.104970+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a088"
+    },
+    "id": "0c5528b7-32d2-40e1-b3e0-67d31a9d973f",
+    "barcode": "5035048723319",
+    "descrizione": "Rasaerba a batteria 36V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 233.9,
+    "prezzo_vendita": 285.4,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048723319.jpg",
+    "note": "Codice fornitore: BCMW3336L1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.106571+00:00",
+    "updated_at": "2026-06-11T08:31:52.106584+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a089"
+    },
+    "id": "f797fa6c-2282-428d-8230-170b2b88839c",
+    "barcode": "5035048723357",
+    "descrizione": "Rasaerba con doppia batteria 36V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 308.4,
+    "prezzo_vendita": 376.2,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048723357.jpg",
+    "note": "Codice fornitore: BCMW3336L2-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.108186+00:00",
+    "updated_at": "2026-06-11T08:31:52.108200+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a08a"
+    },
+    "id": "7bc4558e-714b-440b-8dcc-1022146a85f3",
+    "barcode": "5035048723302",
+    "descrizione": "Rasaerba a batteria 36V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 163.9,
+    "prezzo_vendita": 200.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048723302.jpg",
+    "note": "Codice fornitore: BCMW3336N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.109807+00:00",
+    "updated_at": "2026-06-11T08:31:52.109821+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a08b"
+    },
+    "id": "c23a29bd-63ec-4ec5-849c-65fe90442c1e",
+    "barcode": "5035048788639",
+    "descrizione": "Graffatrice",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048788639.jpg",
+    "note": "Codice fornitore: BCN115-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.111406+00:00",
+    "updated_at": "2026-06-11T08:31:52.111421+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a08c"
+    },
+    "id": "c8a28ca8-4fc4-49e5-9202-819ee75336c3",
+    "barcode": "5035048737200",
+    "descrizione": "Idropistola a batteria (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048737200.jpg",
+    "note": "Codice fornitore: BCPC18B-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.113031+00:00",
+    "updated_at": "2026-06-11T08:31:52.113044+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a08d"
+    },
+    "id": "c10d7a3b-9dea-4460-830f-fae79890fc68",
+    "barcode": "5035048737460",
+    "descrizione": "Idropistola a batteria",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 122.9,
+    "prezzo_vendita": 149.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048737460.jpg",
+    "note": "Codice fornitore: BCPC18D1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.114653+00:00",
+    "updated_at": "2026-06-11T08:31:52.114667+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a08e"
+    },
+    "id": "30f0572c-cfdf-45be-b4f5-3164604a16c5",
+    "barcode": "5035048788448",
+    "descrizione": "Potatore a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 106.5,
+    "prezzo_vendita": 129.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048788448.jpg",
+    "note": "Codice fornitore: BCPP18B-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.116281+00:00",
+    "updated_at": "2026-06-11T08:31:52.116294+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a08f"
+    },
+    "id": "a32792c2-7902-4fc4-995e-d3bdcbb774e4",
+    "barcode": "5035048788462",
+    "descrizione": "Potatore a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048788462.jpg",
+    "note": "Codice fornitore: BCPP18D1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.118042+00:00",
+    "updated_at": "2026-06-11T08:31:52.118056+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a090"
+    },
+    "id": "86d20e3f-9bb0-4a4b-94ef-a71fda8eabe1",
+    "barcode": "5035048796863",
+    "descrizione": "Lama per Potatorino 18V (cod. BCPP18D1-QW, BCPP18B-XJ)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048796863.jpg",
+    "note": "Codice fornitore: BCPPRB1-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.119670+00:00",
+    "updated_at": "2026-06-11T08:31:52.119684+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a091"
+    },
+    "id": "f66970f9-69d9-44c2-951a-c79ada2c8a2e",
+    "barcode": "5035048788592",
+    "descrizione": "Taglierino elettrico",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048788592.jpg",
+    "note": "Codice fornitore: BCRC115-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.121283+00:00",
+    "updated_at": "2026-06-11T08:31:52.121297+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a092"
+    },
+    "id": "0a13268c-fdae-4962-b4b3-788f458b4f59",
+    "barcode": "5035048741412",
+    "descrizione": "Utensile multifunzione rotativo con 36 accessori",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 36.8,
+    "prezzo_vendita": 44.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048741412.jpg",
+    "note": "Codice fornitore: BCRT8I-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.122975+00:00",
+    "updated_at": "2026-06-11T08:31:52.122989+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a093"
+    },
+    "id": "835ac21e-9087-495b-b523-68ec1f1182cd",
+    "barcode": "5035048733844",
+    "descrizione": "Svitavvita per mobili HEX DRIVER",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 27.0,
+    "prezzo_vendita": 32.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048733844.jpg",
+    "note": "Codice fornitore: BCRTA01-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.124625+00:00",
+    "updated_at": "2026-06-11T08:31:52.124640+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a094"
+    },
+    "id": "eb8e9a79-b3d5-4e44-a522-6e119dcbaa31",
+    "barcode": "5035048788615",
+    "descrizione": "Forbici elettriche",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048788615.jpg",
+    "note": "Codice fornitore: BCSC115-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.126272+00:00",
+    "updated_at": "2026-06-11T08:31:52.126287+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a095"
+    },
+    "id": "72be9f76-f8fb-4216-81a4-1d3cef23fbaa",
+    "barcode": "5035048736913",
+    "descrizione": "Cesoia sfoltirami a batteria (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 53.2,
+    "prezzo_vendita": 64.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048736913.jpg",
+    "note": "Codice fornitore: BCSS18B-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.127926+00:00",
+    "updated_at": "2026-06-11T08:31:52.127940+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a096"
+    },
+    "id": "95827e3f-519c-4562-9d14-e58ed46f9c40",
+    "barcode": "5035048737224",
+    "descrizione": "Cesoia sfoltirami",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 98.3,
+    "prezzo_vendita": 119.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048737224.jpg",
+    "note": "Codice fornitore: BCSS18D1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.129584+00:00",
+    "updated_at": "2026-06-11T08:31:52.129598+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a097"
+    },
+    "id": "ced23916-c932-4d2c-98bf-5ebdd5ce545e",
+    "barcode": "5035048834787",
+    "descrizione": "Tagliabordi a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 73.7,
+    "prezzo_vendita": 89.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048834787.jpg",
+    "note": "Codice fornitore: BCST918B-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.131200+00:00",
+    "updated_at": "2026-06-11T08:31:52.131215+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a098"
+    },
+    "id": "93a1c5f1-4e28-4888-9de4-2e48f4e25064",
+    "barcode": "5035048834817",
+    "descrizione": "Tagliabordi a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 98.3,
+    "prezzo_vendita": 119.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048834817.jpg",
+    "note": "Codice fornitore: BCST918D1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.132880+00:00",
+    "updated_at": "2026-06-11T08:31:52.132895+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a099"
+    },
+    "id": "bf5d8bb1-f556-4ae6-881e-fcaebf7bb6aa",
+    "barcode": "5035048723456",
+    "descrizione": "Tagliabordi a batteria 36V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 180.3,
+    "prezzo_vendita": 220.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048723456.jpg",
+    "note": "Codice fornitore: BCSTE636L1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.134532+00:00",
+    "updated_at": "2026-06-11T08:31:52.134547+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a09a"
+    },
+    "id": "9c2c6a95-db0d-4d1d-a892-d639fbafb7ad",
+    "barcode": "5035048835890",
+    "descrizione": "Tagliabordi a batteria 18V con lame in resina (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 98.3,
+    "prezzo_vendita": 119.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048835890.jpg",
+    "note": "Codice fornitore: BCSTR918B-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.136142+00:00",
+    "updated_at": "2026-06-11T08:31:52.136156+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a09b"
+    },
+    "id": "52bc0d50-55bd-4fd0-95d5-78413e3daca1",
+    "barcode": "5035048834879",
+    "descrizione": "Tagliabordi a batteria 18V con lame in resina",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048834879.jpg",
+    "note": "Codice fornitore: BCSTR918D1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.137779+00:00",
+    "updated_at": "2026-06-11T08:31:52.137793+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a09c"
+    },
+    "id": "c4e79523-c6ed-41d5-bdda-2a1fbb3651f7",
+    "barcode": "5035048481677",
+    "descrizione": "Caricabatterie rapido 1A",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 24.5,
+    "prezzo_vendita": 29.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048481677.jpg",
+    "note": "Codice fornitore: BDC1A-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.139386+00:00",
+    "updated_at": "2026-06-11T08:31:52.139400+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a09d"
+    },
+    "id": "182918a4-c58d-4687-b51e-3854398cf2bb",
+    "barcode": "5035048481684",
+    "descrizione": "Starter kit: batteria 18 V 1.5 Ah + caricabatterie 1A",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 33.0,
+    "prezzo_vendita": 40.3,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048481684.jpg",
+    "note": "Codice fornitore: BDC1A15-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.141013+00:00",
+    "updated_at": "2026-06-11T08:31:52.141027+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a09e"
+    },
+    "id": "a80adf2d-be51-483f-baa4-484a15ada5f6",
+    "barcode": "5035048656570",
+    "descrizione": "Caricabatterie rapido 2A",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048656570.jpg",
+    "note": "Codice fornitore: BDC2A-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.142666+00:00",
+    "updated_at": "2026-06-11T08:31:52.142680+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a09f"
+    },
+    "id": "20c652d1-9e77-45ae-ab81-d03d58e947cb",
+    "barcode": "5035048730638",
+    "descrizione": "Caricabatterie rapido",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 40.9,
+    "prezzo_vendita": 49.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048730638.jpg",
+    "note": "Codice fornitore: BDC2A20-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.144293+00:00",
+    "updated_at": "2026-06-11T08:31:52.144306+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0a0"
+    },
+    "id": "58a95914-7ebb-466f-b320-f171902f2304",
+    "barcode": "5035048491553",
+    "descrizione": "Starter kit: batteria al litio 36V 2.0Ah + caricabatterie",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048491553.jpg",
+    "note": "Codice fornitore: BDC2A36-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.145971+00:00",
+    "updated_at": "2026-06-11T08:31:52.145985+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0a1"
+    },
+    "id": "58c44d30-b016-4379-8df4-02040f980df3",
+    "barcode": "5035048562048",
+    "descrizione": "Sega circolare a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048562048.jpg",
+    "note": "Codice fornitore: BDCCS18N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.147624+00:00",
+    "updated_at": "2026-06-11T08:31:52.147638+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0a2"
+    },
+    "id": "baed9e2e-00c4-463c-ac86-09553ba5b5fa",
+    "barcode": "5035048631706",
+    "descrizione": "Trapano avvitatore a batteria 7.2V",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 26.5,
+    "prezzo_vendita": 32.3,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048631706.jpg",
+    "note": "Codice fornitore: BDCD8-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.149247+00:00",
+    "updated_at": "2026-06-11T08:31:52.149260+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0a3"
+    },
+    "id": "5e0ae4c9-b8c2-4169-a132-ce7796ced5c5",
+    "barcode": "5035048631812",
+    "descrizione": "Trapano avvitatore a batteria 10.8V",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 40.9,
+    "prezzo_vendita": 49.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048631812.jpg",
+    "note": "Codice fornitore: BDCDD12-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.150893+00:00",
+    "updated_at": "2026-06-11T08:31:52.150908+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0a4"
+    },
+    "id": "b0521acd-64e1-482d-a555-c732cefaa72f",
+    "barcode": "5035048631850",
+    "descrizione": "Trapano avvitatore a batteria 10.8V in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048631850.jpg",
+    "note": "Codice fornitore: BDCDD12K-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.152511+00:00",
+    "updated_at": "2026-06-11T08:31:52.152524+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0a5"
+    },
+    "id": "bc120fc2-c208-467a-a391-fb7e552feff2",
+    "barcode": "5035048631966",
+    "descrizione": "Trapano avvitatore con doppia batteria 10.8V in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048631966.jpg",
+    "note": "Codice fornitore: BDCDD12KB-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.154136+00:00",
+    "updated_at": "2026-06-11T08:31:52.154150+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0a6"
+    },
+    "id": "7c330b40-45ab-4516-a799-51d09fabc767",
+    "barcode": "5035048709481",
+    "descrizione": "Trapano avvitatore a batteria 12V",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 53.2,
+    "prezzo_vendita": 64.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048709481.jpg",
+    "note": "Codice fornitore: BDCDD12S1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.155766+00:00",
+    "updated_at": "2026-06-11T08:31:52.155780+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0a7"
+    },
+    "id": "ef1821ab-305d-440d-a6d9-dd0bc5f19ffd",
+    "barcode": "5035048562062",
+    "descrizione": "Trapano avvitatore a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048562062.jpg",
+    "note": "Codice fornitore: BDCDD18N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.157474+00:00",
+    "updated_at": "2026-06-11T08:31:52.157489+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0a8"
+    },
+    "id": "3f968efe-62c9-4d96-bde5-fa61776975b9",
+    "barcode": "5035048655375",
+    "descrizione": "Levigatrice Mouse\u00ae con softbag",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 73.7,
+    "prezzo_vendita": 89.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048655375.jpg",
+    "note": "Codice fornitore: BDCDS18-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.159116+00:00",
+    "updated_at": "2026-06-11T08:31:52.159130+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0a9"
+    },
+    "id": "924080d1-c639-4db2-8bd9-0fd4fc35ae23",
+    "barcode": "5035048655351",
+    "descrizione": "Levigatrice Mouse\u00ae (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 45.0,
+    "prezzo_vendita": 54.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048655351.jpg",
+    "note": "Codice fornitore: BDCDS18N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.160743+00:00",
+    "updated_at": "2026-06-11T08:31:52.160757+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0aa"
+    },
+    "id": "7f3c41bf-d853-475c-936f-7b4d099d8ed1",
+    "barcode": "5054905240264",
+    "descrizione": "Trapano avvitatore a percussione a batteria 12V",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905240264.jpg",
+    "note": "Codice fornitore: BDCHD12S1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.162344+00:00",
+    "updated_at": "2026-06-11T08:31:52.162358+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ab"
+    },
+    "id": "1d499482-f5b6-4acf-a59f-c6bfe5038db2",
+    "barcode": "5035048832752",
+    "descrizione": "Avvitatore a impulsi 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 73.9,
+    "prezzo_vendita": 90.2,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048832752.jpg",
+    "note": "Codice fornitore: BDCIM18D1A-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.163983+00:00",
+    "updated_at": "2026-06-11T08:31:52.163997+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ac"
+    },
+    "id": "6dc75a47-04f5-44b1-a145-ed21dcc1038f",
+    "barcode": "5035048560389",
+    "descrizione": "Avvitatore a impulsi 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048560389.jpg",
+    "note": "Codice fornitore: BDCIM18N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.165612+00:00",
+    "updated_at": "2026-06-11T08:31:52.165626+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ad"
+    },
+    "id": "ebaf780b-8ca1-4511-ba2c-5e60cb2a408c",
+    "barcode": "5035048661628",
+    "descrizione": "Compressore portatile",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048661628.jpg",
+    "note": "Codice fornitore: BDCINF18N-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.167238+00:00",
+    "updated_at": "2026-06-11T08:31:52.167252+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ae"
+    },
+    "id": "36520d77-69d3-4562-844f-d9ce5678c900",
+    "barcode": "5035048630327",
+    "descrizione": "Seghetto alternativo a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048630327.jpg",
+    "note": "Codice fornitore: BDCJS18-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.168902+00:00",
+    "updated_at": "2026-06-11T08:31:52.168917+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0af"
+    },
+    "id": "2278f13d-1fb9-4e46-9687-5e44095512f8",
+    "barcode": "5035048630310",
+    "descrizione": "Seghetto alternativo a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 54.0,
+    "prezzo_vendita": 65.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048630310.jpg",
+    "note": "Codice fornitore: BDCJS18N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.170539+00:00",
+    "updated_at": "2026-06-11T08:31:52.170553+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0b0"
+    },
+    "id": "eb10caa1-76b6-4916-b3ea-5eed509d509e",
+    "barcode": "5035048789131",
+    "descrizione": "Utensile multifunzione oscillante a batteria 18V con accessori in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 106.5,
+    "prezzo_vendita": 129.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048789131.jpg",
+    "note": "Codice fornitore: BDCOS18D1K-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.172175+00:00",
+    "updated_at": "2026-06-11T08:31:52.172189+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0b1"
+    },
+    "id": "e235ce4b-580f-4e80-bcfc-6dd6fb5ad95a",
+    "barcode": "5035048789100",
+    "descrizione": "Utensile multifunzione oscillante a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048789100.jpg",
+    "note": "Codice fornitore: BDCOS18N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.173817+00:00",
+    "updated_at": "2026-06-11T08:31:52.173831+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0b2"
+    },
+    "id": "b60d4f35-dbd9-4d28-9dec-71e8109208ec",
+    "barcode": "5035048562208",
+    "descrizione": "Sega universale a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048562208.jpg",
+    "note": "Codice fornitore: BDCR18-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.175443+00:00",
+    "updated_at": "2026-06-11T08:31:52.175472+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0b3"
+    },
+    "id": "5656a8c1-1b18-4672-bc88-10f439914388",
+    "barcode": "5035048561720",
+    "descrizione": "Sega circolare 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048561720.jpg",
+    "note": "Codice fornitore: BDCR18N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.177108+00:00",
+    "updated_at": "2026-06-11T08:31:52.177122+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0b4"
+    },
+    "id": "72c6f2a0-59fe-46cb-b51d-e8d87714892c",
+    "barcode": "5035048664414",
+    "descrizione": "Levigatrice rotorbitale a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048664414.jpg",
+    "note": "Codice fornitore: BDCROS18-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.179073+00:00",
+    "updated_at": "2026-06-11T08:31:52.179090+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0b5"
+    },
+    "id": "b6a99b2b-c2d2-420f-a064-f916b6409ea8",
+    "barcode": "5035048664445",
+    "descrizione": "Levigatrice rotorbitale a batteria (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 53.2,
+    "prezzo_vendita": 64.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048664445.jpg",
+    "note": "Codice fornitore: BDCROS18N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.180786+00:00",
+    "updated_at": "2026-06-11T08:31:52.180801+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0b6"
+    },
+    "id": "3f575716-0676-4f6d-8a11-2500bec3fa54",
+    "barcode": "5035048668993",
+    "descrizione": "Svitavvita con impugnatura orientabile e torcia integrata",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 27.0,
+    "prezzo_vendita": 32.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048668993.jpg",
+    "note": "Codice fornitore: BDCSFL20C-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.182487+00:00",
+    "updated_at": "2026-06-11T08:31:52.182502+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0b7"
+    },
+    "id": "9fb113bf-c110-4f83-a548-ce7c6e0cd1a8",
+    "barcode": "5035048791981",
+    "descrizione": "Carrello pieghevole",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048791981.jpg",
+    "note": "Codice fornitore: BDCWBK01-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.184157+00:00",
+    "updated_at": "2026-06-11T08:31:52.184171+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0b8"
+    },
+    "id": "854e30de-ac6a-4566-9d70-08b10a8040a0",
+    "barcode": "5054905330439",
+    "descrizione": "Smerigliatrice angolare 2200W 230mm",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 73.5,
+    "prezzo_vendita": 89.7,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905330439.jpg",
+    "note": "Codice fornitore: BDGL2223-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.185831+00:00",
+    "updated_at": "2026-06-11T08:31:52.185845+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0b9"
+    },
+    "id": "bc2ab446-bd9d-4ece-b4be-7c195dc3ae98",
+    "barcode": "5035048810514",
+    "descrizione": "Batteria al Litio 18V - 2.0Ah con indicatore stato di carica",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 28.1,
+    "prezzo_vendita": 34.3,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048810514.jpg",
+    "note": "Codice fornitore: BDL2018S-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.187591+00:00",
+    "updated_at": "2026-06-11T08:31:52.187607+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ba"
+    },
+    "id": "bcf02b8f-f7bb-4e38-8506-264d498112d6",
+    "barcode": "5035048811245",
+    "descrizione": "Batteria al Litio 18V - 2.5Ah con indicatore stato di carica",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048811245.jpg",
+    "note": "Codice fornitore: BDL2518S-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.189263+00:00",
+    "updated_at": "2026-06-11T08:31:52.189279+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0bb"
+    },
+    "id": "b01e58ce-e945-41bc-9b08-751a8338bfcd",
+    "barcode": "5054905337308",
+    "descrizione": "Batteria al Litio 18V - 4.0Ah con indicatore stato di carica",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337308.jpg",
+    "note": "Codice fornitore: BDL4018S-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.190937+00:00",
+    "updated_at": "2026-06-11T08:31:52.190951+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0bc"
+    },
+    "id": "0ed37264-1323-40b7-9e1e-4e312826b719",
+    "barcode": "5035048840658",
+    "descrizione": "Starter kit: batteria 18V con indicatore stato di carica + caricabatterie 1A",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 33.9,
+    "prezzo_vendita": 41.4,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048840658.jpg",
+    "note": "Codice fornitore: BDL2018S1B-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.192607+00:00",
+    "updated_at": "2026-06-11T08:31:52.192621+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0bd"
+    },
+    "id": "c15511b0-8447-43fb-8f29-6176820cb749",
+    "barcode": "5035048710241",
+    "descrizione": "Soffiatore Assiale a filo 1850W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 49.5,
+    "prezzo_vendita": 60.4,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048710241.jpg",
+    "note": "Codice fornitore: BEBL185-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.194279+00:00",
+    "updated_at": "2026-06-11T08:31:52.194294+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0be"
+    },
+    "id": "f62a8e40-7e9d-4336-867c-e4a98ae18934",
+    "barcode": "5035048705124",
+    "descrizione": "Soffiatore - Aspiratore - Trituratore a filo 2600W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 65.6,
+    "prezzo_vendita": 80.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048705124.jpg",
+    "note": "Codice fornitore: BEBLV260-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.195980+00:00",
+    "updated_at": "2026-06-11T08:31:52.195995+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0bf"
+    },
+    "id": "3bf105ae-dda0-43df-b907-3c0c0beea33f",
+    "barcode": "5035048705155",
+    "descrizione": "Soffiatore - Aspiratore - Trituratore a filo 2900W con zaino",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048705155.jpg",
+    "note": "Codice fornitore: BEBLV290-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.197661+00:00",
+    "updated_at": "2026-06-11T08:31:52.197676+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0c0"
+    },
+    "id": "87144a51-c9ef-452e-8d8f-d5ab9ddd59f2",
+    "barcode": "5035048705186",
+    "descrizione": "Soffiatore - Aspiratore - Trituratore a filo 3000W con zaino",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048705186.jpg",
+    "note": "Codice fornitore: BEBLV300-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.199315+00:00",
+    "updated_at": "2026-06-11T08:31:52.199329+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0c1"
+    },
+    "id": "fbb55226-4310-40a2-8718-41702ad90c2c",
+    "barcode": "5035048705216",
+    "descrizione": "Soffiatore - Aspiratore - Trituratore a filo 3000W con zaino e raschietto",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 98.4,
+    "prezzo_vendita": 120.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048705216.jpg",
+    "note": "Codice fornitore: BEBLV301-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.200980+00:00",
+    "updated_at": "2026-06-11T08:31:52.200995+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0c2"
+    },
+    "id": "18dee810-3686-44d5-b216-4a1a486da619",
+    "barcode": "5035048808245",
+    "descrizione": "Elettrosega a filo 1800W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 82.1,
+    "prezzo_vendita": 100.2,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048808245.jpg",
+    "note": "Codice fornitore: BECS1835-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.202649+00:00",
+    "updated_at": "2026-06-11T08:31:52.202663+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0c3"
+    },
+    "id": "51c55084-33f9-46ba-a220-1968e49c0d1e",
+    "barcode": "5035048808269",
+    "descrizione": "Elettrosega a filo 2000W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 98.3,
+    "prezzo_vendita": 119.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048808269.jpg",
+    "note": "Codice fornitore: BECS2040-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.204308+00:00",
+    "updated_at": "2026-06-11T08:31:52.204322+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0c4"
+    },
+    "id": "8da9dca1-9e1f-4213-befc-f244fee780e1",
+    "barcode": "5035048808283",
+    "descrizione": "Elettrosega a filo 2200W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 114.6,
+    "prezzo_vendita": 139.8,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048808283.jpg",
+    "note": "Codice fornitore: BECS2245-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.205984+00:00",
+    "updated_at": "2026-06-11T08:31:52.205998+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0c5"
+    },
+    "id": "10f0a704-d5fe-4e29-baec-b7abf810a25c",
+    "barcode": "5035048704295",
+    "descrizione": "Smerigliatrice angolare 710W-115mm",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 28.8,
+    "prezzo_vendita": 35.1,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048704295.jpg",
+    "note": "Codice fornitore: BEG010-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.207658+00:00",
+    "updated_at": "2026-06-11T08:31:52.207671+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0c6"
+    },
+    "id": "b30d1859-60b1-4e75-9694-1264cb25554a",
+    "barcode": "5035048677384",
+    "descrizione": "Smerigliatrice angolare 900W-115mm",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048677384.jpg",
+    "note": "Codice fornitore: BEG210-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.209360+00:00",
+    "updated_at": "2026-06-11T08:31:52.209376+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0c7"
+    },
+    "id": "6f5e01af-f891-4563-87d4-fefdf9dec851",
+    "barcode": "5035048677391",
+    "descrizione": "Smerigliatrice angolare 900W-115mm in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 40.9,
+    "prezzo_vendita": 49.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048677391.jpg",
+    "note": "Codice fornitore: BEG210K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.211048+00:00",
+    "updated_at": "2026-06-11T08:31:52.211062+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0c8"
+    },
+    "id": "b59cfd78-efc9-4b2b-8cfe-3d75d053eaf9",
+    "barcode": "5035048677421",
+    "descrizione": "Smerigliatrice angolare 900W-125mm",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 36.8,
+    "prezzo_vendita": 44.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048677421.jpg",
+    "note": "Codice fornitore: BEG220-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.212726+00:00",
+    "updated_at": "2026-06-11T08:31:52.212740+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0c9"
+    },
+    "id": "70080f3f-95eb-44b6-b161-40c932567dd1",
+    "barcode": "5035048706824",
+    "descrizione": "Biotrituratore 2800W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 245.9,
+    "prezzo_vendita": 300.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048706824.jpg",
+    "note": "Codice fornitore: BEGAS5800-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.214374+00:00",
+    "updated_at": "2026-06-11T08:31:52.214389+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ca"
+    },
+    "id": "314549c3-89f5-4a69-8cd9-c6d827c9facc",
+    "barcode": "5035048704219",
+    "descrizione": "Trapano a percussione a filo 500W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048704219.jpg",
+    "note": "Codice fornitore: BEH200-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.216054+00:00",
+    "updated_at": "2026-06-11T08:31:52.216071+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0cb"
+    },
+    "id": "0a8bb362-6f84-4132-ade5-637a0b40e697",
+    "barcode": "5035048680391",
+    "descrizione": "Trapano a percussione a filo 550W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 36.9,
+    "prezzo_vendita": 45.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048680391.jpg",
+    "note": "Codice fornitore: BEH550-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.217789+00:00",
+    "updated_at": "2026-06-11T08:31:52.217803+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0cc"
+    },
+    "id": "8757bc46-b336-4bf5-91c5-4ecb8b93adb5",
+    "barcode": "5035048681213",
+    "descrizione": "Trapano a percussione a filo 550W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 40.9,
+    "prezzo_vendita": 49.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048681213.jpg",
+    "note": "Codice fornitore: BEH550K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.219480+00:00",
+    "updated_at": "2026-06-11T08:31:52.219495+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0cd"
+    },
+    "id": "583acf9a-d093-4622-ac7a-e29d2a2d2d54",
+    "barcode": "5035048681343",
+    "descrizione": "Trapano a percussione a filo 710W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 45.0,
+    "prezzo_vendita": 54.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048681343.jpg",
+    "note": "Codice fornitore: BEH710K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.221129+00:00",
+    "updated_at": "2026-06-11T08:31:52.221143+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ce"
+    },
+    "id": "f5fde9f2-ac34-4c8f-b885-adfe7e92ad3b",
+    "barcode": "5035048681404",
+    "descrizione": "Trapano a percussione a filo 850W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 63.5,
+    "prezzo_vendita": 77.5,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048681404.jpg",
+    "note": "Codice fornitore: BEH850K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.222870+00:00",
+    "updated_at": "2026-06-11T08:31:52.222886+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0cf"
+    },
+    "id": "bce248ba-0c11-49ed-b82a-9bcb02ea06e5",
+    "barcode": "5035048730416",
+    "descrizione": "Martello tassellatore scalpellatore 650W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 73.7,
+    "prezzo_vendita": 89.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048730416.jpg",
+    "note": "Codice fornitore: BEHS01-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.224562+00:00",
+    "updated_at": "2026-06-11T08:31:52.224577+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0d0"
+    },
+    "id": "05fe1213-ec36-4455-9869-5856bc905528",
+    "barcode": "5035048730485",
+    "descrizione": "Martello tassellatore scalpellatore 800W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 98.3,
+    "prezzo_vendita": 119.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048730485.jpg",
+    "note": "Codice fornitore: BEHS02K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.226233+00:00",
+    "updated_at": "2026-06-11T08:31:52.226247+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0d1"
+    },
+    "id": "551344db-b888-47db-9778-f1327f0ae6e9",
+    "barcode": "5035048730515",
+    "descrizione": "Martello demolitore scalpellatore 1250W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 106.5,
+    "prezzo_vendita": 129.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048730515.jpg",
+    "note": "Codice fornitore: BEHS03K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.227933+00:00",
+    "updated_at": "2026-06-11T08:31:52.227948+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0d2"
+    },
+    "id": "f8dacbf6-53c3-4739-a258-c2a6d49cd626",
+    "barcode": "5035048677988",
+    "descrizione": "Tagliasiepi a filo 420W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048677988.jpg",
+    "note": "Codice fornitore: BEHT201-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.229637+00:00",
+    "updated_at": "2026-06-11T08:31:52.229651+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0d3"
+    },
+    "id": "b6b05547-5dc0-43f5-81c1-7ed30d88c532",
+    "barcode": "5035048678015",
+    "descrizione": "Tagliasiepi a filo 450W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048678015.jpg",
+    "note": "Codice fornitore: BEHT251-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.231316+00:00",
+    "updated_at": "2026-06-11T08:31:52.231331+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0d4"
+    },
+    "id": "fdb7787a-1cf5-4763-81f0-73da17c82524",
+    "barcode": "5035048678084",
+    "descrizione": "Tagliasiepi a filo 500W con innovativa lama seghettata",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 73.7,
+    "prezzo_vendita": 89.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048678084.jpg",
+    "note": "Codice fornitore: BEHTS401-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.233412+00:00",
+    "updated_at": "2026-06-11T08:31:52.233430+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0d5"
+    },
+    "id": "7688185f-e16e-4ec3-9027-6cb9ad5c3867",
+    "barcode": "5035048728017",
+    "descrizione": "Tagliasiepi a filo 650W con impugnatura rotante",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 98.3,
+    "prezzo_vendita": 119.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048728017.jpg",
+    "note": "Codice fornitore: BEHTS551-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.235205+00:00",
+    "updated_at": "2026-06-11T08:31:52.235221+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0d6"
+    },
+    "id": "b1f0e224-e6d1-4b98-a4a4-498573795521",
+    "barcode": "5035048707067",
+    "descrizione": "Rasaerba a filo 1000W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 75.0,
+    "prezzo_vendita": 91.5,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048707067.jpg",
+    "note": "Codice fornitore: BEMW351-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.236910+00:00",
+    "updated_at": "2026-06-11T08:31:52.236924+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0d7"
+    },
+    "id": "cdebaa10-cba2-4872-9e6c-a596c8f794cb",
+    "barcode": "5035048682708",
+    "descrizione": "Rasaerba a filo 1200W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 82.8,
+    "prezzo_vendita": 101.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048682708.jpg",
+    "note": "Codice fornitore: BEMW451BH-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.238614+00:00",
+    "updated_at": "2026-06-11T08:31:52.238629+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0d8"
+    },
+    "id": "dbfe1258-e336-4e79-9d74-3418f6a0fcb6",
+    "barcode": "5035048682739",
+    "descrizione": "Rasaerba a filo 1400W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 127.0,
+    "prezzo_vendita": 154.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048682739.jpg",
+    "note": "Codice fornitore: BEMW461BH-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.240300+00:00",
+    "updated_at": "2026-06-11T08:31:52.240315+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0d9"
+    },
+    "id": "f495bb5c-524b-49c8-9348-7ecc3ca35399",
+    "barcode": "5035048682807",
+    "descrizione": "Rasaerba a filo 1600W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 163.9,
+    "prezzo_vendita": 200.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048682807.jpg",
+    "note": "Codice fornitore: BEMW471ES-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.241989+00:00",
+    "updated_at": "2026-06-11T08:31:52.242004+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0da"
+    },
+    "id": "1d34084e-9931-4ef1-ad39-a4e0cb39b973",
+    "barcode": "5035048682852",
+    "descrizione": "Rasaerba a filo 1800W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 196.6,
+    "prezzo_vendita": 239.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048682852.jpg",
+    "note": "Codice fornitore: BEMW481ES-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.243675+00:00",
+    "updated_at": "2026-06-11T08:31:52.243689+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0db"
+    },
+    "id": "43cadbce-5196-4129-bb41-8cf49104792d",
+    "barcode": "5035048706879",
+    "descrizione": "Rasaerba a filo 1200W a cuscino d'aria",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048706879.jpg",
+    "note": "Codice fornitore: BEMWH551-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.245360+00:00",
+    "updated_at": "2026-06-11T08:31:52.245375+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0dc"
+    },
+    "id": "de47cda0-c254-4532-b02c-e683bcdb6771",
+    "barcode": "5035048847657",
+    "descrizione": "Rasaerba a filo 1400W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 107.9,
+    "prezzo_vendita": 131.6,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048847657.jpg",
+    "note": "Codice fornitore: BEMWP340-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.247137+00:00",
+    "updated_at": "2026-06-11T08:31:52.247153+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0dd"
+    },
+    "id": "1a13283f-60c0-495e-9842-18c7c41c7c3c",
+    "barcode": "5035048847633",
+    "descrizione": "Rasaerba a filo 1800W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 136.1,
+    "prezzo_vendita": 166.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048847633.jpg",
+    "note": "Codice fornitore: BEMWP400-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.248871+00:00",
+    "updated_at": "2026-06-11T08:31:52.248886+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0de"
+    },
+    "id": "1eb6719b-55c3-464a-b951-e7b044fea211",
+    "barcode": "5035048737279",
+    "descrizione": "Sega a gattuccio a filo 750W con morsetti blocca ramo",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048737279.jpg",
+    "note": "Codice fornitore: BES301-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.250604+00:00",
+    "updated_at": "2026-06-11T08:31:52.250620+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0df"
+    },
+    "id": "86a3e62b-2cfc-4b5d-93de-1539db58cfe0",
+    "barcode": "5035048713877",
+    "descrizione": "Mini sega circolare a filo 400W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048713877.jpg",
+    "note": "Codice fornitore: BES510-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.252363+00:00",
+    "updated_at": "2026-06-11T08:31:52.252378+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0e0"
+    },
+    "id": "ffa9501b-6078-43fd-8613-bb90f3a6898d",
+    "barcode": "5035048808900",
+    "descrizione": "Seghetto alternativo 400W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 26.9,
+    "prezzo_vendita": 32.8,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048808900.jpg",
+    "note": "Codice fornitore: BES602-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.254083+00:00",
+    "updated_at": "2026-06-11T08:31:52.254098+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0e1"
+    },
+    "id": "bec47b60-a345-4d54-906a-db9a0708c1b5",
+    "barcode": "5035048810927",
+    "descrizione": "Seghetto alternativo 400W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 29.0,
+    "prezzo_vendita": 35.4,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048810927.jpg",
+    "note": "Codice fornitore: BES603-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.255778+00:00",
+    "updated_at": "2026-06-11T08:31:52.255793+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0e2"
+    },
+    "id": "730c1309-ee04-494b-9a7e-31e7c39aafd5",
+    "barcode": "5035048711538",
+    "descrizione": "Seghetto alternativo ad azione pendolare 650W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048711538.jpg",
+    "note": "Codice fornitore: BES610-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.257473+00:00",
+    "updated_at": "2026-06-11T08:31:52.257488+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0e3"
+    },
+    "id": "86f6ecd5-dfc0-43f3-aa27-1328ea49d0d9",
+    "barcode": "5035048711590",
+    "descrizione": "Seghetto alternativo ad azione pendolare 650W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 73.7,
+    "prezzo_vendita": 89.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048711590.jpg",
+    "note": "Codice fornitore: BES610K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.259177+00:00",
+    "updated_at": "2026-06-11T08:31:52.259192+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0e4"
+    },
+    "id": "0b710eeb-9b8b-400e-85a5-6153c60c4db1",
+    "barcode": "5035048790496",
+    "descrizione": "Troncatrice radiale 1500W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 163.5,
+    "prezzo_vendita": 199.5,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048790496.jpg",
+    "note": "Codice fornitore: BES701-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.260914+00:00",
+    "updated_at": "2026-06-11T08:31:52.260928+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0e5"
+    },
+    "id": "6431a9d8-6e92-4f14-8d74-5cba59cd102d",
+    "barcode": "5035048796573",
+    "descrizione": "Troncatrice radiale 1500W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048796573.jpg",
+    "note": "Codice fornitore: BES702-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.262626+00:00",
+    "updated_at": "2026-06-11T08:31:52.262641+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0e6"
+    },
+    "id": "f0107096-5d15-457a-bd9a-52684630f3cb",
+    "barcode": "5035048712399",
+    "descrizione": "Troncatrice radiale 2100W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 229.5,
+    "prezzo_vendita": 280.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048712399.jpg",
+    "note": "Codice fornitore: BES710-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.264318+00:00",
+    "updated_at": "2026-06-11T08:31:52.264333+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0e7"
+    },
+    "id": "ad85adbb-4de5-4c18-831b-f2a3456736dc",
+    "barcode": "5035048712412",
+    "descrizione": "Sega da banco 1800W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 188.5,
+    "prezzo_vendita": 230.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048712412.jpg",
+    "note": "Codice fornitore: BES720-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.266061+00:00",
+    "updated_at": "2026-06-11T08:31:52.266076+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0e8"
+    },
+    "id": "4a7639b6-2907-402c-940b-2b0c51dbd255",
+    "barcode": "5035048680940",
+    "descrizione": "Tagliabordi a filo 450W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048680940.jpg",
+    "note": "Codice fornitore: BESTA525-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.267812+00:00",
+    "updated_at": "2026-06-11T08:31:52.267826+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0e9"
+    },
+    "id": "6312e4e3-7ca2-41b0-98eb-e4c33307c3bd",
+    "barcode": "5035048681060",
+    "descrizione": "Tagliabordi a filo 550W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048681060.jpg",
+    "note": "Codice fornitore: BESTA530-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.269533+00:00",
+    "updated_at": "2026-06-11T08:31:52.269548+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ea"
+    },
+    "id": "b2d70601-d10f-4f80-816e-b845483778ff",
+    "barcode": "5035048795583",
+    "descrizione": "Elettrozappa a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 180.3,
+    "prezzo_vendita": 220.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048795583.jpg",
+    "note": "Codice fornitore: BETL1820L-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.271230+00:00",
+    "updated_at": "2026-06-11T08:31:52.271244+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0eb"
+    },
+    "id": "78ca322a-db26-4a23-ba92-3cbffd3ed2dd",
+    "barcode": "5035048795545",
+    "descrizione": "Elettrozappa a batteria (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 147.5,
+    "prezzo_vendita": 180.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048795545.jpg",
+    "note": "Codice fornitore: BETL18B-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.272931+00:00",
+    "updated_at": "2026-06-11T08:31:52.272945+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ec"
+    },
+    "id": "60de2349-d6a3-45ed-9be6-511c9cd9935b",
+    "barcode": "5035048704165",
+    "descrizione": "Multilevigatrice 4-in-1",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048704165.jpg",
+    "note": "Codice fornitore: BEW200-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.274660+00:00",
+    "updated_at": "2026-06-11T08:31:52.274674+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ed"
+    },
+    "id": "b107bb7d-47e6-4690-8c97-8f1bc10761c1",
+    "barcode": "5035048704233",
+    "descrizione": "Levigatrice rotorbitale a filo 230W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 32.8,
+    "prezzo_vendita": 40.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048704233.jpg",
+    "note": "Codice fornitore: BEW210-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.276374+00:00",
+    "updated_at": "2026-06-11T08:31:52.276389+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ee"
+    },
+    "id": "ed196354-e749-4982-8a7f-c267e5988423",
+    "barcode": "5035048704264",
+    "descrizione": "Levigatrice orbitale a filo 150W da 1/3 di foglio",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 28.7,
+    "prezzo_vendita": 35.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048704264.jpg",
+    "note": "Codice fornitore: BEW220-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.278150+00:00",
+    "updated_at": "2026-06-11T08:31:52.278165+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ef"
+    },
+    "id": "a2f6ebb4-76fe-4409-af93-2f910c91706b",
+    "barcode": "5035048709375",
+    "descrizione": "Levigatrice Mouse\u00ae 55W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 26.5,
+    "prezzo_vendita": 32.3,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048709375.jpg",
+    "note": "Codice fornitore: BEW230BC-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.279883+00:00",
+    "updated_at": "2026-06-11T08:31:52.279898+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0f0"
+    },
+    "id": "8cccd561-c48f-4e0e-b723-3b71b0e6c02f",
+    "barcode": "5035048810958",
+    "descrizione": "Pialletto a filo 710W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048810958.jpg",
+    "note": "Codice fornitore: BEW712-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.281585+00:00",
+    "updated_at": "2026-06-11T08:31:52.281599+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0f1"
+    },
+    "id": "001dca08-a2c7-4dcf-8f50-768acad3564c",
+    "barcode": "5035048726044",
+    "descrizione": "Cavalletto per troncatrice",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048726044.jpg",
+    "note": "Codice fornitore: BEZ100-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.283264+00:00",
+    "updated_at": "2026-06-11T08:31:52.283279+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0f2"
+    },
+    "id": "4c6ddb09-ca9a-4ebc-ba63-161ab8bdca4a",
+    "barcode": "5035048790243",
+    "descrizione": "Lavapavimenti a vapore SteamSystem 8in1",
+    "marca": "BLACK+DECKER",
+    "categoria": "CURA DELLA CASA",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048790243.jpg",
+    "note": "Codice fornitore: BHSM15FX08-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.284975+00:00",
+    "updated_at": "2026-06-11T08:31:52.284990+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0f3"
+    },
+    "id": "fa7e58b9-3af1-4964-9383-fc8c3af8ba4e",
+    "barcode": "5035048447178",
+    "descrizione": "Batteria al Litio 18V - 2.0Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 24.5,
+    "prezzo_vendita": 29.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048447178.jpg",
+    "note": "Codice fornitore: BL2018-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.286681+00:00",
+    "updated_at": "2026-06-11T08:31:52.286696+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0f4"
+    },
+    "id": "da5cc29b-7c22-463d-9c65-74d67fa695b4",
+    "barcode": "5035048636954",
+    "descrizione": "Batteria al Litio 36V - 2.0Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048636954.jpg",
+    "note": "Codice fornitore: BL20362-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.288405+00:00",
+    "updated_at": "2026-06-11T08:31:52.288420+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0f5"
+    },
+    "id": "8665e467-9fa2-4d83-a028-e0259a615250",
+    "barcode": "5035048658420",
+    "descrizione": "Batteria al Litio 18V - 2.5Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 28.5,
+    "prezzo_vendita": 34.8,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048658420.jpg",
+    "note": "Codice fornitore: BL2518-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.290130+00:00",
+    "updated_at": "2026-06-11T08:31:52.290143+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0f6"
+    },
+    "id": "c2c8d702-3ad5-4f61-88fc-5b051c515bef",
+    "barcode": "5035048713044",
+    "descrizione": "Batteria al litio 36V 2.5 Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048713044.jpg",
+    "note": "Codice fornitore: BL2536-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.291841+00:00",
+    "updated_at": "2026-06-11T08:31:52.291856+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0f7"
+    },
+    "id": "17b836c8-1d64-4954-8f5f-a7ed20cdd0ae",
+    "barcode": "5035048560044",
+    "descrizione": "Batteria al Litio 18V - 4.0Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "BATTERIE E CARICABATTERIE",
+    "prezzo_acquisto": 40.9,
+    "prezzo_vendita": 49.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048560044.jpg",
+    "note": "Codice fornitore: BL4018-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.293562+00:00",
+    "updated_at": "2026-06-11T08:31:52.293576+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0f8"
+    },
+    "id": "1fb50999-b788-47ca-878f-f35c11aedaf8",
+    "barcode": "5054905337124",
+    "descrizione": "Sega circolare brushless 18V 2.5Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 98.5,
+    "prezzo_vendita": 120.2,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337124.jpg",
+    "note": "Codice fornitore: BLCCS78E1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.295362+00:00",
+    "updated_at": "2026-06-11T08:31:52.295378+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0f9"
+    },
+    "id": "27d80a1f-b609-4c51-a11e-58dc4ecab45d",
+    "barcode": "5054905337155",
+    "descrizione": "Sega circolare brushless 18V 4.0Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337155.jpg",
+    "note": "Codice fornitore: BLCCS78M1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.297130+00:00",
+    "updated_at": "2026-06-11T08:31:52.297146+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0fa"
+    },
+    "id": "fb869ec6-ea27-425c-831d-003c34b91ba7",
+    "barcode": "5054905337186",
+    "descrizione": "Sega circolare brushless (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 123.1,
+    "prezzo_vendita": 150.2,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337186.jpg",
+    "note": "Codice fornitore: BLCCS78N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.298861+00:00",
+    "updated_at": "2026-06-11T08:31:52.298876+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0fb"
+    },
+    "id": "95c87202-3fec-46aa-94db-a8a918dbc57d",
+    "barcode": "5054905337025",
+    "descrizione": "Sega universale brushless 18V 2.5Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 92.5,
+    "prezzo_vendita": 112.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337025.jpg",
+    "note": "Codice fornitore: BLCR78E1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.300581+00:00",
+    "updated_at": "2026-06-11T08:31:52.300596+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0fc"
+    },
+    "id": "ba3aa90d-3395-4595-992b-7542c772cd3a",
+    "barcode": "5054905337056",
+    "descrizione": "Sega universale brushless 18V 4.0Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 107.5,
+    "prezzo_vendita": 131.2,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337056.jpg",
+    "note": "Codice fornitore: BLCR78M1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.302299+00:00",
+    "updated_at": "2026-06-11T08:31:52.302313+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0fd"
+    },
+    "id": "d21f720e-5735-461c-859a-3b949630da48",
+    "barcode": "5054905337087",
+    "descrizione": "Sega universale brushless (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 66.4,
+    "prezzo_vendita": 81.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337087.jpg",
+    "note": "Codice fornitore: BLCR78N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.304030+00:00",
+    "updated_at": "2026-06-11T08:31:52.304044+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0fe"
+    },
+    "id": "d6042287-d651-438b-b457-af86fcab9657",
+    "barcode": "5054905337223",
+    "descrizione": "Seghetto alternativo ad azione pendolare brushless 18V 2.5Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 91.0,
+    "prezzo_vendita": 111.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337223.jpg",
+    "note": "Codice fornitore: BLCJS78E1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.305772+00:00",
+    "updated_at": "2026-06-11T08:31:52.305785+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a0ff"
+    },
+    "id": "1f726b19-ff63-499a-9573-0348c70bcb60",
+    "barcode": "5054905337254",
+    "descrizione": "Seghetto alternativo ad azione pendolare brushless (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.9,
+    "prezzo_vendita": 80.4,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5054905337254.jpg",
+    "note": "Codice fornitore: BLCJS78N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.307565+00:00",
+    "updated_at": "2026-06-11T08:31:52.307580+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a100"
+    },
+    "id": "a8ae17af-0d44-4b58-be98-cb498a6696af",
+    "barcode": "5035048846933",
+    "descrizione": "Avvitatore a impulsi 1/4 brushless 18V 2.5Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048846933.jpg",
+    "note": "Codice fornitore: BLIM78N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.309301+00:00",
+    "updated_at": "2026-06-11T08:31:52.309316+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a101"
+    },
+    "id": "07be80db-a95a-4df7-a4a8-d8dfc20cda1f",
+    "barcode": "5035048846957",
+    "descrizione": "Avvitatore a impulsi 1/4 brushless (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 92.6,
+    "prezzo_vendita": 113.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048846957.jpg",
+    "note": "Codice fornitore: BLIM78E1K-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.311094+00:00",
+    "updated_at": "2026-06-11T08:31:52.311110+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a102"
+    },
+    "id": "04d7abac-03ed-4aff-9a30-9495a888b9d5",
+    "barcode": "5035048846735",
+    "descrizione": "Trapano avvitatore brushless 18V 2.5Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 74.5,
+    "prezzo_vendita": 90.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048846735.jpg",
+    "note": "Codice fornitore: BLD782E1K-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.312837+00:00",
+    "updated_at": "2026-06-11T08:31:52.312852+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a103"
+    },
+    "id": "063d65a4-3f63-433f-862a-249f893c0ed7",
+    "barcode": "5035048846766",
+    "descrizione": "Trapano avvitatore brushless 2x18V 2.5Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 100.1,
+    "prezzo_vendita": 122.1,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048846766.jpg",
+    "note": "Codice fornitore: BLD782E2K-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.314573+00:00",
+    "updated_at": "2026-06-11T08:31:52.314587+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a104"
+    },
+    "id": "95edf6ff-5c62-45bf-bb8b-2d0b76a8b213",
+    "barcode": "5035048846704",
+    "descrizione": "Trapano avvitatore brushless (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 54.5,
+    "prezzo_vendita": 65.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048846704.jpg",
+    "note": "Codice fornitore: BLD782N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.316315+00:00",
+    "updated_at": "2026-06-11T08:31:52.316330+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a105"
+    },
+    "id": "0c381426-7169-454d-b36a-b34148cd6fdd",
+    "barcode": "5035048846872",
+    "descrizione": "Trapano avvitatore a percussione brushless 18V 2.5Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 82.9,
+    "prezzo_vendita": 101.1,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048846872.jpg",
+    "note": "Codice fornitore: BLD783E1K-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.318066+00:00",
+    "updated_at": "2026-06-11T08:31:52.318080+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a106"
+    },
+    "id": "a5023bf3-3ff6-471b-89ca-2116e4c96bd2",
+    "barcode": "5035048846902",
+    "descrizione": "Trapano avvitatore a percussione brushless 2x18V 2.5Ah",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 107.5,
+    "prezzo_vendita": 131.2,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048846902.jpg",
+    "note": "Codice fornitore: BLD783E2K-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.319803+00:00",
+    "updated_at": "2026-06-11T08:31:52.319817+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a107"
+    },
+    "id": "4ce3c65f-6ddf-486f-a223-5cdd05196d3d",
+    "barcode": "5035048846841",
+    "descrizione": "Trapano avvitatore a percussione brushless (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048846841.jpg",
+    "note": "Codice fornitore: BLD783N-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.321542+00:00",
+    "updated_at": "2026-06-11T08:31:52.321557+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a108"
+    },
+    "id": "42135a43-9521-4896-b80c-38ed0f45f3e1",
+    "barcode": "5035048715406",
+    "descrizione": "Scopa ricaricabile 18V Premier",
+    "marca": "BLACK+DECKER",
+    "categoria": "CURA DELLA CASA",
+    "prezzo_acquisto": 172.1,
+    "prezzo_vendita": 209.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048715406.jpg",
+    "note": "Codice fornitore: BSV520BRB-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.323306+00:00",
+    "updated_at": "2026-06-11T08:31:52.323321+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a109"
+    },
+    "id": "43c185a3-f236-40d3-9a10-5b123a858e02",
+    "barcode": "5035048741306",
+    "descrizione": "Ugello 5 in 1",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048741306.jpg",
+    "note": "Codice fornitore: BZO51N1-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.325057+00:00",
+    "updated_at": "2026-06-11T08:31:52.325072+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a10a"
+    },
+    "id": "906484db-b353-4bb0-95d5-44ee43408dd1",
+    "barcode": "5035048741320",
+    "descrizione": "Secchio",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048741320.jpg",
+    "note": "Codice fornitore: BZOB1-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.326804+00:00",
+    "updated_at": "2026-06-11T08:31:52.326817+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a10b"
+    },
+    "id": "5f0189d6-1daa-4711-ac8c-d8ac27f96cfe",
+    "barcode": "5035048741245",
+    "descrizione": "Tubo (6 metri con galleggiante) + adattatore quickconnect",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048741245.jpg",
+    "note": "Codice fornitore: BZOIHK2-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.328555+00:00",
+    "updated_at": "2026-06-11T08:31:52.328570+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a10c"
+    },
+    "id": "412828d4-afb8-4d5e-a2f0-c8469b00adab",
+    "barcode": "5035048741344",
+    "descrizione": "Lancia lunga",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048741344.jpg",
+    "note": "Codice fornitore: BZOQDW1-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.330313+00:00",
+    "updated_at": "2026-06-11T08:31:52.330328+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a10d"
+    },
+    "id": "7e6eac08-3eeb-4a89-b094-78e0e3615d8a",
+    "barcode": "5035048741269",
+    "descrizione": "Kit pulizia (spazzola + porta detergente)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048741269.jpg",
+    "note": "Codice fornitore: BZOSBSK3-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.332069+00:00",
+    "updated_at": "2026-06-11T08:31:52.332083+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a10e"
+    },
+    "id": "246134cc-eeea-4679-9c30-501eebf399e1",
+    "barcode": "5035048741283",
+    "descrizione": "Lancia corta",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048741283.jpg",
+    "note": "Codice fornitore: BZOSW1-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.333807+00:00",
+    "updated_at": "2026-06-11T08:31:52.333821+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a10f"
+    },
+    "id": "e6e53d55-2b8f-4210-8fd6-156256623fc1",
+    "barcode": "5035048637272",
+    "descrizione": "Rasaerba con doppia batteria 36V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 405.6,
+    "prezzo_vendita": 494.8,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048637272.jpg",
+    "note": "Codice fornitore: CLMA4820L2-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.335541+00:00",
+    "updated_at": "2026-06-11T08:31:52.335555+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a110"
+    },
+    "id": "673e65ab-f2fe-4124-b416-55ac70e67b1f",
+    "barcode": "5035048459041",
+    "descrizione": "Base \"3 - in - 1\", due altezze taglio, ruote durevoli, leggero e compatto",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 139.2,
+    "prezzo_vendita": 169.8,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048459041.jpg",
+    "note": "Codice fornitore: CM100-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.337311+00:00",
+    "updated_at": "2026-06-11T08:31:52.337326+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a111"
+    },
+    "id": "0a7930e7-4e6f-4ffa-9bfb-8538c623452d",
+    "barcode": "5035048810309",
+    "descrizione": "Sega circolare 1200W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048810309.jpg",
+    "note": "Codice fornitore: CS1200-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.339090+00:00",
+    "updated_at": "2026-06-11T08:31:52.339104+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a112"
+    },
+    "id": "bdd78b57-7855-4d44-b74a-35e150c8f21f",
+    "barcode": "5035048659182",
+    "descrizione": "Sega circolare 1250W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048659182.jpg",
+    "note": "Codice fornitore: CS1250L-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.340845+00:00",
+    "updated_at": "2026-06-11T08:31:52.340860+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a113"
+    },
+    "id": "9a962bd4-e146-4fe8-94b0-b47b36dd6456",
+    "barcode": "5035048655078",
+    "descrizione": "Sega circolare a filo 1500W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048655078.jpg",
+    "note": "Codice fornitore: CS1550-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.342609+00:00",
+    "updated_at": "2026-06-11T08:31:52.342624+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a114"
+    },
+    "id": "8cc56e12-61b3-4e5a-a5fa-a7f7bc13d96d",
+    "barcode": "5035048555965",
+    "descrizione": "Svitavvita compatto",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 24.5,
+    "prezzo_vendita": 29.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048555965.jpg",
+    "note": "Codice fornitore: CS3651LC-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.344339+00:00",
+    "updated_at": "2026-06-11T08:31:52.344353+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a115"
+    },
+    "id": "86dd47a8-8b0b-464d-aee6-4f0e48d3f5d8",
+    "barcode": "5035048556900",
+    "descrizione": "Svitavvita con testa ad angolo",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 26.2,
+    "prezzo_vendita": 32.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048556900.jpg",
+    "note": "Codice fornitore: CS3652LC-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.346117+00:00",
+    "updated_at": "2026-06-11T08:31:52.346132+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a116"
+    },
+    "id": "134277a6-3f7f-497e-b3b8-d69dc8b019ea",
+    "barcode": "5035048840757",
+    "descrizione": "Dustbuster con luci led",
+    "marca": "BLACK+DECKER",
+    "categoria": "CURA DELLA CASA",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048840757.jpg",
+    "note": "Codice fornitore: DVD320B-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.347864+00:00",
+    "updated_at": "2026-06-11T08:31:52.347879+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a117"
+    },
+    "id": "0b7f66d2-aa6f-4e8f-ba00-029d91c88990",
+    "barcode": "5035048238875",
+    "descrizione": "Potatore a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 139.3,
+    "prezzo_vendita": 169.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048238875.jpg",
+    "note": "Codice fornitore: GKC1000L-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.349621+00:00",
+    "updated_at": "2026-06-11T08:31:52.349635+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a118"
+    },
+    "id": "db68151c-ea7a-4357-b027-07baeaf4374a",
+    "barcode": "5035048470558",
+    "descrizione": "Elettrosega a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 114.7,
+    "prezzo_vendita": 139.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048470558.jpg",
+    "note": "Codice fornitore: GKC1820L20-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.351345+00:00",
+    "updated_at": "2026-06-11T08:31:52.351360+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a119"
+    },
+    "id": "0ad0755d-0cab-4348-9bfe-a3f3fe4c772c",
+    "barcode": "5035048437858",
+    "descrizione": "Elettrosega a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 73.7,
+    "prezzo_vendita": 89.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048437858.jpg",
+    "note": "Codice fornitore: GKC1820LB-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.353091+00:00",
+    "updated_at": "2026-06-11T08:31:52.353105+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a11a"
+    },
+    "id": "65a85485-1b82-4c00-bf8e-1056ab6e2444",
+    "barcode": "5035048465936",
+    "descrizione": "Elettrosega a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 139.3,
+    "prezzo_vendita": 169.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048465936.jpg",
+    "note": "Codice fornitore: GKC1825L20-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.354821+00:00",
+    "updated_at": "2026-06-11T08:31:52.354835+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a11b"
+    },
+    "id": "0cbf047e-76b4-49c8-a6a1-668b5546b12b",
+    "barcode": "5035048651384",
+    "descrizione": "Elettrosega a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 90.5,
+    "prezzo_vendita": 110.4,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048651384.jpg",
+    "note": "Codice fornitore: GKC1825LB-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.356579+00:00",
+    "updated_at": "2026-06-11T08:31:52.356593+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a11c"
+    },
+    "id": "4a62a890-ddc2-4a34-9e04-46a16e7ca5ac",
+    "barcode": "5035048480731",
+    "descrizione": "Elettrosega a batteria 36V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 225.3,
+    "prezzo_vendita": 274.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048480731.jpg",
+    "note": "Codice fornitore: GKC3630L20-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.358327+00:00",
+    "updated_at": "2026-06-11T08:31:52.358341+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a11d"
+    },
+    "id": "fc54c1fa-7af9-49bd-9b29-ef1e5f583475",
+    "barcode": "5035048307731",
+    "descrizione": "Tagliabordi a filo 250W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 24.9,
+    "prezzo_vendita": 30.4,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048307731.jpg",
+    "note": "Codice fornitore: GL250-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.360068+00:00",
+    "updated_at": "2026-06-11T08:31:52.360081+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a11e"
+    },
+    "id": "4485fb4e-fc53-46f6-8fd1-a657e380618a",
+    "barcode": "5035048307694",
+    "descrizione": "Tagliabordi a filo 350W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048307694.jpg",
+    "note": "Codice fornitore: GL360-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.361805+00:00",
+    "updated_at": "2026-06-11T08:31:52.361819+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a11f"
+    },
+    "id": "dac32eda-d167-4d18-9146-e100475442b3",
+    "barcode": "5035048435052",
+    "descrizione": "Tagliabordi a filo 700W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 73.7,
+    "prezzo_vendita": 89.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048435052.jpg",
+    "note": "Codice fornitore: GL7033-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.363536+00:00",
+    "updated_at": "2026-06-11T08:31:52.363551+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a120"
+    },
+    "id": "41f262ad-f9e7-43f0-a877-7f16e6a4f8ec",
+    "barcode": "5035048435038",
+    "descrizione": "Tagliabordi a filo 900W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048435038.jpg",
+    "note": "Codice fornitore: GL9035-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.365428+00:00",
+    "updated_at": "2026-06-11T08:31:52.365444+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a121"
+    },
+    "id": "50b96337-b9ab-4f68-92ef-3996d38ff405",
+    "barcode": "5035048470596",
+    "descrizione": "Sega potatrice telescopica a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 122.9,
+    "prezzo_vendita": 149.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048470596.jpg",
+    "note": "Codice fornitore: GPC1820L20-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.367524+00:00",
+    "updated_at": "2026-06-11T08:31:52.367540+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a122"
+    },
+    "id": "ba3583da-0822-457e-bcff-c55b0b0c7888",
+    "barcode": "5035048437827",
+    "descrizione": "Sega potatrice a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048437827.jpg",
+    "note": "Codice fornitore: GPC1820LB-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.369301+00:00",
+    "updated_at": "2026-06-11T08:31:52.369316+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a123"
+    },
+    "id": "ef2318c6-248e-4f8f-b753-82655b9d3876",
+    "barcode": "5035048290194",
+    "descrizione": "Cesoia a batteria 3.6V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 49.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048290194.jpg",
+    "note": "Codice fornitore: GSL200-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.371071+00:00",
+    "updated_at": "2026-06-11T08:31:52.371086+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a124"
+    },
+    "id": "f683c434-c357-4765-a664-902a0920cb06",
+    "barcode": "5035048290224",
+    "descrizione": "Sfoltirami a batteria 3.6V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 45.0,
+    "prezzo_vendita": 54.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048290224.jpg",
+    "note": "Codice fornitore: GSL300-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.372823+00:00",
+    "updated_at": "2026-06-11T08:31:52.372838+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a125"
+    },
+    "id": "a75a05b5-fb59-4ed3-97e3-f3a940155df1",
+    "barcode": "5035048470633",
+    "descrizione": "Tagliasiepi a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 122.8,
+    "prezzo_vendita": 149.8,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048470633.jpg",
+    "note": "Codice fornitore: GTC1843L20-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.374577+00:00",
+    "updated_at": "2026-06-11T08:31:52.374591+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a126"
+    },
+    "id": "cfda9146-7385-4282-a9fa-307c858dc50c",
+    "barcode": "5035048437834",
+    "descrizione": "Tagliasiepi a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048437834.jpg",
+    "note": "Codice fornitore: GTC1843LB-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.376315+00:00",
+    "updated_at": "2026-06-11T08:31:52.376330+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a127"
+    },
+    "id": "c59631e1-6ebb-45b8-a019-6f32b14912aa",
+    "barcode": "5035048651261",
+    "descrizione": "Tagliasiepi a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 73.7,
+    "prezzo_vendita": 89.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048651261.jpg",
+    "note": "Codice fornitore: GTC18452PCB-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.378080+00:00",
+    "updated_at": "2026-06-11T08:31:52.378095+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a128"
+    },
+    "id": "7e4d7622-b449-4514-b468-66f07040eba2",
+    "barcode": "5035048554128",
+    "descrizione": "Tagliasiepi a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048554128.jpg",
+    "note": "Codice fornitore: GTC1845L20-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.379868+00:00",
+    "updated_at": "2026-06-11T08:31:52.379884+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a129"
+    },
+    "id": "864619a5-3647-438d-a2e9-16d88329f70f",
+    "barcode": "5035048639986",
+    "descrizione": "Tagliasiepi a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 151.5,
+    "prezzo_vendita": 184.8,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048639986.jpg",
+    "note": "Codice fornitore: GTC18504PC-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.381647+00:00",
+    "updated_at": "2026-06-11T08:31:52.381662+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a12a"
+    },
+    "id": "e982bbd9-2970-449e-b840-b5cca261317f",
+    "barcode": "5035048640029",
+    "descrizione": "Soffiatore Assiale a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 73.7,
+    "prezzo_vendita": 89.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048640029.jpg",
+    "note": "Codice fornitore: GWC1820PC-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.383388+00:00",
+    "updated_at": "2026-06-11T08:31:52.383402+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a12b"
+    },
+    "id": "987b1052-f0a3-4aed-9e92-754b84b57a38",
+    "barcode": "5035048651292",
+    "descrizione": "Soffiatore Assiale a batteria 18V (solo corpo macchina)",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048651292.jpg",
+    "note": "Codice fornitore: GWC1820PCB-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.385273+00:00",
+    "updated_at": "2026-06-11T08:31:52.385289+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a12c"
+    },
+    "id": "1603aa93-921c-43ae-a535-09fb12d70fa5",
+    "barcode": "5035048340790",
+    "descrizione": "Pistola a spruzzo 400W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048340790.jpg",
+    "note": "Codice fornitore: HVLP200C-IT",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.387095+00:00",
+    "updated_at": "2026-06-11T08:31:52.387110+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a12d"
+    },
+    "id": "22c59d8b-9147-4742-8bfe-343a5513fc76",
+    "barcode": "5035048335321",
+    "descrizione": "Pistola a spruzzo 450W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048335321.jpg",
+    "note": "Codice fornitore: HVLP400C-IT",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.388852+00:00",
+    "updated_at": "2026-06-11T08:31:52.388866+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a12e"
+    },
+    "id": "f13d3925-3ef7-4aeb-aa8a-fe94860d6a58",
+    "barcode": "5035048129845",
+    "descrizione": "Levigatrice rotorbitale a filo 480W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048129845.jpg",
+    "note": "Codice fornitore: KA191EK-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.390605+00:00",
+    "updated_at": "2026-06-11T08:31:52.390619+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a12f"
+    },
+    "id": "bc9a9976-e8ee-4c68-a135-184980e743fd",
+    "barcode": "5035048561379",
+    "descrizione": "Levigatrice rotorbitale a filo 240W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048561379.jpg",
+    "note": "Codice fornitore: KA199-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.392338+00:00",
+    "updated_at": "2026-06-11T08:31:52.392352+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a130"
+    },
+    "id": "c83542ec-e38e-4003-b2e9-4d644c53dcaa",
+    "barcode": "5035048465974",
+    "descrizione": "Levigatrice Mouse\u00ae 120W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 37.7,
+    "prezzo_vendita": 46.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048465974.jpg",
+    "note": "Codice fornitore: KA2000-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.394098+00:00",
+    "updated_at": "2026-06-11T08:31:52.394112+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a131"
+    },
+    "id": "adbfc166-370a-43a9-a807-295ab4f1b060",
+    "barcode": "5035048203330",
+    "descrizione": "Levigatrice orbitale a filo 240W da 1/3 di foglio",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 40.9,
+    "prezzo_vendita": 49.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048203330.jpg",
+    "note": "Codice fornitore: KA320E-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.395893+00:00",
+    "updated_at": "2026-06-11T08:31:52.395907+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a132"
+    },
+    "id": "0458a809-0ce5-4b83-a421-ea641904fc2c",
+    "barcode": "5035048203378",
+    "descrizione": "Levigatrice orbitale a filo 240W da 1/3 di foglio in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048203378.jpg",
+    "note": "Codice fornitore: KA320EKA-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.397743+00:00",
+    "updated_at": "2026-06-11T08:31:52.397759+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a133"
+    },
+    "id": "5fe6c618-831a-45a2-8df3-76da89ae7282",
+    "barcode": "5035048658505",
+    "descrizione": "Levigatrice orbitale a filo 170W da 1/4 di foglio",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.5,
+    "prezzo_vendita": 70.2,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048658505.jpg",
+    "note": "Codice fornitore: KA401LA-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.399560+00:00",
+    "updated_at": "2026-06-11T08:31:52.399575+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a134"
+    },
+    "id": "d5900cf9-40a4-4837-80cb-064a19708b72",
+    "barcode": "5035048175163",
+    "descrizione": "Levigatrice a nastro 720W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048175163.jpg",
+    "note": "Codice fornitore: KA86-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.401341+00:00",
+    "updated_at": "2026-06-11T08:31:52.401356+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a135"
+    },
+    "id": "0421cc4b-2887-4e3c-9d17-04c3c4e46b8a",
+    "barcode": "5035048128718",
+    "descrizione": "Levigatrice a nastro 720W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048128718.jpg",
+    "note": "Codice fornitore: KA88-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.403113+00:00",
+    "updated_at": "2026-06-11T08:31:52.403127+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a136"
+    },
+    "id": "845e4de2-8aa4-4af5-b2a1-e6e070a7d0c7",
+    "barcode": "5035048175187",
+    "descrizione": "Lima elettrica 350W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048175187.jpg",
+    "note": "Codice fornitore: KA900E-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.404872+00:00",
+    "updated_at": "2026-06-11T08:31:52.404886+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a137"
+    },
+    "id": "7bf40b63-0909-4305-b92f-7d9e3cfb0618",
+    "barcode": "5035048638033",
+    "descrizione": "Smerigliatrice angolare 1200W - 125/115mm",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048638033.jpg",
+    "note": "Codice fornitore: KG1202-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.406642+00:00",
+    "updated_at": "2026-06-11T08:31:52.406656+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a138"
+    },
+    "id": "004b848c-7c5a-4c96-8b9c-22130f86badb",
+    "barcode": "5035048335529",
+    "descrizione": "Trapano a percussione a filo 910W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048335529.jpg",
+    "note": "Codice fornitore: KR911K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.408419+00:00",
+    "updated_at": "2026-06-11T08:31:52.408433+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a139"
+    },
+    "id": "8e0887c5-a4bb-4806-83db-318e7744b099",
+    "barcode": "5035048545843",
+    "descrizione": "Seghetto alternativo ad azione pendolare in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 40.9,
+    "prezzo_vendita": 49.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048545843.jpg",
+    "note": "Codice fornitore: KS701PEK-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.410219+00:00",
+    "updated_at": "2026-06-11T08:31:52.410234+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a13a"
+    },
+    "id": "3c690b8b-ff40-4063-8ab0-fa6c73a25c84",
+    "barcode": "5035048545867",
+    "descrizione": "Seghetto alternativo Autoselect\u00ae ad azione pendolare 550W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048545867.jpg",
+    "note": "Codice fornitore: KS801SE-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.412000+00:00",
+    "updated_at": "2026-06-11T08:31:52.412014+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a13b"
+    },
+    "id": "769a09cb-3e15-4e70-b6c3-93a5267154fe",
+    "barcode": "5035048545898",
+    "descrizione": "Seghetto alternativo Autoselect\u00ae ad azione pendolare 550W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048545898.jpg",
+    "note": "Codice fornitore: KS801SEK-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.413773+00:00",
+    "updated_at": "2026-06-11T08:31:52.413787+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a13c"
+    },
+    "id": "0d81d95a-cf32-4b73-aea5-3b5dceb55096",
+    "barcode": "5035048147955",
+    "descrizione": "Sega multifunzione 400W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.9,
+    "prezzo_vendita": 80.4,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048147955.jpg",
+    "note": "Codice fornitore: KS880EC-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.415537+00:00",
+    "updated_at": "2026-06-11T08:31:52.415552+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a13d"
+    },
+    "id": "eb75dea8-8a33-4ee6-b83f-18e236941a6c",
+    "barcode": "5035048545904",
+    "descrizione": "Seghetto alternativo ad azione pendolare 620W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048545904.jpg",
+    "note": "Codice fornitore: KS901PEK-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.417408+00:00",
+    "updated_at": "2026-06-11T08:31:52.417424+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a13e"
+    },
+    "id": "1a30ac1a-6235-4cab-b1fd-c3b1a20f2a70",
+    "barcode": "5035048658284",
+    "descrizione": "Elettrofresatrice 1200W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 65.5,
+    "prezzo_vendita": 79.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048658284.jpg",
+    "note": "Codice fornitore: KW1200E-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.419281+00:00",
+    "updated_at": "2026-06-11T08:31:52.419297+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a13f"
+    },
+    "id": "a91ffdfb-c56e-45ef-bb3c-83a5f89a885e",
+    "barcode": "5035048658291",
+    "descrizione": "Elettrofresatrice 1200W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 90.1,
+    "prezzo_vendita": 109.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048658291.jpg",
+    "note": "Codice fornitore: KW1200EKA-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.421086+00:00",
+    "updated_at": "2026-06-11T08:31:52.421102+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a140"
+    },
+    "id": "6905ddd4-1361-4956-aa74-43d02e97c034",
+    "barcode": "5035048312070",
+    "descrizione": "Pialletto 750W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048312070.jpg",
+    "note": "Codice fornitore: KW750K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.422894+00:00",
+    "updated_at": "2026-06-11T08:31:52.422909+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a141"
+    },
+    "id": "009afec7-9476-4499-9eb2-a88ef6942a7a",
+    "barcode": "5035048331491",
+    "descrizione": "Pistola termica - Sverniciatore 1700W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 26.1,
+    "prezzo_vendita": 31.8,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048331491.jpg",
+    "note": "Codice fornitore: KX1650-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.424690+00:00",
+    "updated_at": "2026-06-11T08:31:52.424704+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a142"
+    },
+    "id": "b1f0f878-0986-4a39-bdf9-f5397874a97b",
+    "barcode": "5035048444054",
+    "descrizione": "Pistola termica - Sverniciatore 2000W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 37.6,
+    "prezzo_vendita": 45.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048444054.jpg",
+    "note": "Codice fornitore: KX2001-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.426464+00:00",
+    "updated_at": "2026-06-11T08:31:52.426479+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a143"
+    },
+    "id": "f34a9783-8b30-4c4d-9bf4-50b43a6ff25b",
+    "barcode": "5035048331521",
+    "descrizione": "Pistola termica - Sverniciatore 2000W in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 49.1,
+    "prezzo_vendita": 59.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048331521.jpg",
+    "note": "Codice fornitore: KX2200K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.428293+00:00",
+    "updated_at": "2026-06-11T08:31:52.428307+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a144"
+    },
+    "id": "d6452bc8-3dfa-4d71-9c50-b5b56ff4f6bc",
+    "barcode": "5011402171712",
+    "descrizione": "Utensile a vapore per rimuovere la carta da parati",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 57.3,
+    "prezzo_vendita": 69.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5011402171712.jpg",
+    "note": "Codice fornitore: KX3300-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.430080+00:00",
+    "updated_at": "2026-06-11T08:31:52.430096+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a145"
+    },
+    "id": "d57aa6b6-7e40-459b-b34c-89fe801e5bbe",
+    "barcode": "5035048653807",
+    "descrizione": "Utensile multifunzione oscillante a filo 300W",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048653807.jpg",
+    "note": "Codice fornitore: MT300SA2-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.431872+00:00",
+    "updated_at": "2026-06-11T08:31:52.431887+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a146"
+    },
+    "id": "8db72870-d81e-4dde-b11d-fc8b52e0c0a7",
+    "barcode": "5035048636602",
+    "descrizione": "Tagliasiepi a filo 550W a testa orientabile",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 106.5,
+    "prezzo_vendita": 129.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048636602.jpg",
+    "note": "Codice fornitore: PH5551-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.433656+00:00",
+    "updated_at": "2026-06-11T08:31:52.433670+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a147"
+    },
+    "id": "83a9b6bf-34af-4d22-848b-473c2d05f235",
+    "barcode": "5035048554081",
+    "descrizione": "Sega potatrice telescopica a filo 800W",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048554081.jpg",
+    "note": "Codice fornitore: PS7525-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.435409+00:00",
+    "updated_at": "2026-06-11T08:31:52.435424+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a148"
+    },
+    "id": "6cf3b911-6526-408a-bcc3-b3f25c79aeb4",
+    "barcode": "5035048839300",
+    "descrizione": "Scopa ricaricabile 18V reviva",
+    "marca": "BLACK+DECKER",
+    "categoria": "CURA DELLA CASA",
+    "prezzo_acquisto": 131.1,
+    "prezzo_vendita": 159.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048839300.jpg",
+    "note": "Codice fornitore: REVSV18D1-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.437199+00:00",
+    "updated_at": "2026-06-11T08:31:52.437213+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a149"
+    },
+    "id": "f21c3748-b5c7-493b-909c-89726f0b61eb",
+    "barcode": "5035048434666",
+    "descrizione": "Sega multifunzione 500W Autoselect\u00ae Scorpion\u00ae in valigetta",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048434666.jpg",
+    "note": "Codice fornitore: RS890K-QS",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.438980+00:00",
+    "updated_at": "2026-06-11T08:31:52.438995+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a14a"
+    },
+    "id": "f9afd7c3-951d-4103-8ed5-d7351611dce3",
+    "barcode": "5035048661918",
+    "descrizione": "Tagliabordi a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 81.9,
+    "prezzo_vendita": 99.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048661918.jpg",
+    "note": "Codice fornitore: ST182320-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.440773+00:00",
+    "updated_at": "2026-06-11T08:31:52.440787+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a14b"
+    },
+    "id": "d4716020-5a2d-4be7-ac5b-49a1770cc91f",
+    "barcode": "5035048639870",
+    "descrizione": "Tagliabordi a batteria 18V",
+    "marca": "BLACK+DECKER",
+    "categoria": "GAMMA GIARDINO",
+    "prezzo_acquisto": 0.0,
+    "prezzo_vendita": 0.0,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048639870.jpg",
+    "note": "Codice fornitore: STC1840EPC-QW",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.442556+00:00",
+    "updated_at": "2026-06-11T08:31:52.442570+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a14c"
+    },
+    "id": "2f7732a2-be31-4389-925e-d8a1827c563a",
+    "barcode": "5035048103678",
+    "descrizione": "Banco da lavoro Workmate\u00ae",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 32.7,
+    "prezzo_vendita": 39.9,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5035048103678.jpg",
+    "note": "Codice fornitore: WM301-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.444324+00:00",
+    "updated_at": "2026-06-11T08:31:52.444338+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6a2a7278b080e6030891a14d"
+    },
+    "id": "a6a11e40-df19-4572-8e10-7194a473ebec",
+    "barcode": "5011402122400",
+    "descrizione": "Banco da lavoro Workmate\u00ae",
+    "marca": "BLACK+DECKER",
+    "categoria": "ELETTROUTENSILI",
+    "prezzo_acquisto": 78.1,
+    "prezzo_vendita": 95.28,
+    "quantita": 0,
+    "fornitore": "BLACK+DECKER",
+    "foto": "http://192.168.31.209:8001/uploads/5011402122400.jpg",
+    "note": "Codice fornitore: WM550-XJ",
+    "soglia_scorta": 5,
+    "created_at": "2026-06-11T08:31:52.446125+00:00",
+    "updated_at": "2026-06-11T08:31:52.446139+00:00"
+  }
+]

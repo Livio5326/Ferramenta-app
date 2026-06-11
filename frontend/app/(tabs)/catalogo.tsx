@@ -64,10 +64,21 @@ export default function Catalogo() {
           )}
         </View>
         <View style={styles.cardBody}>
-          <Text style={styles.cardBrand}>{item.marca || '—'}</Text>
-          <Text style={styles.cardTitle} numberOfLines={2}>{item.descrizione}</Text>
-          <View style={styles.cardFoot}>
-            <Text style={styles.cardPrice}>{fmtEUR(item.prezzo_vendita)}</Text>
+  <Text style={styles.cardBrand}>{item.marca || '-'}</Text>
+
+  <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
+    {item.descrizione}
+  </Text>
+
+  {!!item.note && (
+    <Text style={styles.cardNote} numberOfLines={1} ellipsizeMode="tail">
+      {item.note.replace('Codice fornitore:', '').trim()}
+    </Text>
+  )}
+</View> 
+
+           <View style={styles.cardFoot}>
+           <Text style={styles.cardPrice}>{fmtEUR(item.prezzo_vendita)}</Text>
             {!isCliente && (
               <Text style={[styles.cardQty, low && { color: COLORS.error }]}>QTA {item.quantita}</Text>
             )}
@@ -82,7 +93,6 @@ export default function Catalogo() {
               <Text style={styles.addBtnTxt}>VENDI</Text>
             </Pressable>
           )}
-        </View>
       </Pressable>
     );
   };
