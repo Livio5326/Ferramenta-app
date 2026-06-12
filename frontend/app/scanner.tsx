@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Feather } from '@expo/vector-icons';
 
@@ -11,6 +11,8 @@ import { useAppStore } from '@/src/store';
 
 export default function Scanner() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ returnTo?: string }>();
+  const returnTo = String(params.returnTo || '');
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [lastCode, setLastCode] = useState<string>('');
@@ -41,6 +43,10 @@ export default function Scanner() {
     if (scanned) return;
     setScanned(true);
     setLastCode(data);
+    if (returnTo === 'product-new') {
+      router.replace({ pathname: '/product/new', params: { barcode: data } });
+      return;
+    }
     try {
       const p = await api.getByBarcode(data);
       Alert.alert(

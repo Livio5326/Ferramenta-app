@@ -84,11 +84,11 @@ export default function Dashboard() {
               <Text style={styles.statValue}>{fmtEUR(stats?.valore_magazzino || 0)}</Text>
               <Text style={styles.statFoot}>{stats?.total_pieces || 0} PEZZI · {stats?.total_products || 0} REF</Text>
             </View>
-            <View style={[styles.bentoCard, styles.bentoCardLg, { backgroundColor: stats?.sotto_scorta_count ? COLORS.error : COLORS.surfaceSecondary }]} testID="stat-scorta">
+            <Pressable style={[styles.bentoCard, styles.bentoCardLg, { backgroundColor: stats?.sotto_scorta_count ? COLORS.error : COLORS.surfaceSecondary }]} onPress={()=> router.push('/catalogo?sotto_scorta=true')} testID="stat-scorta">
               <Text style={[styles.statLabel, stats?.sotto_scorta_count && { color: COLORS.onError }]}>SOTTO SCORTA</Text>
               <Text style={[styles.statValue, stats?.sotto_scorta_count && { color: COLORS.onError }]}>{stats?.sotto_scorta_count || 0}</Text>
               <Text style={[styles.statFoot, stats?.sotto_scorta_count && { color: COLORS.onError }]}>DA RIORDINARE</Text>
-            </View>
+            </Pressable>
           </View>
         )}
 

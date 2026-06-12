@@ -120,6 +120,7 @@ async def list_products(
             {"descrizione": {"$regex": q, "$options": "i"}},
             {"barcode": {"$regex": q, "$options": "i"}},
             {"marca": {"$regex": q, "$options": "i"}},
+            {"note": {"$regex": q, "$options": "i"}},
         ]
     if categoria:
         query["categoria"] = categoria

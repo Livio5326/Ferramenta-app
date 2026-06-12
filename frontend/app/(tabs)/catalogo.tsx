@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 
@@ -12,6 +12,8 @@ import { Product, useAppStore } from '@/src/store';
 
 export default function Catalogo() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const soloSottoScorta = params.sotto_scorta === 'true';
   const mode = useAppStore((s) => s.mode);
   const addToCart = useAppStore((s) => s.addToCart);
   const isCliente = mode === 'cliente';
@@ -25,14 +27,23 @@ export default function Catalogo() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.listProducts({ q: q || undefined, categoria: categoria || undefined });
-      setItems(data);
+      const data = await api.listProducts({ q: q || undefined, categoria: categoria || undefined, sotto_scorta: soloSottoScorta || undefined });
+      setItems( soloSottoScorta
+    ? [...data].sort((a, b) => {
+        const urgenzaA = (a.quantita ?? 0) / Math.max(a.soglia_scorta ?? 1, 1);
+        const urgenzaB = (b.quantita ?? 0) / Math.max(b.soglia_scorta ?? 1, 1);
+
+        if (urgenzaA !== urgenzaB) return urgenzaA - urgenzaB;
+        return (a.quantita ?? 0) - (b.quantita ?? 0);
+      })
+    : data
+   );
     } catch (e) {
       console.warn(e);
     } finally {
       setLoading(false);
     }
-  }, [q, categoria]);
+  }, [q, categoria, soloSottoScorta]);
 
   useFocusEffect(useCallback(() => {
     api.meta().then((m) => setCats(m.categorie)).catch(() => {});
@@ -99,7 +110,7 @@ export default function Catalogo() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']} testID="catalogo-screen">
-      <ScreenHeader title="CATALOGO" subtitle={`${items.length} PRODOTTI`} />
+      <ScreenHeader title={soloSottoScorta ? "SOTTO SCORTA" : "CATALOGO"} subtitle={`${items.length} PRODOTTI`} />
       <View style={styles.searchBar}>
         <Feather name="search" size={16} color={COLORS.onSurfaceSecondary} />
         <TextInput

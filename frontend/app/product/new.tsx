@@ -84,7 +84,7 @@ export default function ProductForm() {
       fornitore: form.fornitore.trim(),
       foto: form.foto,
       note: form.note,
-      soglia_scorta: parseInt(form.soglia_scorta) || 5,
+      soglia_scorta: form.soglia_scorta.trim() === '' ? 5 : Number(form.soglia_scorta),
     };
     try {
       if (editing && params.id) await api.updateProduct(params.id, payload);
@@ -123,7 +123,28 @@ export default function ProductForm() {
           </Pressable>
 
           <Field label="DESCRIZIONE *" value={form.descrizione} onChange={(v) => set('descrizione', v)} testID="f-descrizione" multiline />
-          <Field label="BARCODE" value={form.barcode} onChange={(v) => set('barcode', v)} testID="f-barcode" keyboard="numeric" />
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+            <View style={{ flex: 1 }}>
+              <Field label="BARCODE" value={form.barcode} onChange={(v) => set('barcode', v)} testID="f-barcode" keyboard="numeric" />
+            </View>
+
+            <Pressable
+              onPress={() => router.push({ pathname: '/scanner', params: { returnTo: 'product-new' } })}
+              style={{
+                width: 54,
+                height: 54,
+                marginLeft: 10,
+                marginBottom: 24,
+                borderWidth: 2,
+                borderColor: COLORS.brand,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              testID="scan-barcode-new-product"
+            >
+               <Feather name="maximize" size={22} color={COLORS.brand} />
+            </Pressable>
+          </View>
           <Field label="URL FOTO (opz.)" value={form.foto.startsWith('data:') ? '' : form.foto} onChange={(v) => set('foto', v)} testID="f-foto" placeholder="https://..." />
           <Field label="MARCA" value={form.marca} onChange={(v) => set('marca', v)} testID="f-marca" />
           <Field label="CATEGORIA" value={form.categoria} onChange={(v) => set('categoria', v)} testID="f-categoria" />
