@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
@@ -62,7 +62,7 @@ export default function Catalogo() {
       >
         <View style={styles.cardImgWrap}>
           {item.foto ? (
-            <Image source={item.foto} style={styles.cardImg} contentFit="cover" />
+            <Image source={{ uri: ((process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/uploads/' + item.foto) }} style={styles.cardImg} contentFit="cover" />
           ) : (
             <View style={styles.cardPlaceholder}>
               <Feather name="package" size={32} color={COLORS.brandTertiary} />
@@ -217,3 +217,4 @@ const styles = StyleSheet.create({
   emptyBtn: { borderWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.brand, paddingHorizontal: 18, paddingVertical: 12 },
   emptyBtnTxt: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onBrandPrimary, fontWeight: '900', letterSpacing: 1 },
 });
+

@@ -55,10 +55,14 @@ export default function Dashboard() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']} testID="dashboard-screen">
       <ScreenHeader
-        title="FERRAMENTA"
-        subtitle="MANAGER · MAGAZZINO"
-        right={<ModeToggle />}
-      />
+  title={`FERRAMENTA\nLOPERFIDO`}
+    
+  subtitle={`Via F. Jaia, 50 - Conversano (BA)\nTel. 080 5566904`}
+/>
+
+<View style={styles.modeToggleCenter}>
+  <ModeToggle />
+</View>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.brand} />}
@@ -152,6 +156,12 @@ export default function Dashboard() {
 }
 
 const styles = StyleSheet.create({
+  modeToggleCenter: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: 12,
+  marginBottom: 18,
+},
   safe: { flex: 1, backgroundColor: COLORS.surface },
   content: { paddingBottom: 32 },
   bannerWrap: { height: 140, borderBottomWidth: 2, borderColor: COLORS.borderStrong, position: 'relative' },
