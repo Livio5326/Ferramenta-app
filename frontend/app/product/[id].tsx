@@ -104,6 +104,7 @@ export default function ProductDetail() {
 
         <View style={styles.specs}>
           <Spec label="BARCODE" value={p.barcode || '—'} />
+          <Spec label="CODICE PRODOTTO" value={p.codice_prodotto || '—'} />
           <Spec label="CATEGORIA" value={p.categoria || '—'} />
           <Spec label="MARCA" value={p.marca || '—'} />
           {!isCliente && <Spec label="FORNITORE" value={p.fornitore || '—'} />}

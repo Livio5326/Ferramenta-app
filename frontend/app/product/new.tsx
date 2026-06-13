@@ -11,6 +11,7 @@ import { api } from '@/src/api';
 
 type Form = {
   barcode: string;
+  codice_prodotto: string;
   descrizione: string;
   marca: string;
   categoria: string;
@@ -24,7 +25,7 @@ type Form = {
 };
 
 const empty: Form = {
-  barcode: '', descrizione: '', marca: '', categoria: '', prezzo_acquisto: '0', prezzo_vendita: '0', quantita: '0', fornitore: '', foto: '', note: '', soglia_scorta: '5',
+  barcode: '', codice_prodotto: '', descrizione: '', marca: '', categoria: '', prezzo_acquisto: '0', prezzo_vendita: '0', quantita: '0', fornitore: '', foto: '', note: '', soglia_scorta: '5',
 };
 
 export default function ProductForm() {
@@ -38,7 +39,7 @@ export default function ProductForm() {
     if (params.id) {
       api.getProduct(params.id).then((p) => {
         setForm({
-          barcode: p.barcode, descrizione: p.descrizione, marca: p.marca, categoria: p.categoria,
+          barcode: p.barcode, codice_prodotto: p.codice_prodotto || '',  descrizione: p.descrizione, marca: p.marca, categoria: p.categoria,
           prezzo_acquisto: String(p.prezzo_acquisto), prezzo_vendita: String(p.prezzo_vendita),
           quantita: String(p.quantita), fornitore: p.fornitore, foto: p.foto, note: p.note,
           soglia_scorta: String(p.soglia_scorta),
@@ -75,6 +76,7 @@ export default function ProductForm() {
     setSaving(true);
     const payload = {
       barcode: form.barcode.trim(),
+      codice_prodotto: form.codice_prodotto.trim(),
       descrizione: form.descrizione.trim(),
       marca: form.marca.trim(),
       categoria: form.categoria.trim(),
@@ -145,6 +147,8 @@ export default function ProductForm() {
                <Feather name="maximize" size={22} color={COLORS.brand} />
             </Pressable>
           </View>
+          
+          <Field label="CODICE PRODOTTO" value={form.codice_prodotto} onChange={(v) => set('codice_prodotto', v)} testID="f-codice-prodotto" />
           <Field label="URL FOTO (opz.)" value={form.foto.startsWith('data:') ? '' : form.foto} onChange={(v) => set('foto', v)} testID="f-foto" placeholder="https://..." />
           <Field label="MARCA" value={form.marca} onChange={(v) => set('marca', v)} testID="f-marca" />
           <Field label="CATEGORIA" value={form.categoria} onChange={(v) => set('categoria', v)} testID="f-categoria" />

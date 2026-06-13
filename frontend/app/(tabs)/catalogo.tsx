@@ -81,9 +81,9 @@ export default function Catalogo() {
     {item.descrizione}
   </Text>
 
-  {!!item.note && (
+  {!!item.codice_prodotto && (
     <Text style={styles.cardNote} numberOfLines={1} ellipsizeMode="tail">
-      {item.note.replace('Codice fornitore:', '').trim()}
+      {item.codice_prodotto}
     </Text>
   )}
 </View> 

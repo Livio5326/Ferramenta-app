@@ -30,6 +30,7 @@ api_router = APIRouter(prefix="/api")
 class Product(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     barcode: str = ""
+    codice_prodotto: str = ""
     descrizione: str
     marca: str = ""
     categoria: str = ""
@@ -46,6 +47,7 @@ class Product(BaseModel):
 
 class ProductCreate(BaseModel):
     barcode: str = ""
+    codice_prodotto: str = ""
     descrizione: str
     marca: str = ""
     categoria: str = ""
@@ -60,6 +62,7 @@ class ProductCreate(BaseModel):
 
 class ProductUpdate(BaseModel):
     barcode: Optional[str] = None
+    codice_prodotto: Optional[str] = None
     descrizione: Optional[str] = None
     marca: Optional[str] = None
     categoria: Optional[str] = None
@@ -119,8 +122,8 @@ async def list_products(
         query["$or"] = [
             {"descrizione": {"$regex": q, "$options": "i"}},
             {"barcode": {"$regex": q, "$options": "i"}},
+            {"codice_prodotto": {"$regex": q, "$options": "i"}},
             {"marca": {"$regex": q, "$options": "i"}},
-            {"note": {"$regex": q, "$options": "i"}},
         ]
     if categoria:
         query["categoria"] = categoria

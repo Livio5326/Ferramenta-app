@@ -4,6 +4,7 @@ export type Mode = 'gestore' | 'cliente';
 
 export type Product = {
   id: string;
+  codice_prodotto: string;
   barcode: string;
   descrizione: string;
   marca: string;
