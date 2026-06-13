@@ -14,6 +14,7 @@ export default function Catalogo() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const soloSottoScorta = params.sotto_scorta === 'true';
+  const soloVendita = params.vendita === 'true';
   const mode = useAppStore((s) => s.mode);
   const addToCart = useAppStore((s) => s.addToCart);
   const isCliente = mode === 'cliente';
@@ -28,22 +29,25 @@ export default function Catalogo() {
     setLoading(true);
     try {
       const data = await api.listProducts({ q: q || undefined, categoria: categoria || undefined, sotto_scorta: soloSottoScorta || undefined });
-      setItems( soloSottoScorta
-    ? [...data].sort((a, b) => {
+      const prodottiVisibili = soloVendita
+     ? data.filter((p) => Number(p.quantita ?? 0) > 0)
+     : data;
+    setItems( soloSottoScorta
+    ? [...prodottiVisibili].sort((a, b) => {
         const urgenzaA = (a.quantita ?? 0) / Math.max(a.soglia_scorta ?? 1, 1);
         const urgenzaB = (b.quantita ?? 0) / Math.max(b.soglia_scorta ?? 1, 1);
 
         if (urgenzaA !== urgenzaB) return urgenzaA - urgenzaB;
         return (a.quantita ?? 0) - (b.quantita ?? 0);
       })
-    : data
+    : prodottiVisibili
    );
     } catch (e) {
       console.warn(e);
     } finally {
       setLoading(false);
     }
-  }, [q, categoria, soloSottoScorta]);
+  }, [q, categoria, soloSottoScorta, soloVendita]);
 
   useFocusEffect(useCallback(() => {
     api.meta().then((m) => setCats(m.categorie)).catch(() => {});

@@ -18,6 +18,8 @@ export default function ProductDetail() {
 
   const [p, setP] = useState<Product | null>(null);
   const [busy, setBusy] = useState(false);
+  const [saleQty, setSaleQty] = useState(1);
+  const maxVendibile = Math.max(0, Number(p?.quantita ?? 0));
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -117,15 +119,15 @@ export default function ProductDetail() {
       {!isCliente && (
         <View style={styles.footer}>
           <View style={styles.stockCtrl}>
-            <Pressable style={styles.stockBtn} onPress={() => adjust(-1)} disabled={busy} testID="stock-minus">
+            <Pressable style={styles.stockBtn} onPress={() => setSaleQty((q) => Math.max(1, q - 1))} disabled={busy || saleQty <= 1} testID="sale-qty-minus">
               <Feather name="minus" size={20} color={COLORS.onSurface} />
             </Pressable>
-            <Text style={styles.stockNum}>{p.quantita}</Text>
-            <Pressable style={styles.stockBtn} onPress={() => adjust(1)} disabled={busy} testID="stock-plus">
+            <Text style={styles.stockNum}>{saleQty}</Text>
+              <Pressable style={styles.stockBtn} onPress={() => setSaleQty((q) => Math.min(maxVendibile, q + 1))} disabled={busy || saleQty >= maxVendibile} testID="sale-qty-plus">
               <Feather name="plus" size={20} color={COLORS.onSurface} />
             </Pressable>
           </View>
-          <Pressable style={styles.addCartBtn} onPress={() => { addToCart(p, 1); Alert.alert('Aggiunto', 'Prodotto nel carrello'); }} testID="add-cart-detail">
+          <Pressable style={styles.addCartBtn} onPress={() => { addToCart(p, saleQty); Alert.alert('Aggiunto', '${saleQty} pz nel carrello'); }} testID="add-cart-detail">
             <Feather name="shopping-cart" size={18} color={COLORS.onSuccess} />
             <Text style={styles.addCartTxt}>VENDI</Text>
           </Pressable>

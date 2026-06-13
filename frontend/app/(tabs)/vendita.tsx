@@ -12,15 +12,16 @@ import { api } from '@/src/api';
 export default function Vendita() {
   const router = useRouter();
   const cart = useAppStore((s) => s.cart);
+  const cartVendibile = cart.filter((c) => Number(c.product.quantita ?? 0) > 0);
   const removeFromCart = useAppStore((s) => s.removeFromCart);
   const updateCartQty = useAppStore((s) => s.updateCartQty);
   const clearCart = useAppStore((s) => s.clearCart);
   const [completing, setCompleting] = useState(false);
 
-  const total = cartTotal(cart);
+  const total = cartTotal(cartVendibile);
 
   const completa = async () => {
-    if (cart.length === 0) return;
+    if (cartVendibile.length === 0) return;
     setCompleting(true);
     try {
       await api.createSale(
@@ -44,16 +45,16 @@ export default function Vendita() {
     <SafeAreaView style={styles.safe} edges={['top']} testID="vendita-screen">
       <ScreenHeader
         title="VENDITA"
-        subtitle={`${cart.length} ARTICOLI`}
+        subtitle={`${cartVendibile.length} ARTICOLI`}
         right={
-          cart.length > 0 ? (
+          cartVendibile.length > 0 ? (
             <Pressable onPress={clearCart} testID="clear-cart">
               <Feather name="trash-2" size={20} color={COLORS.error} />
             </Pressable>
           ) : null
         }
       />
-      {cart.length === 0 ? (
+      {cartVendibile.length === 0 ? (
         <View style={styles.empty}>
           <Feather name="shopping-cart" size={64} color={COLORS.brandTertiary} />
           <Text style={styles.emptyText}>CARRELLO VUOTO</Text>
@@ -61,7 +62,7 @@ export default function Vendita() {
             <Feather name="maximize" size={20} color={COLORS.onBrandPrimary} />
             <Text style={styles.bigBtnTxt}>INIZIA SCANSIONE</Text>
           </Pressable>
-          <Pressable style={[styles.bigBtn, { backgroundColor: COLORS.surfaceInverse }]} onPress={() => router.push('/catalogo')} testID="goto-catalog-btn">
+          <Pressable style={[styles.bigBtn, { backgroundColor: COLORS.surfaceInverse }]} onPress={() => router.push('/catalogo?vendita=true')} testID="goto-catalog-btn">
             <Feather name="package" size={20} color={COLORS.onSurfaceInverse} />
             <Text style={styles.bigBtnTxt}>SCEGLI DAL CATALOGO</Text>
           </Pressable>
@@ -69,7 +70,7 @@ export default function Vendita() {
       ) : (
         <>
           <FlatList
-            data={cart}
+            data={cartVendibile}
             keyExtractor={(c) => c.product.id}
             contentContainerStyle={{ paddingBottom: 220 }}
             renderItem={({ item }) => (

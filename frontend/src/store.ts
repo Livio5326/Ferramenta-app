@@ -39,23 +39,37 @@ export const useAppStore = create<State>((set) => ({
   mode: 'gestore',
   cart: [],
   setMode: (mode) => set({ mode }),
+  
   addToCart: (product, q = 1) =>
-    set((s) => {
-      const existing = s.cart.find((c) => c.product.id === product.id);
-      if (existing) {
-        return {
-          cart: s.cart.map((c) =>
-            c.product.id === product.id ? { ...c, quantita: c.quantita + q } : c
-          ),
-        };
-      }
-      return { cart: [...s.cart, { product, quantita: q }] };
-    }),
+  set((s) => {
+    const disponibile = Number(product.quantita ?? 0);
+
+    if (disponibile <= 0) {
+      return s;
+    }
+
+    const existing = s.cart.find((c) => c.product.id === product.id);
+
+    if (existing) {
+      return {
+        cart: s.cart.map((c) =>
+          c.product.id === product.id
+            ? { ...c, quantita: Math.min(disponibile, c.quantita + q) }
+            : c
+        ),
+      };
+    }
+
+    return {
+      cart: [...s.cart, { product, quantita: Math.min(disponibile, q) }],
+    };
+  }),
+
   removeFromCart: (id) => set((s) => ({ cart: s.cart.filter((c) => c.product.id !== id) })),
   updateCartQty: (id, q) =>
     set((s) => ({
       cart: s.cart
-        .map((c) => (c.product.id === id ? { ...c, quantita: Math.max(0, q) } : c))
+        .map((c) => (c.product.id === id ? { ...c, quantita: Math.min(Number(c.product.quantita ?? 0), Math.max(0, q)) } : c))
         .filter((c) => c.quantita > 0),
     })),
   clearCart: () => set({ cart: [] }),
