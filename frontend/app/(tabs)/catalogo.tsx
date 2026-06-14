@@ -66,7 +66,15 @@ export default function Catalogo() {
       >
         <View style={styles.cardImgWrap}>
           {item.foto ? (
-            <Image source={{ uri: ((process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/uploads/' + item.foto) }} style={styles.cardImg} contentFit="cover" />
+<Image
+  source={{
+    uri: String(item.foto).startsWith('http') || String(item.foto).startsWith('data:')
+      ? item.foto
+      : ((process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/uploads/' + item.foto),
+  }}
+  style={styles.cardImg}
+  contentFit="cover"
+/>
           ) : (
             <View style={styles.cardPlaceholder}>
               <Feather name="package" size={32} color={COLORS.brandTertiary} />

@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx';
 import { COLORS, FONTS } from '@/src/theme';
 import { api } from '@/src/api';
 
-const COLS = ['BARCODE', 'DESCRIZIONE', 'MARCA', 'CATEGORIA', 'P. ACQUISTO', 'P. VENDITA', 'QUANTITÀ', 'FORNITORE', 'FOTO', 'NOTE'];
+const COLS = ['BARCODE', 'CODICE PRODOTTO', 'DESCRIZIONE', 'MARCA', 'CATEGORIA', 'P. ACQUISTO', 'P. VENDITA', 'QUANTITÀ', 'FORNITORE', 'FOTO', 'NOTE'];
 
 export default function ImportScreen() {
   const router = useRouter();
@@ -52,6 +52,7 @@ export default function ImportScreen() {
     };
     return rows.map((r) => ({
       barcode: String(r['BARCODE'] ?? r['barcode'] ?? '').trim(),
+      codice_prodotto: String(r['CODICE PRODOTTO'] ?? r['Codice Prodotto'] ?? r['codice_prodotto'] ?? r['CODICE FORNITORE'] ?? r['Codice Fornitore'] ?? '').trim(),
       descrizione: String(r['DESCRIZIONE'] ?? r['descrizione'] ?? '').trim() || 'Senza descrizione',
       marca: String(r['MARCA'] ?? r['marca'] ?? '').trim(),
       categoria: String(r['CATEGORIA'] ?? r['categoria'] ?? '').trim(),

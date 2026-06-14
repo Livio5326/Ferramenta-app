@@ -69,7 +69,15 @@ export default function ProductDetail() {
       <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
         <View style={styles.imgWrap}>
           {p.foto ? (
-            <Image source={p.foto} style={styles.img} contentFit="cover" />
+<Image
+  source={{
+    uri: String(p.foto).startsWith('http') || String(p.foto).startsWith('data:')
+      ? p.foto
+      : ((process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/uploads/' + p.foto),
+  }}
+  style={styles.img}
+  contentFit="cover"
+/>
           ) : (
             <View style={[styles.img, { backgroundColor: COLORS.surfaceTertiary, alignItems: 'center', justifyContent: 'center' }]}>
               <Feather name="package" size={64} color={COLORS.brand} />
