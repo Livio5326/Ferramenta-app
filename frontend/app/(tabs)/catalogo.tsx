@@ -145,21 +145,22 @@ export default function Catalogo() {
   const cambiaCategoria = useCallback((nuovaCategoria: string | null) => {
     richiestaCatalogoRef.current += 1;
     setCategoria(nuovaCategoria);
-    setItems([]);
-    setLoading(true);
-  }, []);
+}, []);
 
 
   const load = useCallback(async () => {
     const richiestaId = ++richiestaCatalogoRef.current;
     setLoading(true);
     try {
-      const data = await api.listProducts({ q: q || undefined, sotto_scorta: soloSottoScorta || undefined });
+      const data = await api.listProducts({
+        q: q || undefined,
+        categoria: categoria || undefined,
+        sotto_scorta: soloSottoScorta || undefined,
+      });
       if (richiestaId !== richiestaCatalogoRef.current) return;
-      const prodottiFiltrati = categoria ? data.filter((p) => prodottoInCategoriaStandard(p, categoria)) : data;
       const prodottiVisibili = soloVendita
-        ? prodottiFiltrati.filter((p) => Number(p.quantita ?? 0) > 0)
-        : prodottiFiltrati;
+        ? data.filter((p) => Number(p.quantita ?? 0) > 0)
+        : data;
     setItems( soloSottoScorta
     ? [...prodottiVisibili].sort((a, b) => {
         const urgenzaA = (a.quantita ?? 0) / Math.max(a.soglia_scorta ?? 1, 1);
@@ -183,7 +184,7 @@ export default function Catalogo() {
     load();
   }, [load]));
 
-  useEffect(() => { const t = setTimeout(load, 250); return () => clearTimeout(t); }, [q, categoria, load]);
+  useEffect(() => { load(); }, [load]);
 
   const renderCard = ({ item }: { item: Product }) => {
     const low = item.quantita <= item.soglia_scorta;
@@ -288,7 +289,7 @@ export default function Catalogo() {
           ))}
         </ScrollView>
       </View>
-      {loading ? (
+      {loading && items.length === 0 ? (
         <View style={styles.center}><ActivityIndicator color={COLORS.brand} /></View>
       ) : items.length === 0 ? (
         <View style={styles.center}>
@@ -310,6 +311,12 @@ export default function Catalogo() {
           numColumns={2}
           keyExtractor={(it) => it.id}
           renderItem={renderCard}
+          initialNumToRender={8}
+          maxToRenderPerBatch={6}
+          updateCellsBatchingPeriod={30}
+          windowSize={5}
+          removeClippedSubviews={true}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 24 }}
           columnWrapperStyle={{ borderBottomWidth: 0 }}
         />

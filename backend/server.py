@@ -193,11 +193,130 @@ async def adjust_stock(pid: str, body: StockAdjust):
     return Product(**doc)
 
 
+
+def calcola_categoria_standard_import(data: dict) -> str:
+    """Assegna categoria_standard in modo stabile durante l'import Excel."""
+    import re
+
+    def up(v):
+        return str(v or "").strip().upper()
+
+    categoria = up(data.get("categoria"))
+    descrizione = up(data.get("descrizione"))
+    codice = up(data.get("codice_prodotto") or data.get("codice") or "")
+    marca = up(data.get("marca") or data.get("fornitore") or "")
+    testo = f"{categoria} {descrizione} {codice} {marca}"
+
+    # Auto
+    if (
+        re.search(r"^(ASI|BDCINF)", codice)
+        or "PNEUMATIC" in testo
+        or "POMPA A PEDALE" in testo
+        or "SOLLEVATORE" in testo
+        or "COLONNETTE" in testo
+    ):
+        return "Auto"
+
+    # Portautensili
+    if (
+        "PORTAUTENSILI" in categoria
+        or re.search(r"^(WM|BEZ|BDCWBK|FME790)", codice)
+        or "BANCO DA LAVORO" in testo
+        or "CAVALLETTO" in testo
+        or "SUPPORTO" in testo
+        or "CARRELLO" in testo
+    ):
+        return "Portautensili"
+
+    # Accessori
+    if "BATTERIE E CARICABATTERIE" in categoria:
+        return "Accessori"
+
+    if "ACCESSORI" in categoria:
+        return "Accessori"
+
+    # Giardinaggio
+    if "GIARDINO" in categoria or "GAMMA GIARDINO" in categoria:
+        return "Giardinaggio"
+
+    # Casa
+    if "CURA DELLA CASA" in categoria:
+        return "Casa"
+
+    # Gesso/cartongesso Stanley: per ora li trattiamo come utensili manuali
+    if "GESSO RIVESTITO" in categoria:
+        return "Utensili manuali"
+
+    # Utensileria
+    if "UTENSILERIA MANUALE" in categoria or "UTENSILERIA MECCANICA" in categoria:
+        return "Utensili manuali"
+
+    # Misura
+    if "STRUMENTI DI MISURA" in categoria or "STRUMENTAZIONE ELETTRONICA" in categoria:
+        if any(x in testo for x in ["SEGHETTO", "SEGACCIO", "LAMA", "SPATOLA", "TRUSCHINO", "POMPA"]):
+            return "Utensili manuali"
+        return "Strumenti di misura"
+
+    # Elettroutensili Stanley già separati
+    if "ELETTROUTENSILI A BATTERIA" in categoria:
+        return "Utensili a batteria"
+
+    if "ELETTROUTENSILI A FILO" in categoria:
+        return "Utensili a filo"
+
+    # Black+Decker e futuri cataloghi generici con categoria "ELETTROUTENSILI"
+    if "ELETTROUTENSILI" in categoria:
+        if (
+            "AVVITATORE" in testo
+            or "SVITAVVITA" in testo
+            or "IMPULSI" in testo
+            or "SOLO CORPO" in testo
+            or "BATTERIA" in testo
+            or "18V" in testo
+            or "20V" in testo
+            or "12V" in testo
+            or "V20" in testo
+            or "CORDLESS" in testo
+            or "RICARICA" in testo
+            or "RICARICABILE" in testo
+            or "LITIO" in testo
+            or "LI-ION" in testo
+            or re.search(r"^(BDC|BCD|BDCD|BDCH|BCRT|BCS|BCN|SFMC|FMC)", codice)
+        ):
+            return "Utensili a batteria"
+
+        if (
+            "GIFTSET" in testo
+            or "KIT ACCESSORI" in testo
+            or "SET ACCESSORI" in testo
+            or "ACCESSORI" in testo
+            or re.search(r"^A", codice)
+        ):
+            return "Accessori"
+
+        return "Utensili a filo"
+
+    # Categorie future semplici
+    if "VERNIC" in categoria:
+        return "Vernici"
+    if "IDRAUL" in categoria:
+        return "Idraulica"
+    if "ELETTRIC" in categoria:
+        return "Elettrico"
+    if "ANTINFORTUNISTICA" in categoria or "SICUREZZA" in categoria:
+        return "Antinfortunistica"
+    if "FISSAGGIO" in categoria:
+        return "Fissaggio"
+
+    return "Altro"
+
 @api_router.post("/products/bulk")
 async def bulk_import(products: List[ProductCreate]):
     inserted = 0
     for p in products:
-        prod = Product(**p.dict())
+        data = p.dict()
+        data["categoria_standard"] = calcola_categoria_standard_import(data)
+        prod = Product(**data)
         # upsert per barcode se presente, altrimenti per descrizione
         key = {"barcode": prod.barcode} if prod.barcode else {"descrizione": prod.descrizione}
         existing = await db.products.find_one(key, {"_id": 0})
