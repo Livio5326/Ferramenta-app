@@ -66,6 +66,7 @@ class ProductUpdate(BaseModel):
     descrizione: Optional[str] = None
     marca: Optional[str] = None
     categoria: Optional[str] = None
+    categoria_standard: Optional[str] = None
     prezzo_acquisto: Optional[float] = None
     prezzo_vendita: Optional[float] = None
     quantita: Optional[int] = None
@@ -126,11 +127,11 @@ async def list_products(
             {"marca": {"$regex": q, "$options": "i"}},
         ]
     if categoria:
-        query["categoria"] = categoria
+        query["categoria_standard"] = categoria
     if marca:
         query["marca"] = marca
     cursor = db.products.find(query, {"_id": 0}).sort("descrizione", 1)
-    docs = await cursor.to_list(2000)
+    docs = await cursor.to_list(10000)
     if sotto_scorta:
         docs = [d for d in docs if d.get("quantita", 0) <= d.get("soglia_scorta", 5)]
     return [Product(**d) for d in docs]
@@ -278,7 +279,7 @@ async def stats():
         c = d.get("categoria") or "Senza categoria"
         cat_counts[c] = cat_counts.get(c, 0) + 1
     # sales
-    sales_docs = await db.sales.find({}, {"_id": 0}).to_list(2000)
+    sales_docs = await db.sales.find({}, {"_id": 0}).to_list(10000)
     totale_vendite = sum(float(s.get("totale", 0)) for s in sales_docs)
     return {
         "total_products": total_products,

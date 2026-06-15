@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +11,122 @@ import { ScreenHeader } from '@/src/components/ScreenHeader';
 import { api } from '@/src/api';
 import { Product, useAppStore } from '@/src/store';
 
+const CATEGORIE_STANDARD = [
+  'Utensili manuali',
+  'Strumenti di misura',
+  'Utensili a filo',
+  'Utensili a batteria',
+  'Accessori',
+  'Portautensili',
+  'Ferramenta',
+  'Fissaggio',
+  'Giardinaggio',
+  'Vernici',
+  'Idraulica',
+  'Elettrico',
+  'Antinfortunistica',
+  'Auto',
+  'Casa',
+  'Altro',
+];
+
+
+function testoProdottoFiltro(p: any) {
+  return [
+    p.descrizione,
+    p.nome,
+    p.categoria,
+    p.marca,
+    p.fornitore,
+    p.note,
+    p.codice_prodotto,
+    p.barcode,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+}
+
+function categoriaStandardDaImportata(p: any): string {
+  const standard = String(p.categoria_standard || '').trim();
+
+  if (standard) {
+    return standard;
+  }
+
+  const categoriaImportata = String(p.categoria || '').toLowerCase();
+  const marca = String(p.marca || '').toLowerCase();
+  const fornitore = String(p.fornitore || '').toLowerCase();
+  const descrizione = String(p.descrizione || '').toLowerCase();
+  const note = String(p.note || '').toLowerCase();
+  const codice = String(p.codice_prodotto || '').toUpperCase();
+
+  const testo = `${categoriaImportata} ${descrizione} ${note} ${codice}`;
+
+  const haWattaggio = /\b\d{2,4}\s*(w|watt|watts)\b/.test(testo);
+  const haBatteria =
+    testo.includes('batteria') ||
+    testo.includes('batterie') ||
+    testo.includes('cordless') ||
+    testo.includes('18v') ||
+    testo.includes('20v') ||
+    testo.includes('12v') ||
+    testo.includes('54v') ||
+    testo.includes('v20') ||
+    testo.includes('li-ion') ||
+    testo.includes('litio');
+
+  if (categoriaImportata.includes('portautensili')) return 'Portautensili';
+  if (categoriaImportata.includes('strumenti di misura') || categoriaImportata.includes('strumentazione elettronica')) return 'Strumenti di misura';
+  if (categoriaImportata.includes('utensileria manuale') || categoriaImportata.includes('utensileria meccanica')) return 'Utensili manuali';
+  if (categoriaImportata.includes('giardino') || categoriaImportata.includes('gamma giardino')) return 'Giardinaggio';
+  if (categoriaImportata.includes('batterie e caricabatterie')) return 'Accessori';
+  if (categoriaImportata.includes('cura della casa')) return 'Casa';
+
+  if (categoriaImportata.includes('elettroutensili a batteria')) return 'Utensili a batteria';
+  if (categoriaImportata.includes('elettroutensili a filo')) return 'Utensili a filo';
+
+  if (categoriaImportata.includes('elettroutensili')) {
+    if (haBatteria && !haWattaggio) return 'Utensili a batteria';
+    return 'Utensili a filo';
+  }
+
+  if (categoriaImportata.includes('accessori')) {
+    if (codice.startsWith('FME') || codice.startsWith('SFME') || codice.startsWith('SFMEE') || codice.startsWith('SM') || codice.startsWith('FMEG')) {
+      return 'Utensili a filo';
+    }
+
+    if (codice.startsWith('SFMC') || codice.startsWith('SCMW') || codice.startsWith('SFMCMW') || codice.startsWith('SCOEP')) {
+      if (testo.includes('rasaerba') || testo.includes('giardino') || testo.includes('taglia')) {
+        return 'Giardinaggio';
+      }
+
+      return 'Utensili a batteria';
+    }
+
+    return 'Accessori';
+  }
+
+  if (categoriaImportata.includes('fissaggio')) return 'Fissaggio';
+  if (categoriaImportata.includes('vernici') || categoriaImportata.includes('pittura')) return 'Vernici';
+  if (categoriaImportata.includes('idraulica')) return 'Idraulica';
+  if (categoriaImportata.includes('elettrico')) return 'Elettrico';
+  if (categoriaImportata.includes('antinfortunistica') || categoriaImportata.includes('dpi')) return 'Antinfortunistica';
+  if (categoriaImportata.includes('auto')) return 'Auto';
+  if (categoriaImportata.includes('casa')) return 'Casa';
+
+  if (marca.includes('black') || fornitore.includes('black')) {
+    if (haBatteria && !haWattaggio) return 'Utensili a batteria';
+    if (haWattaggio || categoriaImportata.includes('elettroutensili')) return 'Utensili a filo';
+  }
+
+  return 'Altro';
+}
+
+function prodottoInCategoriaStandard(p: any, categoria: string) {
+  return categoriaStandardDaImportata(p) === categoria;
+}
+
 export default function Catalogo() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -21,17 +138,28 @@ export default function Catalogo() {
 
   const [q, setQ] = useState('');
   const [categoria, setCategoria] = useState<string | null>(null);
-  const [cats, setCats] = useState<string[]>([]);
+  const cats = CATEGORIE_STANDARD;
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const richiestaCatalogoRef = useRef(0);
+  const cambiaCategoria = useCallback((nuovaCategoria: string | null) => {
+    richiestaCatalogoRef.current += 1;
+    setCategoria(nuovaCategoria);
+    setItems([]);
+    setLoading(true);
+  }, []);
+
 
   const load = useCallback(async () => {
+    const richiestaId = ++richiestaCatalogoRef.current;
     setLoading(true);
     try {
-      const data = await api.listProducts({ q: q || undefined, categoria: categoria || undefined, sotto_scorta: soloSottoScorta || undefined });
+      const data = await api.listProducts({ q: q || undefined, sotto_scorta: soloSottoScorta || undefined });
+      if (richiestaId !== richiestaCatalogoRef.current) return;
+      const prodottiFiltrati = categoria ? data.filter((p) => prodottoInCategoriaStandard(p, categoria)) : data;
       const prodottiVisibili = soloVendita
-     ? data.filter((p) => Number(p.quantita ?? 0) > 0)
-     : data;
+        ? prodottiFiltrati.filter((p) => Number(p.quantita ?? 0) > 0)
+        : prodottiFiltrati;
     setItems( soloSottoScorta
     ? [...prodottiVisibili].sort((a, b) => {
         const urgenzaA = (a.quantita ?? 0) / Math.max(a.soglia_scorta ?? 1, 1);
@@ -45,12 +173,13 @@ export default function Catalogo() {
     } catch (e) {
       console.warn(e);
     } finally {
-      setLoading(false);
+      if (richiestaId === richiestaCatalogoRef.current) {
+        setLoading(false);
+      }
     }
   }, [q, categoria, soloSottoScorta, soloVendita]);
 
   useFocusEffect(useCallback(() => {
-    api.meta().then((m) => setCats(m.categorie)).catch(() => {});
     load();
   }, [load]));
 
@@ -142,7 +271,7 @@ export default function Catalogo() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsContent}>
           <Pressable
             style={[styles.chip, !categoria && styles.chipActive]}
-            onPress={() => setCategoria(null)}
+            onPress={() => cambiaCategoria(null)}
             testID="chip-tutti"
           >
             <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>TUTTI</Text>
@@ -151,7 +280,7 @@ export default function Catalogo() {
             <Pressable
               key={c}
               style={[styles.chip, categoria === c && styles.chipActive]}
-              onPress={() => setCategoria(c)}
+              onPress={() => cambiaCategoria(c)}
               testID={`chip-${c}`}
             >
               <Text style={[styles.chipTxt, categoria === c && styles.chipTxtActive]}>{c.toUpperCase()}</Text>
@@ -173,6 +302,10 @@ export default function Catalogo() {
         </View>
       ) : (
         <FlatList
+        
+        
+        
+        
           data={items}
           numColumns={2}
           keyExtractor={(it) => it.id}
