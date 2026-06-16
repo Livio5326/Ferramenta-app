@@ -169,7 +169,19 @@ export default function Catalogo() {
         if (urgenzaA !== urgenzaB) return urgenzaA - urgenzaB;
         return (a.quantita ?? 0) - (b.quantita ?? 0);
       })
-    : prodottiVisibili
+    : [...prodottiVisibili].sort((a, b) => {
+              const dispA = Number(a.quantita ?? 0) > 0 ? 0 : 1;
+              const dispB = Number(b.quantita ?? 0) > 0 ? 0 : 1;
+              if (dispA !== dispB) return dispA - dispB;
+
+              const marca = String(a.marca ?? "").localeCompare(String(b.marca ?? ""), "it");
+              if (marca !== 0) return marca;
+
+              const descrizione = String(a.descrizione ?? "").localeCompare(String(b.descrizione ?? ""), "it");
+              if (descrizione !== 0) return descrizione;
+
+              return String(a.codice_prodotto ?? "").localeCompare(String(b.codice_prodotto ?? ""), "it");
+            })
    );
     } catch (e) {
       console.warn(e);
@@ -203,7 +215,7 @@ export default function Catalogo() {
       : ((process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/uploads/' + item.foto),
   }}
   style={styles.cardImg}
-  contentFit="cover"
+  contentFit="contain"
 />
           ) : (
             <View style={styles.cardPlaceholder}>
@@ -238,12 +250,15 @@ export default function Catalogo() {
           </View>
           {!isCliente && (
             <Pressable
-              style={styles.addBtn}
-              onPress={() => addToCart(item, 1)}
+              style={[styles.addBtn, Number(item.quantita ?? 0) <= 0 && { opacity: 0.45 }]}
+              disabled={Number(item.quantita ?? 0) <= 0}
+              onPress={() => Number(item.quantita ?? 0) > 0 && addToCart(item, 1)}
               testID={`add-to-cart-${item.id}`}
             >
               <Feather name="plus" size={14} color={COLORS.onBrandPrimary} />
-              <Text style={styles.addBtnTxt}>VENDI</Text>
+              <Text style={styles.addBtnTxt}>
+                {Number(item.quantita ?? 0) > 0 ? "VENDI" : "NON DISPONIBILE"}
+              </Text>
             </Pressable>
           )}
       </Pressable>
@@ -252,13 +267,13 @@ export default function Catalogo() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']} testID="catalogo-screen">
-      <ScreenHeader title={soloSottoScorta ? "SOTTO SCORTA" : "CATALOGO"} subtitle={`${items.length} PRODOTTI`} />
+      <ScreenHeader title={soloSottoScorta ? "SOTTO SCORTA" : "CATALOGO"} subtitle={soloSottoScorta ? `${items.length} PRODOTTI SOTTO SCORTA` : categoria ? `Categoria: ${categoria} • ${items.length} prodotti` : `Tutto il catalogo • ${items.length} prodotti`} />
       <View style={styles.searchBar}>
         <Feather name="search" size={16} color={COLORS.onSurfaceSecondary} />
         <TextInput
           value={q}
           onChangeText={setQ}
-          placeholder="Cerca per nome, barcode, marca..."
+          placeholder={categoria ? `Cerca in ${categoria}...` : "Cerca in tutto il catalogo..."}
           placeholderTextColor={COLORS.onSurfaceSecondary}
           style={styles.searchInput}
           testID="search-input"
