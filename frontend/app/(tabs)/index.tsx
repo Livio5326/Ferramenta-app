@@ -123,35 +123,59 @@ return (
                 <Feather name="upload" size={28} color={COLORS.onBrandSecondary} />
                 <Text style={styles.actionText}>IMPORTA EXCEL</Text>
               </Pressable>
-              <Pressable style={[styles.action, { backgroundColor: COLORS.brandTertiary }]} onPress={handleSeed} testID="action-seed">
-                <Feather name="database" size={28} color={COLORS.onBrandTertiary} />
-                <Text style={[styles.actionText, { color: COLORS.onBrandTertiary }]}>CARICA DEMO</Text>
-              </Pressable>
+   <Pressable
+  style={[styles.action, { backgroundColor: COLORS.brandTertiary }]}
+  onPress={() => router.push('/statistiche-prodotti' as any )}
+  testID="action-statistiche-prodotti"
+>
+  <Feather name="bar-chart-2" size={28} color={COLORS.onBrandTertiary} />
+  <Text style={[styles.actionText, { color: COLORS.onBrandTertiary }]}>
+    STATISTICHE PRODOTTI
+  </Text>
+</Pressable>
             </>
           )}
         </View>
 {isCliente && (
   <View style={styles.clientHome}>
     <Text style={styles.clientSectionTitle}>REPARTI PRINCIPALI</Text>
-
-    <View style={styles.clientGrid}>
-      {[
-        'PROMO',
-        'I PIU RICHIESTI',
-        'VERNICI',
-        'GIARDINO',
-        'UTENSILI',
-        'IDRAULICA',
-      ].map((item) => (
-        <Pressable
-          key={item}
-          style={styles.clientTile}
-          onPress={() => router.push('/catalogo')}
-        >
-          <Text style={styles.clientTileText}>{item}</Text>
-        </Pressable>
-      ))}
-    </View>
+<View style={styles.clientGrid}>
+  {[
+    {
+      titolo: 'PROMO',
+      descrizione: 'Offerte e occasioni',
+    },
+    {
+      titolo: 'I PIÙ RICHIESTI',
+      descrizione: 'Articoli più cercati da voi',
+    },
+    {
+      titolo: 'VERNICI',
+      descrizione: 'Smalti, pitture, pennelli',
+    },
+    {
+      titolo: 'GIARDINO',
+      descrizione: 'Taglio, irrigazione, cura',
+    },
+    {
+      titolo: 'UTENSILI',
+      descrizione:''
+    },
+    {
+      titolo: 'IDRAULICA',
+      descrizione: 'Raccordi, tubi, rubinetteria',
+    },
+  ].map((item) => (
+    <Pressable
+      key={item.titolo}
+      style={styles.clientTile}
+      onPress={() => router.push('/catalogo' as any)}
+    >
+      <Text style={styles.clientTileText}>{item.titolo}</Text>
+      <Text style={styles.clientTileSub}>{item.descrizione}</Text>
+    </Pressable>
+  ))}
+</View>
 
     <Text style={styles.clientSectionTitle}>SERVIZI</Text>
 
@@ -321,12 +345,13 @@ clientGrid: {
 
 clientTile: {
   width: '48%',
-  minHeight: 72,
+  minHeight: 105,
   borderWidth: 2,
   borderColor: COLORS.borderStrong,
   backgroundColor: COLORS.surfaceSecondary,
   justifyContent: 'center',
   paddingHorizontal: 14,
+  paddingVertical: 12,
 },
 
 clientTileWide: {
@@ -344,8 +369,9 @@ clientTileText: {
 
 clientTileSub: {
   fontFamily: FONTS.mono,
-  fontSize: 12,
+  fontSize: 11,
+  lineHeight: 16,
   color: COLORS.onSurfaceSecondary,
-  marginTop: 6,
+  marginTop: 8,
 },
 });
