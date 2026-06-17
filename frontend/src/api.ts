@@ -24,6 +24,17 @@ export const api = {
     const s = qs.toString();
     return req<Product[]>('/products' + (s ? '?' + s : ''));
   },
+  listProductsPage: (params: { q?: string; categoria?: string; marca?: string; sotto_scorta?: boolean; vendibile?: boolean; limit?: number; skip?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.q) qs.set('q', params.q);
+    if (params.categoria) qs.set('categoria', params.categoria);
+    if (params.marca) qs.set('marca', params.marca);
+    if (params.sotto_scorta) qs.set('sotto_scorta', 'true');
+    if (params.vendibile) qs.set('vendibile', 'true');
+    qs.set('limit', String(params.limit ?? 50));
+    qs.set('skip', String(params.skip ?? 0));
+    return req<{ items: Product[]; total: number; limit: number; skip: number; has_more: boolean }>('/products/page?' + qs.toString());
+  },
   getProduct: (id: string) => req<Product>(`/products/${id}`),
   getByBarcode: (b: string) => req<Product>(`/products/barcode/${encodeURIComponent(b)}`),
   createProduct: (p: Partial<Product>) =>

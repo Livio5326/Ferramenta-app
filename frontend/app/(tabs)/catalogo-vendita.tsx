@@ -126,11 +126,11 @@ function prodottoInCategoriaStandard(p: any, categoria: string) {
   return categoriaStandardDaImportata(p) === categoria;
 }
 
-export default function Catalogo() {
+export default function CatalogoVendita() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const soloSottoScorta = params.sotto_scorta === 'true';
-  const soloVendita = params.vendita === 'true';
+  const soloVendita = true;
   const mode = useAppStore((s) => s.mode);
   const addToCart = useAppStore((s) => s.addToCart);
   const isCliente = mode === 'cliente';
@@ -159,7 +159,7 @@ export default function Catalogo() {
         q: q || undefined,
         categoria: categoria || undefined,
         sotto_scorta: soloSottoScorta || undefined,
-        vendibile: soloVendita || undefined,
+        vendibile: true,
         limit: 30,
         skip: 0,
       });
@@ -228,7 +228,7 @@ export default function Catalogo() {
         q: q || undefined,
         categoria: categoria || undefined,
         sotto_scorta: soloSottoScorta || undefined,
-        vendibile: soloVendita || undefined,
+        vendibile: true,
         limit: 30,
         skip: items.length,
       });

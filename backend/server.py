@@ -137,12 +137,81 @@ async def list_products(
     return [Product(**d) for d in docs]
 
 
+
 @api_router.get("/products/barcode/{barcode}", response_model=Product)
 async def get_by_barcode(barcode: str):
     doc = await db.products.find_one({"barcode": barcode}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Prodotto non trovato")
     return Product(**doc)
+
+
+@api_router.get("/products/page")
+async def list_products_page(
+    q: Optional[str] = None,
+    categoria: Optional[str] = None,
+    marca: Optional[str] = None,
+    sotto_scorta: Optional[bool] = None,
+    vendibile: Optional[bool] = None,
+    limit: int = 50,
+    skip: int = 0,
+):
+    # Limiti di sicurezza: evitiamo richieste enormi dal frontend
+    if limit < 1:
+        limit = 50
+    if limit > 200:
+        limit = 200
+    if skip < 0:
+        skip = 0
+
+    query = {}
+
+    if q:
+        query["$or"] = [
+            {"descrizione": {"$regex": q, "$options": "i"}},
+            {"barcode": {"$regex": q, "$options": "i"}},
+            {"codice_prodotto": {"$regex": q, "$options": "i"}},
+            {"marca": {"$regex": q, "$options": "i"}},
+        ]
+
+    if categoria:
+        query["categoria_standard"] = categoria
+
+    if marca:
+        query["marca"] = marca
+
+    if sotto_scorta:
+        query["$expr"] = {
+            "$lte": [
+                {"$ifNull": ["$quantita", 0]},
+                {"$ifNull": ["$soglia_scorta", 5]},
+            ]
+        }
+
+    if vendibile:
+        query["quantita"] = {"$gt": 0}
+
+    total = await db.products.count_documents(query)
+
+    cursor = (
+        db.products
+        .find(query, {"_id": 0})
+        .sort("descrizione", 1)
+        .skip(skip)
+        .limit(limit)
+    )
+
+    docs = await cursor.to_list(limit)
+    items = [Product(**d).dict() for d in docs]
+
+    return {
+        "items": items,
+        "total": total,
+        "limit": limit,
+        "skip": skip,
+        "has_more": skip + len(items) < total,
+    }
+
 
 
 @api_router.get("/products/{pid}", response_model=Product)

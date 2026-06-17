@@ -25,7 +25,7 @@ export default function Vendita() {
     setCompleting(true);
     try {
       await api.createSale(
-        cart.map((c) => ({
+        cartVendibile.map((c) => ({
           product_id: c.product.id,
           descrizione: c.product.descrizione,
           prezzo_vendita: c.product.prezzo_vendita,
@@ -62,7 +62,7 @@ export default function Vendita() {
             <Feather name="maximize" size={20} color={COLORS.onBrandPrimary} />
             <Text style={styles.bigBtnTxt}>INIZIA SCANSIONE</Text>
           </Pressable>
-          <Pressable style={[styles.bigBtn, { backgroundColor: COLORS.surfaceInverse }]} onPress={() => router.push('/catalogo?vendita=true')} testID="goto-catalog-btn">
+          <Pressable style={[styles.bigBtn, { backgroundColor: COLORS.surfaceInverse }]} onPress={() => router.push('/catalogo-vendita')} testID="goto-catalog-btn">
             <Feather name="package" size={20} color={COLORS.onSurfaceInverse} />
             <Text style={styles.bigBtnTxt}>SCEGLI DAL CATALOGO</Text>
           </Pressable>

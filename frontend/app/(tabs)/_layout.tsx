@@ -45,6 +45,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="catalogo-vendita"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="vendita"
         options={{
           title: 'Vendita',
