@@ -19,16 +19,17 @@ export const api = {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
     if (params.categoria) qs.set('categoria', params.categoria);
-    if (params.marca) qs.set('marca', params.marca);
+    if (params.marca_standard && params.marca_standard !== 'Tutte') qs.set('marca_standard', params.marca_standard);
     if (params.sotto_scorta) qs.set('sotto_scorta', 'true');
     const s = qs.toString();
     return req<Product[]>('/products' + (s ? '?' + s : ''));
   },
-  listProductsPage: (params: { q?: string; categoria?: string; marca?: string; sotto_scorta?: boolean; vendibile?: boolean; limit?: number; skip?: number } = {}) => {
+  listProductsPage: (params: { q?: string; categoria?: string; marca?: string; sotto_scorta?: boolean; vendibile?: boolean;
+  marca_standard?: string; limit?: number; skip?: number } = {}) => {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
     if (params.categoria) qs.set('categoria', params.categoria);
-    if (params.marca) qs.set('marca', params.marca);
+    if (params.marca_standard && params.marca_standard !== 'Tutte') qs.set('marca_standard', params.marca_standard);
     if (params.sotto_scorta) qs.set('sotto_scorta', 'true');
     if (params.vendibile) qs.set('vendibile', 'true');
     qs.set('limit', String(params.limit ?? 50));

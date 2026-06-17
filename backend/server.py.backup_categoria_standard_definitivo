@@ -115,7 +115,7 @@ async def root():
 async def list_products(
     q: Optional[str] = None,
     categoria: Optional[str] = None,
-    marca_standard: Optional[str] = None,
+    marca: Optional[str] = None,
     sotto_scorta: Optional[bool] = None,
 ):
     query = {}
@@ -127,15 +127,14 @@ async def list_products(
             {"marca": {"$regex": q, "$options": "i"}},
         ]
     if categoria:
-        query["categoria_standard"] = categoria
-    if marca_standard and marca_standard != "Tutte":
-        query["marca_standard"] = marca_standard
+        query["categoria"] = categoria
+    if marca:
+        query["marca"] = marca
     cursor = db.products.find(query, {"_id": 0}).sort("descrizione", 1)
-    docs = await cursor.to_list(10000)
+    docs = await cursor.to_list(2000)
     if sotto_scorta:
         docs = [d for d in docs if d.get("quantita", 0) <= d.get("soglia_scorta", 5)]
     return [Product(**d) for d in docs]
-
 
 
 @api_router.get("/products/barcode/{barcode}", response_model=Product)
@@ -144,74 +143,6 @@ async def get_by_barcode(barcode: str):
     if not doc:
         raise HTTPException(status_code=404, detail="Prodotto non trovato")
     return Product(**doc)
-
-
-@api_router.get("/products/page")
-async def list_products_page(
-    q: Optional[str] = None,
-    categoria: Optional[str] = None,
-    marca_standard: Optional[str] = None,
-    sotto_scorta: Optional[bool] = None,
-    vendibile: Optional[bool] = None,
-    limit: int = 50,
-    skip: int = 0,
-):
-    # Limiti di sicurezza: evitiamo richieste enormi dal frontend
-    if limit < 1:
-        limit = 50
-    if limit > 200:
-        limit = 200
-    if skip < 0:
-        skip = 0
-
-    query = {}
-
-    if q:
-        query["$or"] = [
-            {"descrizione": {"$regex": q, "$options": "i"}},
-            {"barcode": {"$regex": q, "$options": "i"}},
-            {"codice_prodotto": {"$regex": q, "$options": "i"}},
-            {"marca": {"$regex": q, "$options": "i"}},
-        ]
-
-    if categoria:
-        query["categoria_standard"] = categoria
-
-    if marca_standard and marca_standard != "Tutte":
-        query["marca_standard"] = marca_standard
-
-    if sotto_scorta:
-        query["$expr"] = {
-            "$lte": [
-                {"$ifNull": ["$quantita", 0]},
-                {"$ifNull": ["$soglia_scorta", 5]},
-            ]
-        }
-
-    if vendibile:
-        query["quantita"] = {"$gt": 0}
-
-    total = await db.products.count_documents(query)
-
-    cursor = (
-        db.products
-        .find(query, {"_id": 0})
-        .sort("descrizione", 1)
-        .skip(skip)
-        .limit(limit)
-    )
-
-    docs = await cursor.to_list(limit)
-    items = [Product(**d).dict() for d in docs]
-
-    return {
-        "items": items,
-        "total": total,
-        "limit": limit,
-        "skip": skip,
-        "has_more": skip + len(items) < total,
-    }
-
 
 
 @api_router.get("/products/{pid}", response_model=Product)
@@ -262,130 +193,11 @@ async def adjust_stock(pid: str, body: StockAdjust):
     return Product(**doc)
 
 
-
-def calcola_categoria_standard_import(data: dict) -> str:
-    """Assegna categoria_standard in modo stabile durante l'import Excel."""
-    import re
-
-    def up(v):
-        return str(v or "").strip().upper()
-
-    categoria = up(data.get("categoria"))
-    descrizione = up(data.get("descrizione"))
-    codice = up(data.get("codice_prodotto") or data.get("codice") or "")
-    marca = up(data.get("marca") or data.get("fornitore") or "")
-    testo = f"{categoria} {descrizione} {codice} {marca}"
-
-    # Auto
-    if (
-        re.search(r"^(ASI|BDCINF)", codice)
-        or "PNEUMATIC" in testo
-        or "POMPA A PEDALE" in testo
-        or "SOLLEVATORE" in testo
-        or "COLONNETTE" in testo
-    ):
-        return "Auto"
-
-    # Portautensili
-    if (
-        "PORTAUTENSILI" in categoria
-        or re.search(r"^(WM|BEZ|BDCWBK|FME790)", codice)
-        or "BANCO DA LAVORO" in testo
-        or "CAVALLETTO" in testo
-        or "SUPPORTO" in testo
-        or "CARRELLO" in testo
-    ):
-        return "Portautensili"
-
-    # Accessori
-    if "BATTERIE E CARICABATTERIE" in categoria:
-        return "Accessori"
-
-    if "ACCESSORI" in categoria:
-        return "Accessori"
-
-    # Giardinaggio
-    if "GIARDINO" in categoria or "GAMMA GIARDINO" in categoria:
-        return "Giardinaggio"
-
-    # Casa
-    if "CURA DELLA CASA" in categoria:
-        return "Casa"
-
-    # Gesso/cartongesso Stanley: per ora li trattiamo come utensili manuali
-    if "GESSO RIVESTITO" in categoria:
-        return "Utensili manuali"
-
-    # Utensileria
-    if "UTENSILERIA MANUALE" in categoria or "UTENSILERIA MECCANICA" in categoria:
-        return "Utensili manuali"
-
-    # Misura
-    if "STRUMENTI DI MISURA" in categoria or "STRUMENTAZIONE ELETTRONICA" in categoria:
-        if any(x in testo for x in ["SEGHETTO", "SEGACCIO", "LAMA", "SPATOLA", "TRUSCHINO", "POMPA"]):
-            return "Utensili manuali"
-        return "Strumenti di misura"
-
-    # Elettroutensili Stanley già separati
-    if "ELETTROUTENSILI A BATTERIA" in categoria:
-        return "Utensili a batteria"
-
-    if "ELETTROUTENSILI A FILO" in categoria:
-        return "Utensili a filo"
-
-    # Black+Decker e futuri cataloghi generici con categoria "ELETTROUTENSILI"
-    if "ELETTROUTENSILI" in categoria:
-        if (
-            "AVVITATORE" in testo
-            or "SVITAVVITA" in testo
-            or "IMPULSI" in testo
-            or "SOLO CORPO" in testo
-            or "BATTERIA" in testo
-            or "18V" in testo
-            or "20V" in testo
-            or "12V" in testo
-            or "V20" in testo
-            or "CORDLESS" in testo
-            or "RICARICA" in testo
-            or "RICARICABILE" in testo
-            or "LITIO" in testo
-            or "LI-ION" in testo
-            or re.search(r"^(BDC|BCD|BDCD|BDCH|BCRT|BCS|BCN|SFMC|FMC)", codice)
-        ):
-            return "Utensili a batteria"
-
-        if (
-            "GIFTSET" in testo
-            or "KIT ACCESSORI" in testo
-            or "SET ACCESSORI" in testo
-            or "ACCESSORI" in testo
-            or re.search(r"^A", codice)
-        ):
-            return "Accessori"
-
-        return "Utensili a filo"
-
-    # Categorie future semplici
-    if "VERNIC" in categoria:
-        return "Vernici"
-    if "IDRAUL" in categoria:
-        return "Idraulica"
-    if "ELETTRIC" in categoria:
-        return "Elettrico"
-    if "ANTINFORTUNISTICA" in categoria or "SICUREZZA" in categoria:
-        return "Antinfortunistica"
-    if "FISSAGGIO" in categoria:
-        return "Fissaggio"
-
-    return "Altro"
-
 @api_router.post("/products/bulk")
 async def bulk_import(products: List[ProductCreate]):
     inserted = 0
     for p in products:
-        data = p.dict()
-        data["categoria_standard"] = calcola_categoria_standard_import(data)
-        prod = Product(**data)
+        prod = Product(**p.dict())
         # upsert per barcode se presente, altrimenti per descrizione
         key = {"barcode": prod.barcode} if prod.barcode else {"descrizione": prod.descrizione}
         existing = await db.products.find_one(key, {"_id": 0})
@@ -467,7 +279,7 @@ async def stats():
         c = d.get("categoria") or "Senza categoria"
         cat_counts[c] = cat_counts.get(c, 0) + 1
     # sales
-    sales_docs = await db.sales.find({}, {"_id": 0}).to_list(10000)
+    sales_docs = await db.sales.find({}, {"_id": 0}).to_list(2000)
     totale_vendite = sum(float(s.get("totale", 0)) for s in sales_docs)
     return {
         "total_products": total_products,

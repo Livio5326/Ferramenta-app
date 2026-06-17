@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, FlatList, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Modal, FlatList, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -45,6 +45,115 @@ function testoProdottoFiltro(p: any) {
     .join(' ')
     .toLowerCase();
 }
+
+
+const MARCHE_STANDARD = [
+  'STANLEY',
+  'BLACK+DECKER',
+  'DEWALT',
+  'BOSCH',
+  'MAKITA',
+  'MILWAUKEE',
+  'METABO',
+  'HIKOKI',
+  'RYOBI',
+  'EINHELL',
+  'DREMEL',
+  'FESTOOL',
+  'FEIN',
+  'AEG',
+  'SKIL',
+  'PARKSIDE',
+  'WERA',
+  'KNIPEX',
+  'USAG',
+  'BETA',
+  'FACOM',
+  'IRWIN',
+  'BAHCO',
+  'GEDORE',
+  'WIHA',
+  'HAZET',
+  'RUBI',
+  'VALEX',
+  'FERVI',
+  'KRINO',
+  'MAURER',
+  'MUNDIAL',
+  'NORTON',
+  'TYROLIT',
+  'SAIT',
+  'RHODIUS',
+  'ABRACUT',
+  'FISCHER',
+  'SPIT',
+  'HILTI',
+  'WURTH',
+  'RAWLPLUG',
+  'PATTEX',
+  'BOSTIK',
+  'SARATOGA',
+  'MAPEI',
+  'SIKA',
+  'LOCTITE',
+  'AREXONS',
+  'SVITOL',
+  'WD-40',
+  'TANGIT',
+  'MAXMEYER',
+  'BOERO',
+  'DUCO',
+  'TIXE',
+  'SAYERLACK',
+  'V33',
+  'OSRAM',
+  'VIMAR',
+  'BTICINO',
+  'LEGRAND',
+  'GEWISS',
+  'AVE',
+  'PHILIPS',
+  'BEGHELLI',
+  'LIFE',
+  'FANTON',
+  '3M',
+  'SINGER SAFETY',
+  'DELTA PLUS',
+  'DIADORA',
+  'U-POWER',
+  'BASE',
+  'COFRA',
+  'PORTWEST',
+  'CISA',
+  'YALE',
+  'VIRO',
+  'ISEO',
+  'MOTTURA',
+  'PREFER',
+  'ABUS',
+  'MASTER LOCK',
+  'SECUREMME',
+  'GROHE',
+  'FAR',
+  'GEBERIT',
+  'CALEFFI',
+  'FERRARI',
+  'TECE',
+  'GARDENA',
+  'CLABER',
+  'FISKARS',
+  'STIHL',
+  'HUSQVARNA',
+  'AL-KO',
+  'GIMI',
+  'VILEDA',
+  'FARAONE',
+  'SICOS',
+  'MELICONI',
+  'PAPILLON',
+  'AMBROVIT',
+  'ALTRO',
+];
 
 function categoriaStandardDaImportata(p: any): string {
   const standard = String(p.categoria_standard || '').trim();
@@ -137,7 +246,12 @@ export default function CatalogoVendita() {
 
   const [q, setQ] = useState('');
   const [categoria, setCategoria] = useState<string | null>(null);
+  const [marcaStandard, setMarcaStandard] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [brandSearch, setBrandSearch] = useState('');
   const cats = CATEGORIE_STANDARD;
+  const brands = MARCHE_STANDARD;
+  const filteredBrands = brands.filter((m) => m.toLowerCase().includes(brandSearch.trim().toLowerCase()));
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -158,6 +272,7 @@ export default function CatalogoVendita() {
       const res = await api.listProductsPage({
         q: q || undefined,
         categoria: categoria || undefined,
+        marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
         vendibile: true,
         limit: 30,
@@ -202,7 +317,7 @@ export default function CatalogoVendita() {
         setLoading(false);
       }
     }
-  }, [q, categoria, soloSottoScorta, soloVendita]);
+  }, [q, categoria, marcaStandard, soloSottoScorta, soloVendita]);
 
   useFocusEffect(useCallback(() => {
     load();
@@ -227,6 +342,7 @@ export default function CatalogoVendita() {
       const res = await api.listProductsPage({
         q: q || undefined,
         categoria: categoria || undefined,
+        marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
         vendibile: true,
         limit: 30,
@@ -245,7 +361,7 @@ export default function CatalogoVendita() {
     } finally {
       setLoadingMore(false);
     }
-  }, [loading, loadingMore, refreshing, hasMore, q, categoria, soloSottoScorta, soloVendita, items.length]);
+  }, [loading, loadingMore, refreshing, hasMore, q, categoria, marcaStandard, soloSottoScorta, soloVendita, items.length]);
 
   const renderCard = ({ item }: { item: Product }) => {
     const low = item.quantita <= item.soglia_scorta;
@@ -261,7 +377,7 @@ export default function CatalogoVendita() {
   source={{
     uri: String(item.foto).startsWith('http') || String(item.foto).startsWith('data:')
       ? item.foto
-      : ((process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/uploads/' + item.foto),
+      : ((process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/uploads/cropped/' + item.foto),
   }}
   style={styles.cardImg}
   contentFit="contain"
@@ -329,6 +445,9 @@ export default function CatalogoVendita() {
         <Pressable onPress={() => router.push('/scanner')} testID="scan-btn">
           <Feather name="maximize" size={20} color={COLORS.brand} />
         </Pressable>
+        <Pressable onPress={() => setFiltersOpen(true)} style={styles.filterIconBtn} testID="filters-btn">
+          <Feather name="sliders" size={20} color={COLORS.brand} />
+        </Pressable>
       </View>
       {/* Category chips */}
       <View style={styles.chipsRow}>
@@ -351,7 +470,116 @@ export default function CatalogoVendita() {
             </Pressable>
           ))}
         </ScrollView>
-      </View>
+</View>
+
+      <Modal
+        visible={filtersOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFiltersOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.filtersPanel}>
+            <View style={styles.filtersHeader}>
+              <Text style={styles.filtersTitle}>FILTRI</Text>
+              <Pressable onPress={() => setFiltersOpen(false)}>
+                <Feather name="x" size={22} color={COLORS.text} />
+              </Pressable>
+            </View>
+
+            <Text style={styles.filterLabel}>CATEGORIA</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chips}
+            >
+              <Pressable
+                style={[styles.chip, !categoria && styles.chipActive]}
+                onPress={() => cambiaCategoria(null)}
+              >
+                <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>TUTTE</Text>
+              </Pressable>
+
+              {cats.map((c) => (
+                <Pressable
+                  key={c}
+                  style={[styles.chip, categoria === c && styles.chipActive]}
+                  onPress={() => cambiaCategoria(c)}
+                >
+                  <Text style={[styles.chipTxt, categoria === c && styles.chipTxtActive]}>
+                    {c.toUpperCase()}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            <Text style={styles.filterLabel}>MARCA</Text>
+            <View style={styles.brandSearchBox}>
+              <Feather name="search" size={15} color={COLORS.onSurfaceSecondary} />
+              <TextInput
+                value={brandSearch}
+                onChangeText={setBrandSearch}
+                placeholder="Cerca marca..."
+                placeholderTextColor={COLORS.onSurfaceSecondary}
+                style={styles.brandSearchInput}
+              />
+              {brandSearch.length > 0 && (
+                <Pressable onPress={() => setBrandSearch('')}>
+                  <Feather name="x" size={16} color={COLORS.onSurfaceSecondary} />
+                </Pressable>
+              )}
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chips}
+            >
+              <Pressable
+                style={[styles.chip, !marcaStandard && styles.chipActive]}
+                onPress={() => setMarcaStandard(null)}
+              >
+                <Text style={[styles.chipTxt, !marcaStandard && styles.chipTxtActive]}>
+                  TUTTE MARCHE
+                </Text>
+              </Pressable>
+
+              {filteredBrands.map((m) => (
+                <Pressable
+                  key={m}
+                  style={[styles.chip, marcaStandard === m && styles.chipActive]}
+                  onPress={() => setMarcaStandard(m)}
+                >
+                  <Text style={[styles.chipTxt, marcaStandard === m && styles.chipTxtActive]}>
+                    {m}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            <View style={styles.filterActions}>
+              <Pressable
+                style={styles.filterClearBtn}
+                onPress={() => {
+                  cambiaCategoria(null);
+                  setMarcaStandard(null);
+                  setBrandSearch('');
+                }}
+              >
+                <Text style={styles.filterClearTxt}>RESET</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.filterApplyBtn}
+                onPress={() => setFiltersOpen(false)}
+              >
+                <Text style={styles.filterApplyTxt}>APPLICA</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {loading && items.length === 0 ? (
         <View style={styles.center}><ActivityIndicator color={COLORS.brand} /></View>
       ) : items.length === 0 ? (
@@ -366,7 +594,7 @@ export default function CatalogoVendita() {
         </View>
       ) : (
         <FlatList
-          key={`catalogo-${categoria ?? 'tutti'}-${soloSottoScorta}-${soloVendita}-${q}`}
+          key={`catalogo-${categoria ?? 'tutti'}-${marcaStandard ?? 'tutte-marche'}-${soloSottoScorta}-${soloVendita}-${q}`}
           ref={listaRef}
           refreshing={refreshing}
           onRefresh={onRefresh}
@@ -426,17 +654,35 @@ const styles = StyleSheet.create({
   cardPlaceholder: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
   lowBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: COLORS.error, paddingHorizontal: 6, paddingVertical: 2 },
   lowBadgeText: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onError, fontWeight: '900', letterSpacing: 1 },
-  cardBody: { padding: 10, gap: 4, borderTopWidth: 2, borderColor: COLORS.borderStrong },
-  cardBrand: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceSecondary, letterSpacing: 1 },
-  cardTitle: { fontFamily: FONTS.display, fontSize: 14, fontWeight: '700', color: COLORS.onSurface, minHeight: 36 },
+  cardBody: { padding: 6, gap: 3 },
+  cardBrand: { fontFamily: FONTS.mono, fontSize: 9, color: COLORS.textMuted, letterSpacing: 1.5, marginBottom: 2 },
+  cardTitle: { fontFamily: FONTS.display, fontSize: 13, color: COLORS.text, fontWeight: '800', marginBottom: 4 },
   cardFoot: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  cardPrice: { fontFamily: FONTS.mono, fontSize: 14, fontWeight: '900', color: COLORS.brand },
-  cardQty: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceSecondary },
+  cardPrice: { fontFamily: FONTS.mono, fontSize: 13, textAlign: 'left', marginLeft: 6, fontWeight: '900', color: COLORS.brand },
+  qtyBox: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'flex-end', gap: 4 },
+  qtyNumberBadge: { alignItems: 'center', justifyContent: 'center' },
+  qtyLabelSmall: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.textMuted, fontWeight: '700' },
+  qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLORS.text, fontWeight: '900', transform: [{ scale: 1.12 }] },
+  cardQty: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.text, fontWeight: '700' },
+  cardQtyNumber: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.text, fontWeight: '700' },
   addBtn: { marginTop: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: COLORS.brand, paddingVertical: 6 },
   addBtnTxt: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onBrandPrimary, fontWeight: '900', letterSpacing: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
   emptyText: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onSurfaceSecondary, letterSpacing: 1.5 },
   emptyBtn: { borderWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.brand, paddingHorizontal: 18, paddingVertical: 12 },
   emptyBtnTxt: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onBrandPrimary, fontWeight: '900', letterSpacing: 1 },
+  filterIconBtn: { marginLeft: 10 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-start', paddingTop: 95, paddingHorizontal: 12 },
+  filtersPanel: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.brand, borderRadius: 14, padding: 12, gap: 8 },
+  filtersHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  filtersTitle: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.text, fontWeight: '900', letterSpacing: 1.5 },
+  filterLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.textMuted, marginTop: 6, marginBottom: 2, letterSpacing: 1.5 },
+  filterActions: { flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginTop: 10 },
+  filterClearBtn: { flex: 1, borderWidth: 1, borderColor: COLORS.brand, paddingVertical: 10, alignItems: 'center' },
+  filterApplyBtn: { flex: 1, backgroundColor: COLORS.brand, paddingVertical: 10, alignItems: 'center' },
+  filterClearTxt: { fontFamily: FONTS.mono, color: COLORS.brand, fontWeight: '800' },
+  filterApplyTxt: { fontFamily: FONTS.mono, color: COLORS.surface, fontWeight: '800' },
+  brandSearchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surfaceSecondary, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 6 },
+  brandSearchInput: { flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: COLORS.text, padding: 0 },
 });
 
