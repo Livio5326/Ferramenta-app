@@ -45,41 +45,44 @@ export default function Dashboard() {
         Alert.alert('Dati demo caricati', `${r.count} prodotti aggiunti`);
         load();
       } else {
-        Alert.alert('Archivio non vuoto', `Ci sono già ${r.existing} prodotti`);
+        Alert.alert('Archivio non vuoto', `Ci sono già ${(r as any).existing ?? 0} prodotti`);
       }
     } catch (e: any) {
       Alert.alert('Errore', String(e?.message || e));
     }
   };
 
-  return (
-    <SafeAreaView style={styles.safe} edges={['top']} testID="dashboard-screen">
-      <ScreenHeader
-  title={`FERRAMENTA\nLOPERFIDO`}
-    
-  subtitle={`Via F. Jaia, 50 - Conversano (BA)\nTel. 080 5566904`}
-/>
+return (
+  <SafeAreaView style={styles.safe} edges={['top']} testID="dashboard-screen">
 
-<View style={styles.modeToggleCenter}>
-  <ModeToggle />
+    <ScrollView
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={COLORS.brand}
+        />
+      }
+    >
+
+{/* Wood banner */}
+<View style={styles.bannerWrap}>
+  <Image source={WOOD_BG} style={styles.banner} contentFit="cover" />
+  <View style={styles.bannerOverlay} />
+
+  <View style={styles.bannerInner}>
+    <Image
+      source={require('../../assets/logo.png')}
+      style={styles.bannerLogo}
+      contentFit="contain"
+    />
+
+    <View style={styles.bannerToggle}>
+      <ModeToggle />
+    </View>
+  </View>
 </View>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.brand} />}
-      >
-        {/* Wood banner */}
-        <View style={styles.bannerWrap}>
-          <Image source={WOOD_BG} style={styles.banner} contentFit="cover" />
-          <View style={styles.bannerOverlay} />
-          <View style={styles.bannerInner}>
-            <Text style={styles.bannerLabel}>{"// BENVENUTO"}</Text>
-            <Text style={styles.bannerTitle}>{isCliente ? 'CATALOGO' : 'COMMAND CENTER'}</Text>
-            <Text style={styles.bannerSub}>
-              {isCliente ? 'Sfoglia i prodotti disponibili' : 'Magazzino, vendita e statistiche in un colpo d\'occhio'}
-            </Text>
-          </View>
-        </View>
-
         {/* Bento stats */}
         {!isCliente && (
           <View style={styles.bento}>
@@ -127,7 +130,50 @@ export default function Dashboard() {
             </>
           )}
         </View>
+{isCliente && (
+  <View style={styles.clientHome}>
+    <Text style={styles.clientSectionTitle}>REPARTI PRINCIPALI</Text>
 
+    <View style={styles.clientGrid}>
+      {[
+        'PROMO',
+        'I PIU RICHIESTI',
+        'VERNICI',
+        'GIARDINO',
+        'UTENSILI',
+        'IDRAULICA',
+      ].map((item) => (
+        <Pressable
+          key={item}
+          style={styles.clientTile}
+          onPress={() => router.push('/catalogo')}
+        >
+          <Text style={styles.clientTileText}>{item}</Text>
+        </Pressable>
+      ))}
+    </View>
+
+    <Text style={styles.clientSectionTitle}>SERVIZI</Text>
+
+    <View style={styles.clientGrid}>
+      <Pressable
+        style={[styles.clientTile, styles.clientTileWide]}
+        onPress={() => router.push('/preventivo')}
+      >
+        <Text style={styles.clientTileText}>RICHIEDI PREVENTIVO</Text>
+        <Text style={styles.clientTileSub}>Scegli i prodotti dal catalogo</Text>
+      </Pressable>
+
+      <Pressable
+        style={[styles.clientTile, styles.clientTileWide]}
+        onPress={() => router.push('/catalogo')}
+      >
+        <Text style={styles.clientTileText}>CONTROLLA DISPONIBILITÀ</Text>
+        <Text style={styles.clientTileSub}>Cerca articolo o barcode</Text>
+      </Pressable>
+    </View>
+  </View>
+)}
         {/* Low stock list */}
         {!isCliente && stats?.sotto_scorta?.length > 0 && (
           <View style={styles.lowStockBlock}>
@@ -164,13 +210,59 @@ const styles = StyleSheet.create({
 },
   safe: { flex: 1, backgroundColor: COLORS.surface },
   content: { paddingBottom: 32 },
-  bannerWrap: { height: 140, borderBottomWidth: 2, borderColor: COLORS.borderStrong, position: 'relative' },
-  banner: { width: '100%', height: '100%' },
-  bannerOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(44,34,27,0.55)' },
-  bannerInner: { position: 'absolute', left: 16, right: 16, bottom: 14 },
-  bannerLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.brandTertiary, letterSpacing: 2 },
-  bannerTitle: { fontFamily: FONTS.display, fontSize: 28, fontWeight: '900', color: COLORS.onSurfaceInverse, letterSpacing: -0.5, marginTop: 2 },
-  bannerSub: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.surface, marginTop: 4 },
+ bannerWrap: {
+  height: 200,
+  borderBottomWidth: 2,
+  borderColor: COLORS.borderStrong,
+  position: 'relative',
+  overflow: 'hidden',
+},
+
+banner: {
+  width: '100%',
+  height: '100%',
+},
+
+bannerOverlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: 'rgba(44,34,27,0.45)',
+},
+
+bannerInner: {
+  position: 'absolute',
+  left: 16,
+  right: 16,
+  top: 0,
+  bottom: 0,
+  justifyContent: 'center',
+  alignItems: 'center',
+  paddingVertical: 18,
+},
+
+bannerLogo: {
+  width: '112%',
+  height: 180,
+  marginBottom: 12,
+  transform: [{ translateY: -5}],
+},
+
+bannerAddress: {
+  fontFamily: FONTS.mono,
+  fontSize: 16,
+  lineHeight: 22,
+  color: COLORS.surface,
+  textAlign: 'center',
+  marginBottom: 14,
+},
+
+bannerToggle: {
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  bottom: 18,
+  alignItems: 'center',
+  zIndex: 50,
+},
   bento: { flexDirection: 'row', borderBottomWidth: 2, borderColor: COLORS.borderStrong },
   bentoCard: { flex: 1, padding: 16, backgroundColor: COLORS.surfaceSecondary, borderRightWidth: 2, borderColor: COLORS.borderStrong },
   bentoCardLg: { minHeight: 110 },
@@ -204,4 +296,56 @@ const styles = StyleSheet.create({
   lowMeta: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceSecondary, marginTop: 2 },
   qtyBadge: { backgroundColor: COLORS.error, paddingHorizontal: 10, paddingVertical: 6 },
   qtyBadgeText: { fontFamily: FONTS.mono, fontSize: 14, fontWeight: '900', color: COLORS.onError },
+  clientHome: {
+  paddingHorizontal: 14,
+  paddingTop: 18,
+  paddingBottom: 28,
+  backgroundColor: COLORS.surface,
+},
+
+clientSectionTitle: {
+  fontFamily: FONTS.mono,
+  fontSize: 13,
+  letterSpacing: 3,
+  color: COLORS.onSurfaceSecondary,
+  marginBottom: 12,
+  marginTop: 8,
+},
+
+clientGrid: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 10,
+  marginBottom: 18,
+},
+
+clientTile: {
+  width: '48%',
+  minHeight: 72,
+  borderWidth: 2,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surfaceSecondary,
+  justifyContent: 'center',
+  paddingHorizontal: 14,
+},
+
+clientTileWide: {
+  width: '100%',
+  minHeight: 82,
+},
+
+clientTileText: {
+  fontFamily: FONTS.mono,
+  fontSize: 15,
+  letterSpacing: 2,
+  color: COLORS.onSurface,
+  fontWeight: '800',
+},
+
+clientTileSub: {
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  color: COLORS.onSurfaceSecondary,
+  marginTop: 6,
+},
 });
