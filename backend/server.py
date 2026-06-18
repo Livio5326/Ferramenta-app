@@ -45,6 +45,101 @@ class Product(BaseModel):
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
+
+def normalizza_marca_standard(raw: str | None) -> str:
+    value = (raw or "").strip()
+    key = value.upper().strip()
+
+    import re
+    normalized = re.sub(r"[^A-Z0-9]+", " ", key).strip()
+
+    BRAND_MAPPING = {
+        "STANLEY": "STANLEY",
+        "STANLEY FATMAX": "STANLEY",
+        "FATMAX": "STANLEY",
+
+        "BLACK": "BLACK+DECKER",
+        "BLACK DECKER": "BLACK+DECKER",
+        "BLACK AND DECKER": "BLACK+DECKER",
+        "BLACK+DECKER": "BLACK+DECKER",
+        "BLACK & DECKER": "BLACK+DECKER",
+        "BLACK&DECKER": "BLACK+DECKER",
+        "BLACK + DECKER": "BLACK+DECKER",
+        "B+D": "BLACK+DECKER",
+        "BD": "BLACK+DECKER",
+        "STANLEY BLACK & DECKER": "BLACK+DECKER",
+
+        "BOSCH": "BOSCH",
+        "BOSCH PROFESSIONAL": "BOSCH",
+        "MAKITA": "MAKITA",
+        "MILWAUKEE": "MILWAUKEE",
+        "DEWALT": "DEWALT",
+        "METABO": "METABO",
+        "HIKOKI": "HIKOKI",
+        "HITACHI": "HIKOKI",
+        "RYOBI": "RYOBI",
+        "EINHELL": "EINHELL",
+        "DREMEL": "DREMEL",
+
+        "WERA": "WERA",
+        "KNIPEX": "KNIPEX",
+        "USAG": "USAG",
+        "BETA": "BETA",
+        "FACOM": "FACOM",
+        "MAURER": "MAURER",
+        "PAPILLON": "PAPILLON",
+        "AMBROVIT": "AMBROVIT",
+
+        "FISCHER": "FISCHER",
+        "PATTEX": "PATTEX",
+        "BOSTIK": "BOSTIK",
+        "SARATOGA": "SARATOGA",
+        "MAPEI": "MAPEI",
+        "SIKA": "SIKA",
+        "LOCTITE": "LOCTITE",
+
+        "OSRAM": "OSRAM",
+        "VIMAR": "VIMAR",
+        "BTICINO": "BTICINO",
+        "LEGRAND": "LEGRAND",
+        "3M": "3M",
+        "SINGER": "SINGER SAFETY",
+        "SINGER SAFETY": "SINGER SAFETY",
+    }
+
+    if key in BRAND_MAPPING:
+        return BRAND_MAPPING[key]
+
+    if normalized in BRAND_MAPPING:
+        return BRAND_MAPPING[normalized]
+
+    if "BLACK" in normalized and "DECKER" in normalized:
+        return "BLACK+DECKER"
+
+    return key if key else "ALTRO"
+
+
+def applica_marca_standard_al_prodotto(data: dict) -> dict:
+    raw_brand = (
+        data.get("marca")
+        or data.get("brand")
+        or data.get("marca_standard")
+        or ""
+    )
+
+    marca_standard = normalizza_marca_standard(raw_brand)
+
+    # Marca e marca_standard vengono uniformate.
+    # Il fornitore resta separato e NON viene modificato.
+    data["marca"] = marca_standard
+    data["marca_standard"] = marca_standard
+
+    # Non usiamo più marca_originale: nell'app deve uscire sempre la marca standard.
+    data.pop("marca_originale", None)
+
+    return data
+
+
 class ProductCreate(BaseModel):
     barcode: str = ""
     codice_prodotto: str = ""
@@ -146,6 +241,29 @@ async def get_by_barcode(barcode: str):
     return Product(**doc)
 
 
+
+@api_router.get("/brands/standard")
+async def get_standard_brands():
+    brands = await db.products.distinct("marca_standard")
+    cleaned = []
+    has_altro = False
+
+    for b in brands:
+        if not b:
+            continue
+        if b == "ALTRO":
+            has_altro = True
+            continue
+        cleaned.append(b)
+
+    cleaned = sorted(cleaned)
+
+    if has_altro:
+        cleaned.append("ALTRO")
+
+    return {"items": cleaned}
+
+
 @api_router.get("/products/page")
 async def list_products_page(
     q: Optional[str] = None,
@@ -225,7 +343,8 @@ async def get_product(pid: str):
 @api_router.post("/products", response_model=Product)
 async def create_product(input: ProductCreate):
     prod = Product(**input.dict())
-    await db.products.insert_one(prod.dict())
+    data = applica_marca_standard_al_prodotto(prod.dict())
+    await db.products.insert_one(data)
     return prod
 
 
@@ -395,8 +514,8 @@ async def bulk_import(products: List[ProductCreate]):
                 {"$set": {**prod.dict(), "id": existing["id"]}},
             )
         else:
-            await db.products.insert_one(prod.dict())
-        inserted += 1
+            data = applica_marca_standard_al_prodotto(prod.dict())
+    await db.products.insert_one(data)
     return {"inserted": inserted}
 
 
@@ -425,6 +544,7 @@ async def seed_demo():
         {"barcode": "8001234500165", "descrizione": "Silicone trasparente 280ml", "marca": "Mapei", "categoria": "Chimica edile", "prezzo_acquisto": 3.0, "prezzo_vendita": 7.9, "quantita": 22, "fornitore": "Mapei", "foto": "", "note": "", "soglia_scorta": 5},
     ]
     docs = [Product(**d).dict() for d in demo]
+    docs = [applica_marca_standard_al_prodotto(doc) for doc in docs]
     await db.products.insert_many(docs)
     return {"seeded": True, "count": len(docs)}
 

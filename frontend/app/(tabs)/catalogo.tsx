@@ -249,9 +249,27 @@ export default function Catalogo() {
   const [marcaStandard, setMarcaStandard] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [brandSearch, setBrandSearch] = useState('');
+  const [brandsReali, setBrandsReali] = useState<string[]>([]);
   const cats = CATEGORIE_STANDARD;
-  const brands = MARCHE_STANDARD;
+  const brands = brandsReali.length > 0 ? brandsReali : MARCHE_STANDARD;
   const filteredBrands = brands.filter((m) => m.toLowerCase().includes(brandSearch.trim().toLowerCase()));
+
+  useEffect(() => {
+    let alive = true;
+
+    api.listStandardBrands()
+      .then((res) => {
+        if (!alive) return;
+        setBrandsReali(res.items || []);
+      })
+      .catch((err) => {
+        console.warn('Errore caricamento marche standard', err);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, []);
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);

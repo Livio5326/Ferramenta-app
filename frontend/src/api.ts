@@ -24,6 +24,7 @@ export const api = {
     const s = qs.toString();
     return req<Product[]>('/products' + (s ? '?' + s : ''));
   },
+  listStandardBrands: () => req<{ items: string[] }>('/brands/standard'),
   listProductsPage: (params: { q?: string; categoria?: string; marca?: string; sotto_scorta?: boolean; vendibile?: boolean;
   marca_standard?: string; limit?: number; skip?: number } = {}) => {
     const qs = new URLSearchParams();
