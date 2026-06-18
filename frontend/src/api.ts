@@ -15,7 +15,7 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  listProducts: (params: { q?: string; categoria?: string; marca?: string; sotto_scorta?: boolean } = {}) => {
+  listProducts: (params: { q?: string; categoria?: string; marca_standard?: string; sotto_scorta?: boolean } = {}) => {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
     if (params.categoria) qs.set('categoria', params.categoria);
@@ -25,8 +25,8 @@ export const api = {
     return req<Product[]>('/products' + (s ? '?' + s : ''));
   },
   listStandardBrands: () => req<{ items: string[] }>('/brands/standard'),
-  listProductsPage: (params: { q?: string; categoria?: string; marca?: string; sotto_scorta?: boolean; vendibile?: boolean;
-  marca_standard?: string; limit?: number; skip?: number } = {}) => {
+  listProductsPage: (params: { q?: string; categoria?: string; marca_standard?: string; sotto_scorta?: boolean; vendibile?: boolean;
+   limit?: number; skip?: number } = {}) => {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
     if (params.categoria) qs.set('categoria', params.categoria);
@@ -49,6 +49,59 @@ export const api = {
   bulkImport: (items: Partial<Product>[]) =>
     req<{ inserted: number }>('/products/bulk', { method: 'POST', body: JSON.stringify(items) }),
   seed: () => req<{ seeded: boolean; count?: number }>('/seed', { method: 'POST' }),
+  previewPromoImport: async (file: { uri: string; name?: string; mimeType?: string }) => {
+    const form = new FormData();
+    form.append('file', {
+      uri: file.uri,
+      name: file.name || 'promo.csv',
+      type: file.mimeType || 'text/csv',
+    } as any);
+
+    const res = await fetch(BASE + '/products/import-promo-prices/preview', {
+      method: 'POST',
+      body: form,
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(`${res.status}: ${txt}`);
+    }
+
+    return res.json();
+  },
+
+  confirmPromoImport: async (
+    file: { uri: string; name?: string; mimeType?: string },
+    promo_nome: string,
+    promo_inizio: string,
+    promo_fine: string
+  ) => {
+    const form = new FormData();
+    form.append('file', {
+      uri: file.uri,
+      name: file.name || 'promo.csv',
+      type: file.mimeType || 'text/csv',
+    } as any);
+    form.append('promo_nome', promo_nome);
+    form.append('promo_inizio', promo_inizio);
+    form.append('promo_fine', promo_fine);
+
+    const res = await fetch(BASE + '/products/import-promo-prices/confirm', {
+      method: 'POST',
+      body: form,
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(`${res.status}: ${txt}`);
+    }
+
+    return res.json();
+  },
+
+  deactivatePromoPrices: () =>
+    req<{ ok: boolean; disattivati: number }>('/products/promo/deactivate', { method: 'POST' }),
+
   meta: () => req<{ categorie: string[]; marche: string[]; fornitori: string[] }>('/meta'),
   statistiche: () =>
     req<{
