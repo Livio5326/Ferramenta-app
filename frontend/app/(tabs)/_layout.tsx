@@ -82,6 +82,7 @@ export default function TabsLayout() {
         name="fornitori"
         options={{
           title: 'Fornitori',
+          href: isCliente ? null : undefined,
           tabBarIcon: ({ color, size }) => <Feather name="truck" size={size} color={color} />,
         }}
       />
