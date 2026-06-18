@@ -23,10 +23,6 @@ app = FastAPI()
 UPLOAD_DIR = ROOT_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads") 
-from fastapi import UploadFile, File, Form
-import csv
-import io
-
 api_router = APIRouter(prefix="/api")
 
 
@@ -40,12 +36,6 @@ class Product(BaseModel):
     categoria: str = ""
     prezzo_acquisto: float = 0.0
     prezzo_vendita: float = 0.0
-    prezzo_promo: Optional[float] = None
-    promo_attiva: bool = False
-    promo_nome: str = ""
-    promo_inizio: str = ""
-    promo_fine: str = ""
-    ultimo_aggiornamento_promo: str = ""
     quantita: int = 0
     fornitore: str = ""
     foto: str = ""  # url o data:image base64
@@ -158,12 +148,6 @@ class ProductCreate(BaseModel):
     categoria: str = ""
     prezzo_acquisto: float = 0.0
     prezzo_vendita: float = 0.0
-    prezzo_promo: Optional[float] = None
-    promo_attiva: bool = False
-    promo_nome: str = ""
-    promo_inizio: str = ""
-    promo_fine: str = ""
-    ultimo_aggiornamento_promo: str = ""
     quantita: int = 0
     fornitore: str = ""
     foto: str = ""
@@ -180,12 +164,6 @@ class ProductUpdate(BaseModel):
     categoria_standard: Optional[str] = None
     prezzo_acquisto: Optional[float] = None
     prezzo_vendita: Optional[float] = None
-    prezzo_promo: Optional[float] = None
-    promo_attiva: Optional[bool] = None
-    promo_nome: Optional[str] = None
-    promo_inizio: Optional[str] = None
-    promo_fine: Optional[str] = None
-    ultimo_aggiornamento_promo: Optional[str] = None
     quantita: Optional[int] = None
     fornitore: Optional[str] = None
     foto: Optional[str] = None
@@ -350,281 +328,6 @@ async def list_products_page(
         "limit": limit,
         "skip": skip,
         "has_more": skip + len(items) < total,
-    }
-
-
-
-
-
-# -------- Import prezzi promozionali --------
-
-def _normalizza_nome_colonna(value):
-    return str(value or "").strip().lower().replace(" ", "_").replace("-", "_")
-
-
-def _valore_da_riga(row, possibili_nomi):
-    normalizzata = {
-        _normalizza_nome_colonna(k): v
-        for k, v in row.items()
-    }
-    for nome in possibili_nomi:
-        key = _normalizza_nome_colonna(nome)
-        if key in normalizzata:
-            return normalizzata[key]
-    return None
-
-
-def _pulisci_testo(value):
-    if value is None:
-        return ""
-    return str(value).strip()
-
-
-def _parse_prezzo(value):
-    if value is None:
-        return None
-
-    if isinstance(value, (int, float)):
-        prezzo = float(value)
-        return prezzo if prezzo > 0 else None
-
-    s = str(value).strip()
-    if not s:
-        return None
-
-    s = s.replace("€", "").replace(" ", "")
-
-    # Formato italiano: 1.234,56
-    if "," in s and "." in s:
-        s = s.replace(".", "").replace(",", ".")
-    else:
-        s = s.replace(",", ".")
-
-    pulito = ""
-    for ch in s:
-        if ch.isdigit() or ch in [".", "-"]:
-            pulito += ch
-
-    try:
-        prezzo = float(pulito)
-        return prezzo if prezzo > 0 else None
-    except Exception:
-        return None
-
-
-def _leggi_file_promo_sync(filename, content):
-    nome = (filename or "").lower()
-
-    if nome.endswith(".csv"):
-        try:
-            testo = content.decode("utf-8-sig")
-        except Exception:
-            testo = content.decode("latin-1")
-
-        sample = testo[:2048]
-        try:
-            dialect = csv.Sniffer().sniff(sample, delimiters=";,")
-            delimiter = dialect.delimiter
-        except Exception:
-            delimiter = ";"
-
-        reader = csv.DictReader(io.StringIO(testo), delimiter=delimiter)
-        return [dict(r) for r in reader]
-
-    if nome.endswith(".xlsx"):
-        try:
-            from openpyxl import load_workbook
-        except Exception:
-            raise HTTPException(
-                status_code=400,
-                detail="Per leggere file Excel serve openpyxl installato nel backend"
-            )
-
-        wb = load_workbook(io.BytesIO(content), data_only=True)
-        ws = wb.active
-
-        rows = list(ws.iter_rows(values_only=True))
-        if not rows:
-            return []
-
-        headers = [_pulisci_testo(h) for h in rows[0]]
-        result = []
-
-        for values in rows[1:]:
-            row = {}
-            for i, header in enumerate(headers):
-                if header:
-                    row[header] = values[i] if i < len(values) else None
-            result.append(row)
-
-        return result
-
-    raise HTTPException(
-        status_code=400,
-        detail="Formato file non supportato. Usa CSV o XLSX"
-    )
-
-
-async def _crea_anteprima_promo(rows):
-    risultati = []
-    letti = 0
-    trovati = 0
-    aggiornabili = 0
-    non_trovati = 0
-    prezzo_non_valido = 0
-
-    for index, row in enumerate(rows, start=2):
-        letti += 1
-
-        codice = _pulisci_testo(_valore_da_riga(row, [
-            "codice_prodotto",
-            "codice prodotto",
-            "codice",
-            "codice_articolo",
-            "codice articolo",
-            "sku"
-        ]))
-
-        barcode = _pulisci_testo(_valore_da_riga(row, [
-            "barcode",
-            "ean",
-            "ean13",
-            "codice_barre",
-            "codice barre"
-        ]))
-
-        descrizione_file = _pulisci_testo(_valore_da_riga(row, [
-            "descrizione",
-            "description",
-            "nome",
-            "prodotto"
-        ]))
-
-        prezzo = _parse_prezzo(_valore_da_riga(row, [
-            "prezzo_promo",
-            "prezzo promo",
-            "prezzo_promozionale",
-            "prezzo promozionale",
-            "promo",
-            "prezzo",
-            "prezzo_netto",
-            "prezzo netto"
-        ]))
-
-        prodotto = None
-        match_usato = ""
-
-        if codice:
-            prodotto = await db.products.find_one({"codice_prodotto": codice}, {"_id": 0})
-            if prodotto:
-                match_usato = "codice_prodotto"
-
-        if not prodotto and barcode:
-            prodotto = await db.products.find_one({"barcode": barcode}, {"_id": 0})
-            if prodotto:
-                match_usato = "barcode"
-
-        stato = "aggiornabile"
-
-        if prezzo is None:
-            prezzo_non_valido += 1
-            stato = "prezzo_non_valido"
-        elif not prodotto:
-            non_trovati += 1
-            stato = "non_trovato"
-        else:
-            trovati += 1
-            aggiornabili += 1
-
-        risultati.append({
-            "riga": index,
-            "codice_prodotto": codice,
-            "barcode": barcode,
-            "descrizione_file": descrizione_file,
-            "prezzo_promo": prezzo,
-            "stato": stato,
-            "match_usato": match_usato,
-            "product_id": prodotto.get("id") if prodotto else None,
-            "descrizione_db": prodotto.get("descrizione") if prodotto else "",
-            "prezzo_vendita_attuale": prodotto.get("prezzo_vendita") if prodotto else None
-        })
-
-    return {
-        "prodotti_letti": letti,
-        "prodotti_trovati": trovati,
-        "prodotti_aggiornabili": aggiornabili,
-        "prodotti_non_trovati": non_trovati,
-        "prezzo_mancante_o_non_valido": prezzo_non_valido,
-        "righe": risultati
-    }
-
-
-@api_router.post("/products/import-promo-prices/preview")
-async def preview_import_promo_prices(file: UploadFile = File(...)):
-    content = await file.read()
-    rows = _leggi_file_promo_sync(file.filename, content)
-    return await _crea_anteprima_promo(rows)
-
-
-@api_router.post("/products/import-promo-prices/confirm")
-async def confirm_import_promo_prices(
-    file: UploadFile = File(...),
-    promo_nome: str = Form(...),
-    promo_inizio: str = Form(""),
-    promo_fine: str = Form("")
-):
-    content = await file.read()
-    rows = _leggi_file_promo_sync(file.filename, content)
-    anteprima = await _crea_anteprima_promo(rows)
-
-    aggiornati = 0
-    now = datetime.now(timezone.utc).isoformat()
-
-    for r in anteprima["righe"]:
-        if r["stato"] != "aggiornabile":
-            continue
-
-        product_id = r.get("product_id")
-        prezzo_promo = r.get("prezzo_promo")
-
-        if not product_id or prezzo_promo is None:
-            continue
-
-        await db.products.update_one(
-            {"id": product_id},
-            {"$set": {
-                "prezzo_promo": prezzo_promo,
-                "promo_attiva": True,
-                "promo_nome": promo_nome,
-                "promo_inizio": promo_inizio,
-                "promo_fine": promo_fine,
-                "ultimo_aggiornamento_promo": now,
-                "updated_at": now
-            }}
-        )
-        aggiornati += 1
-
-    return {
-        "ok": True,
-        "aggiornati": aggiornati,
-        "anteprima": anteprima
-    }
-
-
-@api_router.post("/products/promo/deactivate")
-async def deactivate_promo_prices():
-    now = datetime.now(timezone.utc).isoformat()
-    res = await db.products.update_many(
-        {"promo_attiva": True},
-        {"$set": {
-            "promo_attiva": False,
-            "ultimo_aggiornamento_promo": now,
-            "updated_at": now
-        }}
-    )
-    return {
-        "ok": True,
-        "disattivati": res.modified_count
     }
 
 
