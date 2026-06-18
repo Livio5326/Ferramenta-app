@@ -9,16 +9,6 @@ import { ScreenHeader } from '@/src/components/ScreenHeader';
 import { useAppStore, cartTotal } from '@/src/store';
 import { api } from '@/src/api';
 
-function prezzoFinaleProdotto(p: any): number {
-  const prezzoPromo = Number(p?.prezzo_promo || 0);
-  if (p?.promo_attiva && prezzoPromo > 0) return prezzoPromo;
-  return Number(p?.prezzo_vendita || 0);
-}
-
-function haPromoProdotto(p: any): boolean {
-  return Boolean(p?.promo_attiva && Number(p?.prezzo_promo || 0) > 0);
-}
-
 export default function Vendita() {
   const router = useRouter();
   const cart = useAppStore((s) => s.cart);
@@ -38,7 +28,7 @@ export default function Vendita() {
         cartVendibile.map((c) => ({
           product_id: c.product.id,
           descrizione: c.product.descrizione,
-          prezzo_vendita: prezzoFinaleProdotto(c.product),
+          prezzo_vendita: c.product.prezzo_vendita,
           quantita: c.quantita,
         }))
       );
@@ -87,7 +77,7 @@ export default function Vendita() {
               <View style={styles.row} testID={`cart-row-${item.product.id}`}>
                 <View style={{ flex: 1, gap: 4 }}>
                   <Text style={styles.rowTitle} numberOfLines={2}>{item.product.descrizione}</Text>
-                  <Text style={styles.rowMeta}>{fmtEUR(prezzoFinaleProdotto(item.product))} cad.</Text>
+                  <Text style={styles.rowMeta}>{fmtEUR(item.product.prezzo_vendita)} cad.</Text>
                 </View>
                 <View style={styles.qtyCtrl}>
                   <Pressable style={styles.qtyBtn} onPress={() => updateCartQty(item.product.id, item.quantita - 1)} testID={`qty-minus-${item.product.id}`}>
@@ -98,7 +88,7 @@ export default function Vendita() {
                     <Feather name="plus" size={16} color={COLORS.onSurface} />
                   </Pressable>
                 </View>
-                <Text style={styles.rowSub}>{fmtEUR(prezzoFinaleProdotto(item.product) * item.quantita)}</Text>
+                <Text style={styles.rowSub}>{fmtEUR(item.product.prezzo_vendita * item.quantita)}</Text>
                 <Pressable style={styles.delBtn} onPress={() => removeFromCart(item.product.id)} testID={`remove-${item.product.id}`}>
                   <Feather name="x" size={16} color={COLORS.onError} />
                 </Pressable>

@@ -10,16 +10,6 @@ import { COLORS, FONTS, fmtEUR } from '@/src/theme';
 import { api } from '@/src/api';
 import { Product, useAppStore } from '@/src/store';
 
-function prezzoFinaleProdotto(p: any): number {
-  const prezzoPromo = Number(p?.prezzo_promo || 0);
-  if (p?.promo_attiva && prezzoPromo > 0) return prezzoPromo;
-  return Number(p?.prezzo_vendita || 0);
-}
-
-function haPromoProdotto(p: any): boolean {
-  return Boolean(p?.promo_attiva && Number(p?.prezzo_promo || 0) > 0);
-}
-
 const CATEGORIE_STANDARD = [
   'Utensili manuali',
   'Strumenti di misura',
@@ -245,11 +235,11 @@ function prodottoInCategoriaStandard(p: any, categoria: string) {
   return categoriaStandardDaImportata(p) === categoria;
 }
 
-export default function Catalogo() {
+export default function CatalogoVendita() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const soloSottoScorta = params.sotto_scorta === 'true';
-  const soloVendita = params.vendita === 'true';
+  const soloVendita = true;
   const mode = useAppStore((s) => s.mode);
   const addToCart = useAppStore((s) => s.addToCart);
   const isCliente = mode === 'cliente';
@@ -302,7 +292,7 @@ export default function Catalogo() {
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
-        vendibile: soloVendita || undefined,
+        vendibile: true,
         limit: 30,
         skip: 0,
       });
@@ -372,7 +362,7 @@ export default function Catalogo() {
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
-        vendibile: soloVendita || undefined,
+        vendibile: true,
         limit: 30,
         skip: items.length,
       });
@@ -429,14 +419,14 @@ export default function Catalogo() {
   </Text>
 
   {!!item.codice_prodotto && (
-    <Text style={styles.cardSub} numberOfLines={1} ellipsizeMode="tail">
+    <Text style={styles.cardNote} numberOfLines={1} ellipsizeMode="tail">
       {item.codice_prodotto}
     </Text>
   )}
 </View> 
 
            <View style={styles.cardFoot}>
-           <Text style={styles.cardPrice}>{fmtEUR(prezzoFinaleProdotto(item))}</Text>
+           <Text style={styles.cardPrice}>{fmtEUR(item.prezzo_vendita)}</Text>
             {!isCliente && Number(item.quantita ?? 0) > 0 && (
               <Text style={[styles.cardQty, low && { color: COLORS.error }]}>QTA {item.quantita}</Text>
             )}
@@ -498,7 +488,7 @@ export default function Catalogo() {
             <View style={styles.filtersHeader}>
               <Text style={styles.filtersTitle}>FILTRI</Text>
               <Pressable onPress={() => setFiltersOpen(false)}>
-                <Feather name="x" size={22} color={COLORS.onSurface} />
+                <Feather name="x" size={22} color={COLORS.text} />
               </Pressable>
             </View>
 
@@ -653,13 +643,6 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: COLORS.onSurface, paddingVertical: 4 },
   chipsRow: { height: 56, borderBottomWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surface, justifyContent: 'center' },
   chipsContent: { paddingHorizontal: 12, gap: 8, alignItems: 'center' },
-  chips: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-
   chip: { height: 36, paddingHorizontal: 14, justifyContent: 'center', borderWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surface, flexShrink: 0 },
   chipActive: { backgroundColor: COLORS.surfaceInverse, borderColor: COLORS.surfaceInverse },
   chipTxt: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurface, letterSpacing: 1, fontWeight: '700' },
@@ -677,22 +660,16 @@ const styles = StyleSheet.create({
   lowBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: COLORS.error, paddingHorizontal: 6, paddingVertical: 2 },
   lowBadgeText: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onError, fontWeight: '900', letterSpacing: 1 },
   cardBody: { padding: 6, gap: 3 },
-  cardBrand: { fontFamily: FONTS.mono, fontSize: 9, color: COLORS.onSurfaceTertiary, letterSpacing: 1.5, marginBottom: 2 },
-  cardTitle: { fontFamily: FONTS.display, fontSize: 13, color: COLORS.onSurface, fontWeight: '800', marginBottom: 4 },
+  cardBrand: { fontFamily: FONTS.mono, fontSize: 9, color: COLORS.textMuted, letterSpacing: 1.5, marginBottom: 2 },
+  cardTitle: { fontFamily: FONTS.display, fontSize: 13, color: COLORS.text, fontWeight: '800', marginBottom: 4 },
   cardFoot: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  cardSub: {
-    fontFamily: FONTS.mono,
-    fontSize: 12,
-    color: COLORS.onSurfaceTertiary,
-  },
-
   cardPrice: { fontFamily: FONTS.mono, fontSize: 13, textAlign: 'left', marginLeft: 6, fontWeight: '900', color: COLORS.brand },
   qtyBox: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'flex-end', gap: 4 },
   qtyNumberBadge: { alignItems: 'center', justifyContent: 'center' },
-  qtyLabelSmall: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceTertiary, fontWeight: '700' },
-  qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLORS.onSurface, fontWeight: '900', transform: [{ scale: 1.12 }] },
-  cardQty: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurface, fontWeight: '700' },
-  cardQtyNumber: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurface, fontWeight: '700' },
+  qtyLabelSmall: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.textMuted, fontWeight: '700' },
+  qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLORS.text, fontWeight: '900', transform: [{ scale: 1.12 }] },
+  cardQty: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.text, fontWeight: '700' },
+  cardQtyNumber: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.text, fontWeight: '700' },
   addBtn: { marginTop: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: COLORS.brand, paddingVertical: 6 },
   addBtnTxt: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onBrandPrimary, fontWeight: '900', letterSpacing: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
@@ -703,14 +680,14 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-start', paddingTop: 95, paddingHorizontal: 12 },
   filtersPanel: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.brand, borderRadius: 14, padding: 12, gap: 8 },
   filtersHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  filtersTitle: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.onSurface, fontWeight: '900', letterSpacing: 1.5 },
-  filterLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceTertiary, marginTop: 6, marginBottom: 2, letterSpacing: 1.5 },
+  filtersTitle: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.text, fontWeight: '900', letterSpacing: 1.5 },
+  filterLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.textMuted, marginTop: 6, marginBottom: 2, letterSpacing: 1.5 },
   filterActions: { flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginTop: 10 },
   filterClearBtn: { flex: 1, borderWidth: 1, borderColor: COLORS.brand, paddingVertical: 10, alignItems: 'center' },
   filterApplyBtn: { flex: 1, backgroundColor: COLORS.brand, paddingVertical: 10, alignItems: 'center' },
   filterClearTxt: { fontFamily: FONTS.mono, color: COLORS.brand, fontWeight: '800' },
   filterApplyTxt: { fontFamily: FONTS.mono, color: COLORS.surface, fontWeight: '800' },
   brandSearchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surfaceSecondary, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 6 },
-  brandSearchInput: { flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: COLORS.onSurface, padding: 0 },
+  brandSearchInput: { flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: COLORS.text, padding: 0 },
 });
 

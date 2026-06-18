@@ -11,12 +11,6 @@ export type Product = {
   categoria: string;
   prezzo_acquisto: number;
   prezzo_vendita: number;
-  prezzo_promo?: number | null;
-  promo_attiva?: boolean;
-  promo_nome?: string;
-  promo_inizio?: string;
-  promo_fine?: string;
-  ultimo_aggiornamento_promo?: string;
   quantita: number;
   fornitore: string;
   foto: string;
@@ -30,14 +24,6 @@ export type CartItem = {
   product: Product;
   quantita: number;
 };
-
-export function getPrezzoFinale(product: Product): number {
-  const prezzoPromo = Number(product.prezzo_promo || 0);
-  if (product.promo_attiva && prezzoPromo > 0) {
-    return prezzoPromo;
-  }
-  return Number(product.prezzo_vendita || 0);
-}
 
 type State = {
   mode: Mode;
@@ -90,4 +76,4 @@ export const useAppStore = create<State>((set) => ({
 }));
 
 export const cartTotal = (cart: CartItem[]) =>
-  cart.reduce((acc, c) => acc + getPrezzoFinale(c.product) * c.quantita, 0);
+  cart.reduce((acc, c) => acc + c.product.prezzo_vendita * c.quantita, 0);

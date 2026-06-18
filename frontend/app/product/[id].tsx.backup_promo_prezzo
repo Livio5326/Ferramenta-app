@@ -9,16 +9,6 @@ import { COLORS, FONTS, fmtEUR } from '@/src/theme';
 import { api } from '@/src/api';
 import { Product, useAppStore } from '@/src/store';
 
-function prezzoFinaleProdotto(p: any): number {
-  const prezzoPromo = Number(p?.prezzo_promo || 0);
-  if (p?.promo_attiva && prezzoPromo > 0) return prezzoPromo;
-  return Number(p?.prezzo_vendita || 0);
-}
-
-function haPromoProdotto(p: any): boolean {
-  return Boolean(p?.promo_attiva && Number(p?.prezzo_promo || 0) > 0);
-}
-
 export default function ProductDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -112,7 +102,7 @@ export default function ProductDetail() {
         <View style={styles.priceBlock}>
           <View style={styles.priceCell}>
             <Text style={styles.priceLabel}>PREZZO VENDITA</Text>
-            <Text style={styles.priceValue}>{fmtEUR(prezzoFinaleProdotto(p))}</Text>
+            <Text style={styles.priceValue}>{fmtEUR(p.prezzo_vendita)}</Text>
           </View>
           {!isCliente && (
             <View style={[styles.priceCell, { borderRightWidth: 0 }]}>
