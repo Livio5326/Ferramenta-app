@@ -13,20 +13,40 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: COLORS.brand,
-        tabBarInactiveTintColor: COLORS.onSurfaceSecondary,
+
+        tabBarActiveTintColor: '#D8662A',
+        tabBarInactiveTintColor: '#E8D8BD',
+
         tabBarStyle: {
-          backgroundColor: COLORS.surface,
+          backgroundColor: '#263B2B',
           borderTopWidth: 2,
-          borderTopColor: COLORS.borderStrong,
-          height: Platform.OS === 'ios' ? 84 : 64,
-          paddingTop: 6,
+          borderTopColor: '#A85E2A',
+          height: Platform.OS === 'ios' ? 88 : 70,
+          paddingTop: 3,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 9,
+          elevation: 10,
+          shadowColor: '#18261C',
+          shadowOpacity: 0.16,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: -3 },
         },
+
         tabBarLabelStyle: {
           fontFamily: FONTS.mono,
           fontSize: 10,
-          letterSpacing: 0.5,
+          letterSpacing: 0.9,
           textTransform: 'uppercase',
+          fontWeight: '800',
+        },
+
+        tabBarIconStyle: {
+          marginBottom: 0,
+        },
+
+        tabBarItemStyle: {
+          paddingVertical: 0,
+          transform: [{ translateY: 0 }],
+          transform: [{ translateY: 0 }],
         },
       }}
     >
