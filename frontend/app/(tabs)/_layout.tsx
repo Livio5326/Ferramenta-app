@@ -59,7 +59,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="stats"
+        name="fornitori"
+        options={{
+          title: 'Fornitori',
+          tabBarIcon: ({ color, size }) => <Feather name="truck" size={size} color={color} />,
+        }}
+      />
+      
+      <Tabs.Screen
+        name="statistiche"
         options={{
           title: 'Statistiche',
           tabBarIcon: ({ color, size }) => <Feather name="bar-chart-2" size={size} color={color} />,

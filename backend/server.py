@@ -567,7 +567,7 @@ async def meta():
     }
 
 
-@api_router.get("/stats")
+@api_router.get("/statistiche")
 async def stats():
     docs = await db.products.find({}, {"_id": 0}).to_list(5000)
     total_products = len(docs)

@@ -50,7 +50,7 @@ export const api = {
     req<{ inserted: number }>('/products/bulk', { method: 'POST', body: JSON.stringify(items) }),
   seed: () => req<{ seeded: boolean; count?: number }>('/seed', { method: 'POST' }),
   meta: () => req<{ categorie: string[]; marche: string[]; fornitori: string[] }>('/meta'),
-  stats: () =>
+  statistiche: () =>
     req<{
       total_products: number;
       total_pieces: number;
@@ -61,7 +61,7 @@ export const api = {
       categorie: { nome: string; count: number }[];
       vendite_totali: number;
       numero_vendite: number;
-    }>('/stats'),
+    }>('/statistiche'),
   createSale: (items: { product_id: string; descrizione: string; prezzo_vendita: number; quantita: number }[]) =>
     req<{ id: string; totale: number }>('/sales', { method: 'POST', body: JSON.stringify({ items }) }),
 };

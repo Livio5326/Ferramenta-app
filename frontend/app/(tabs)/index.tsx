@@ -23,7 +23,7 @@ export default function Dashboard() {
 
   const load = useCallback(async () => {
     try {
-      const s = await api.stats();
+      const s = await api.statistiche();
       setStats(s);
     } catch (e) {
       console.warn(e);

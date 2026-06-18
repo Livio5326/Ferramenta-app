@@ -12,7 +12,7 @@ export default function Stats() {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const s = await api.stats();
+    const s = await api.statistiche();
     setStats(s);
   }, []);
 
