@@ -303,7 +303,7 @@ export default function CatalogoVendita() {
         ? data.filter((p) => Number(p.quantita ?? 0) > 0)
         : data;
     setTimeout(() => {
-        listaRef.current?.scrollToOffset({ offset: 0, animated: false });
+        // listaRef.current?.scrollToOffset({ offset: 0, animated: false });
       }, 50);
 
       setItems( soloSottoScorta
