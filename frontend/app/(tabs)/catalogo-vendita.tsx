@@ -427,23 +427,10 @@ export default function CatalogoVendita() {
 
            <View style={styles.cardFoot}>
            <Text style={styles.cardPrice}>{fmtEUR(item.prezzo_vendita)}</Text>
-            {!isCliente && (
+            {!isCliente && Number(item.quantita ?? 0) > 0 && (
               <Text style={[styles.cardQty, low && { color: COLORS.error }]}>QTA {item.quantita}</Text>
             )}
           </View>
-          {!isCliente && (
-            <Pressable
-              style={[styles.addBtn, Number(item.quantita ?? 0) <= 0 && { opacity: 0.45 }]}
-              disabled={Number(item.quantita ?? 0) <= 0}
-              onPress={() => Number(item.quantita ?? 0) > 0 && addToCart(item, 1)}
-              testID={`add-to-cart-${item.id}`}
-            >
-              <Feather name="plus" size={14} color={COLORS.onBrandPrimary} />
-              <Text style={styles.addBtnTxt}>
-                {Number(item.quantita ?? 0) > 0 ? "VENDI" : "NON DISPONIBILE"}
-              </Text>
-            </Pressable>
-          )}
       </Pressable>
     );
   };

@@ -92,7 +92,7 @@ return (
               <Text style={styles.statFoot}>{stats?.total_pieces || 0} PEZZI · {stats?.total_products || 0} REF</Text>
             </View>
             <Pressable style={[styles.bentoCard, styles.bentoCardLg, { backgroundColor: stats?.sotto_scorta_count ? COLORS.error : COLORS.surfaceSecondary }]} onPress={()=> router.push('/catalogo?sotto_scorta=true')} testID="stat-scorta">
-              <Text style={[styles.statLabel, stats?.sotto_scorta_count && { color: COLORS.onError }]}>SOTTO SCORTA</Text>
+
               <Text style={[styles.statValue, stats?.sotto_scorta_count && { color: COLORS.onError }]}>{stats?.sotto_scorta_count || 0}</Text>
               <Text style={[styles.statFoot, stats?.sotto_scorta_count && { color: COLORS.onError }]}>DA RIORDINARE</Text>
             </Pressable>
@@ -198,28 +198,6 @@ return (
     </View>
   </View>
 )}
-        {/* Low stock list */}
-        {!isCliente && stats?.sotto_scorta?.length > 0 && (
-          <View style={styles.lowStockBlock}>
-            <Text style={styles.sectionTitle}>{"// PRODOTTI SOTTO SCORTA"}</Text>
-            {stats.sotto_scorta.slice(0, 5).map((p: any) => (
-              <Pressable
-                key={p.id}
-                style={styles.lowRow}
-                onPress={() => router.push(`/product/${p.id}`)}
-                testID={`lowstock-${p.id}`}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.lowName} numberOfLines={1}>{p.descrizione}</Text>
-                  <Text style={styles.lowMeta}>{p.marca || '—'} · {p.categoria || '—'}</Text>
-                </View>
-                <View style={styles.qtyBadge}>
-                  <Text style={styles.qtyBadgeText}>{p.quantita}</Text>
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        )}
       </ScrollView>
     </SafeAreaView>
   );
