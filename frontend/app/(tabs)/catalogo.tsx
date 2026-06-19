@@ -677,7 +677,7 @@ const styles = StyleSheet.create({
   lowBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: COLORS.error, paddingHorizontal: 6, paddingVertical: 2 },
   lowBadgeText: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onError, fontWeight: '900', letterSpacing: 1 },
   cardBody: { padding: 6, gap: 3 },
-  cardBrand: { fontFamily: FONTS.mono, fontSize: 9, color: COLORS.onSurfaceTertiary, letterSpacing: 1.5, marginBottom: 2 },
+  cardBrand: { fontFamily: FONTS.mono, fontSize: 9, color: COLORS.onSurfaceSecondary, letterSpacing: 1.5, marginBottom: 2 },
   cardTitle: { fontFamily: FONTS.display, fontSize: 13, color: COLORS.onSurface, fontWeight: '800', marginBottom: 4 },
   cardFoot: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   cardSub: {
@@ -689,8 +689,8 @@ const styles = StyleSheet.create({
   cardPrice: { fontFamily: FONTS.mono, fontSize: 13, textAlign: 'left', marginLeft: 6, fontWeight: '900', color: COLORS.brand },
   qtyBox: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'flex-end', gap: 4 },
   qtyNumberBadge: { alignItems: 'center', justifyContent: 'center' },
-  qtyLabelSmall: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceTertiary, fontWeight: '700' },
-  qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLORS.onSurface, fontWeight: '900', transform: [{ scale: 1.12 }] },
+qtyLabelSmall: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceSecondary, fontWeight: '700' },
+qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLORS.onSurface, fontWeight: '900', transform: [{ scale: 1.12 }] },
   cardQty: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurface, fontWeight: '700' },
   cardQtyNumber: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurface, fontWeight: '700' },
   addBtn: { marginTop: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: COLORS.brand, paddingVertical: 6 },
@@ -704,7 +704,7 @@ const styles = StyleSheet.create({
   filtersPanel: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.brand, borderRadius: 14, padding: 12, gap: 8 },
   filtersHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
   filtersTitle: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.onSurface, fontWeight: '900', letterSpacing: 1.5 },
-  filterLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceTertiary, marginTop: 6, marginBottom: 2, letterSpacing: 1.5 },
+filterLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceSecondary, marginTop: 6, marginBottom: 2, letterSpacing: 1.5 },
   filterActions: { flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginTop: 10 },
   filterClearBtn: { flex: 1, borderWidth: 1, borderColor: COLORS.brand, paddingVertical: 10, alignItems: 'center' },
   filterApplyBtn: { flex: 1, backgroundColor: COLORS.brand, paddingVertical: 10, alignItems: 'center' },
@@ -712,5 +712,25 @@ const styles = StyleSheet.create({
   filterApplyTxt: { fontFamily: FONTS.mono, color: COLORS.surface, fontWeight: '800' },
   brandSearchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surfaceSecondary, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 6 },
   brandSearchInput: { flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: COLORS.onSurface, padding: 0 },
+
+cardNote: {
+  fontFamily: FONTS.mono,
+  fontSize: 11,
+  lineHeight: 16,
+  color: COLORS.onSurfaceSecondary,
+  marginTop: 6,
+},
+
+text: {
+  fontFamily: FONTS.mono,
+  fontSize: 14,
+  color: COLORS.onSurface,
+},
+
+textMuted: {
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  color: COLORS.onSurfaceSecondary,
+},
 });
 

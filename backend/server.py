@@ -898,6 +898,57 @@ async def stats():
         "numero_vendite": len(sales_docs),
     }
 
+@api_router.get("/stats/best-sellers")
+async def best_sellers(limit: int = 20):
+    # Legge le vendite e calcola i prodotti più venduti.
+    # Non modifica prodotti, quantità, prezzi o immagini.
+
+    pipeline = [
+        {"$unwind": "$items"},
+        {
+            "$group": {
+                "_id": "$items.product_id",
+                "quantita_venduta": {"$sum": "$items.quantita"},
+                "totale_venduto": {
+                    "$sum": {
+                        "$multiply": ["$items.prezzo_vendita", "$items.quantita"]
+                    }
+                },
+            }
+        },
+        {"$sort": {"quantita_venduta": -1}},
+        {"$limit": limit},
+    ]
+
+    venduti = await db.sales.aggregate(pipeline).to_list(limit)
+
+    if not venduti:
+        return []
+
+    product_ids = [v["_id"] for v in venduti]
+
+    prodotti = await db.products.find(
+        {"id": {"$in": product_ids}},
+        {"_id": 0}
+    ).to_list(length=limit)
+
+    prodotti_by_id = {p.get("id"): p for p in prodotti}
+
+    risultato = []
+
+    for v in venduti:
+        product_id = v["_id"]
+        prodotto = prodotti_by_id.get(product_id)
+
+        if not prodotto:
+            continue
+
+        prodotto["quantita_venduta"] = int(v.get("quantita_venduta", 0))
+        prodotto["totale_venduto"] = round(float(v.get("totale_venduto", 0)), 2)
+
+        risultato.append(prodotto)
+
+    return risultato
 
 @api_router.post("/sales", response_model=Sale)
 async def create_sale(input: SaleCreate):

@@ -144,32 +144,38 @@ return (
     {
       titolo: 'PROMO',
       descrizione: 'Offerte e occasioni',
+      pagina: '/cliente/promo',
     },
     {
       titolo: 'I PIÙ RICHIESTI',
       descrizione: 'Articoli più cercati da voi',
+      pagina: '/cliente/piu-richiesti',
     },
     {
       titolo: 'VERNICI',
       descrizione: 'Smalti, pitture, pennelli',
+      pagina: '/cliente/vernici',
     },
     {
       titolo: 'GIARDINO',
       descrizione: 'Taglio, irrigazione, cura',
+      pagina: '/cliente/giardino',
     },
     {
       titolo: 'UTENSILI',
-      descrizione:''
+      descrizione:'',
+      pagina: '/cliente/utensili',
     },
     {
       titolo: 'IDRAULICA',
       descrizione: 'Raccordi, tubi, rubinetteria',
+      pagina: '/cliente/idraulica',
     },
   ].map((item) => (
     <Pressable
       key={item.titolo}
       style={styles.clientTile}
-      onPress={() => router.push('/catalogo' as any)}
+      onPress={() => router.push(item.pagina as any)}
     >
       <Text style={styles.clientTileText}>{item.titolo}</Text>
       <Text style={styles.clientTileSub}>{item.descrizione}</Text>
