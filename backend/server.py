@@ -317,8 +317,11 @@ async def list_products_page(
     if categoria:
         query["categoria_standard"] = categoria
 
-    if marca_standard and marca_standard != "Tutte":
-        query["marca_standard"] = marca_standard
+    if marca_standard:
+        query["$or"] = [
+        {"marca_standard": marca_standard},
+        {"marca": marca_standard},
+    ]
 
     if sotto_scorta:
         query["$expr"] = {

@@ -46,7 +46,6 @@ export default function TabsLayout() {
         tabBarItemStyle: {
           paddingVertical: 0,
           transform: [{ translateY: 0 }],
-          transform: [{ translateY: 0 }],
         },
       }}
     >
@@ -64,12 +63,34 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <Feather name="package" size={size} color={color} />,
         }}
       />
+    
       <Tabs.Screen
         name="catalogo-vendita"
         options={{
           href: null,
         }}
       />
+      <Tabs.Screen
+  name="lista-desideri-cliente"
+  options={{
+    title: 'Desideri',
+    href: isCliente ? undefined : null,
+    tabBarIcon: ({ color, size }) => (
+      <Feather name="heart" size={size} color={color} />
+    ),
+  }}
+/>
+
+<Tabs.Screen
+  name="carrello-cliente"
+  options={{
+    title: 'Carrello',
+    href: isCliente ? undefined : null,
+    tabBarIcon: ({ color, size }) => (
+      <Feather name="shopping-cart" size={size} color={color} />
+    ),
+  }}
+/>
       <Tabs.Screen
         name="vendita"
         options={{

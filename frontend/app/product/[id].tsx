@@ -8,6 +8,9 @@ import { Image } from 'expo-image';
 import { COLORS, FONTS, fmtEUR } from '@/src/theme';
 import { api } from '@/src/api';
 import { Product, useAppStore } from '@/src/store';
+import { useClienteStore } from '@/src/clienteStore';
+
+
 
 function prezzoFinaleProdotto(p: any): number {
   const prezzoPromo = Number(p?.prezzo_promo || 0);
@@ -25,11 +28,25 @@ export default function ProductDetail() {
   const mode = useAppStore((s) => s.mode);
   const addToCart = useAppStore((s) => s.addToCart);
   const isCliente = mode === 'cliente';
+  const aggiungiDesideri = useClienteStore((state) => state.aggiungiDesideri);
+const aggiungiCarrello = useClienteStore((state) => state.aggiungiCarrello);
+
 
   const [p, setP] = useState<Product | null>(null);
   const [busy, setBusy] = useState(false);
   const [saleQty, setSaleQty] = useState(1);
   const maxVendibile = Math.max(0, Number(p?.quantita ?? 0));
+  const [qtaCliente, setQtaCliente] = useState(1);
+  const aumentaQtaCliente = () => {
+  if (qtaCliente >= maxVendibile) return;
+  setQtaCliente(qtaCliente + 1);
+};
+
+const diminuisciQtaCliente = () => {
+  if (qtaCliente <= 1) return;
+  setQtaCliente(qtaCliente - 1);
+};
+
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -135,6 +152,17 @@ export default function ProductDetail() {
       </ScrollView>
 
       {!isCliente && (
+      <>
+        <View
+  style={[
+    styles.availabilityBox,
+    low ? styles.availabilityBoxError : styles.availabilityBoxSuccess,
+  ]}
+>
+  <Text style={styles.availabilityText}>
+    {low ? 'NON DISPONIBILE' : 'DISPONIBILE'}
+  </Text>
+</View>
         <View style={styles.footer}>
           <View style={styles.stockCtrl}>
             <Pressable style={styles.stockBtn} onPress={() => setSaleQty((q) => Math.max(1, q - 1))} disabled={busy || saleQty <= 1} testID="sale-qty-minus">
@@ -153,17 +181,79 @@ export default function ProductDetail() {
             <Feather name="trash-2" size={18} color={COLORS.onError} />
           </Pressable>
         </View>
+        </>
       )}
-      {isCliente && (
-        <View style={styles.footer}>
-          <Pressable style={[styles.addCartBtn, { flex: 1, backgroundColor: low ? COLORS.error : COLORS.success }]} onPress={() => router.back()} testID="back-cliente">
-            <Text style={styles.addCartTxt}>{low ? 'NON DISPONIBILE' : 'DISPONIBILE'}</Text>
+  {isCliente && (
+  <>
+    <View
+      style={[
+        styles.availabilityBox,
+        low ? styles.availabilityBoxError : styles.availabilityBoxSuccess,
+      ]}
+    >
+      <Text style={styles.availabilityText}>
+        {low ? 'NON DISPONIBILE' : 'DISPONIBILE'}
+      </Text>
+    </View>
+
+    <View style={styles.footer}>
+      <Pressable
+        style={styles.wishlistButton}
+        onPress={() => {
+          aggiungiDesideri(p, qtaCliente);
+          Alert.alert(
+            'Lista desideri',
+            `${qtaCliente} prodotto/i aggiunto/i alla lista desideri`
+          );
+        }}
+      >
+        <Text style={styles.wishlistButtonText}>
+          Aggiungi alla{'\n'}Lista desideri
+        </Text>
+      </Pressable>
+
+      <View style={styles.cartArea}>
+        <View style={styles.qtySelector}>
+          <Pressable
+            style={styles.qtyButton}
+            onPress={diminuisciQtaCliente}
+            disabled={qtaCliente <= 1 || low}
+          >
+            <Text style={styles.qtyButtonText}>-</Text>
+          </Pressable>
+
+          <Text style={styles.qtyValue}>{qtaCliente}</Text>
+
+          <Pressable
+            style={styles.qtyButton}
+            onPress={aumentaQtaCliente}
+            disabled={qtaCliente >= maxVendibile || low}
+          >
+            <Text style={styles.qtyButtonText}>+</Text>
           </Pressable>
         </View>
-      )}
+
+        <Pressable
+          style={[styles.cartButton, low && styles.cartButtonDisabled]}
+          disabled={low}
+          onPress={() => {
+            aggiungiCarrello(p, qtaCliente);
+            Alert.alert(
+              'Carrello',
+              `${qtaCliente} prodotto/i aggiunto/i al carrello`
+            );
+          }}
+        >
+          <Text style={styles.cartIcon}>🛒</Text>
+        </Pressable>
+      </View>
+    </View>
+  </>
+)} 
     </SafeAreaView>
   );
-}
+  }
+
 
 function Spec({ label, value, highlight }: { label: string; value: string; highlight?: string }) {
   return (
@@ -205,4 +295,112 @@ const styles = StyleSheet.create({
   addCartBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: COLORS.success, paddingVertical: 14, borderWidth: 2, borderColor: COLORS.surfaceInverse },
   addCartTxt: { fontFamily: FONTS.mono, fontSize: 13, fontWeight: '900', color: COLORS.onSuccess, letterSpacing: 1.5 },
   delBtn: { width: 50, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.error, marginLeft: 8 },
+  wishlistButton: {
+  borderWidth: 2,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surfaceSecondary,
+  paddingVertical: 14,
+  paddingHorizontal: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+wishlistButtonText: {
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  letterSpacing: 1,
+  color: COLORS.onSurface,
+  fontWeight: '900',
+},
+
+cartButton: {
+  borderWidth: 2,
+  borderColor: COLORS.brand,
+  backgroundColor: COLORS.brand,
+  paddingVertical: 15,
+  paddingHorizontal: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+cartButtonText: {
+  fontFamily: FONTS.mono,
+  fontSize: 13,
+  letterSpacing: 1,
+  color: COLORS.surface,
+  fontWeight: '900',
+},
+cartIcon: {
+  fontSize: 30,
+  lineHeight: 34,
+  textAlign: 'center',
+},
+cartButtonDisabled: {
+  backgroundColor: COLORS.error,
+  borderColor: COLORS.error,
+  opacity: 0.6,
+},
+availabilityBox: {
+  marginHorizontal: 14,
+  marginBottom: 8,
+  borderWidth: 2,
+  paddingVertical: 8,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+availabilityBoxSuccess: {
+  borderColor: COLORS.success,
+  backgroundColor: COLORS.success,
+},
+
+availabilityBoxError: {
+  borderColor: COLORS.error,
+  backgroundColor: COLORS.error,
+},
+
+availabilityText: {
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  letterSpacing: 2,
+  color: COLORS.surface,
+  fontWeight: '900',
+},
+cartArea: {
+  flex: 1,
+  flexDirection: 'row',
+  gap: 8,
+  minWidth: 0,
+},
+qtySelector: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  borderWidth: 2,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surfaceSecondary,
+},
+
+qtyButton: {
+  width: 34,
+  height: 54,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+qtyButtonText: {
+  fontFamily: FONTS.mono,
+  fontSize: 22,
+  color: COLORS.onSurface,
+  fontWeight: '900',
+},
+
+qtyValue: {
+  minWidth: 34,
+  textAlign: 'center',
+  fontFamily: FONTS.mono,
+  fontSize: 16,
+  color: COLORS.onSurface,
+  fontWeight: '900',
+},
+
 });
