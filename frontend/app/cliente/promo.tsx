@@ -30,7 +30,12 @@ export default function PromoScreen() {
 
           <Pressable
             style={styles.catalogBtn}
-            onPress={() => router.push('/catalogo' as any)}
+            onPress={() =>
+  router.push({
+    pathname: '/catalogo',
+    params: { categoria: 'Promo' },
+  } as any)
+}
           >
             <Text style={styles.catalogBtnText}>APRI CATALOGO</Text>
           </Pressable>

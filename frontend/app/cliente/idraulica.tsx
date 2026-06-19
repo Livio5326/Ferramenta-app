@@ -30,7 +30,12 @@ export default function IdraulicaScreen() {
 
           <Pressable
             style={styles.catalogBtn}
-            onPress={() => router.push('/catalogo' as any)}
+            onPress={() =>
+  router.push({
+    pathname: '/catalogo',
+    params: { categoria: 'Idraulica' },
+  } as any)
+}
           >
             <Text style={styles.catalogBtnText}>APRI CATALOGO</Text>
           </Pressable>

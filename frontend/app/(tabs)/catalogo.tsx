@@ -249,6 +249,10 @@ function prodottoInCategoriaStandard(p: any, categoria: string) {
 export default function Catalogo() {
   const router = useRouter();
   const params = useLocalSearchParams();
+
+const categoriaDaPagina =
+  typeof params.categoria === 'string' ? params.categoria : '';
+
   const soloSottoScorta = params.sotto_scorta === 'true';
   const soloVendita = params.vendita === 'true';
   const mode = useAppStore((s) => s.mode);
@@ -257,6 +261,12 @@ export default function Catalogo() {
 
   const [q, setQ] = useState('');
   const [categoria, setCategoria] = useState<string | null>(null);
+  useEffect(() => {
+  if (!categoriaDaPagina) return;
+
+  setCategoria(categoriaDaPagina);
+  setQ('');
+}, [categoriaDaPagina]);
   const [marcaStandard, setMarcaStandard] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [brandSearch, setBrandSearch] = useState('');
