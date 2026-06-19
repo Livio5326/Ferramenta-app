@@ -36,6 +36,7 @@ const CATEGORIE_STANDARD = [
   'Antinfortunistica',
   'Auto',
   'Casa',
+  'Chiavi',
   'Altro',
 ];
 
