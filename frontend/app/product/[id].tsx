@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -30,13 +30,16 @@ export default function ProductDetail() {
   const isCliente = mode === 'cliente';
   const aggiungiDesideri = useClienteStore((state) => state.aggiungiDesideri);
 const aggiungiCarrello = useClienteStore((state) => state.aggiungiCarrello);
-
+const richiediOrdine = useClienteStore((state) => state.richiediOrdine);
 
   const [p, setP] = useState<Product | null>(null);
   const [busy, setBusy] = useState(false);
   const [saleQty, setSaleQty] = useState(1);
   const maxVendibile = Math.max(0, Number(p?.quantita ?? 0));
+  const maxOrdinabileCliente = maxVendibile > 0 ? maxVendibile : 99;
   const [qtaCliente, setQtaCliente] = useState(1);
+  const [qtyPickerOpen, setQtyPickerOpen] = useState(false);
+  const quantitaDisponibiliCliente = Array.from({ length: 30 }, (_, index) => index + 1);
   const aumentaQtaCliente = () => {
   if (qtaCliente >= maxVendibile) return;
   setQtaCliente(qtaCliente + 1);
@@ -90,7 +93,11 @@ const diminuisciQtaCliente = () => {
   };
 
   const low = p.quantita <= p.soglia_scorta;
-
+  const fotoProdottoUrl = p?.foto
+    ? String(p.foto).startsWith('http') || String(p.foto).startsWith('data:')
+    ? String(p.foto)
+    : `${(process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '')}/uploads/${String(p.foto).replace(/^\/+/, '')}`
+  : '';
   return (
     <SafeAreaView style={styles.safe} edges={['top']} testID="product-detail">
       <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
@@ -100,12 +107,11 @@ const diminuisciQtaCliente = () => {
   source={{
     uri: String(p.foto).startsWith('http') || String(p.foto).startsWith('data:')
       ? p.foto
-      : ((process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/uploads/' + p.foto),
+      : `${(process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '')}/uploads/${p.foto}`,
   }}
   style={styles.img}
-  contentFit="cover"
-/>
-          ) : (
+  contentFit="contain"
+/>        ) : (
             <View style={[styles.img, { backgroundColor: COLORS.surfaceTertiary, alignItems: 'center', justifyContent: 'center' }]}>
               <Feather name="package" size={64} color={COLORS.brand} />
             </View>
@@ -145,7 +151,7 @@ const diminuisciQtaCliente = () => {
           <Spec label="CATEGORIA" value={p.categoria || '—'} />
           <Spec label="MARCA" value={p.marca || '—'} />
           {!isCliente && <Spec label="FORNITORE" value={p.fornitore || '—'} />}
-          <Spec label="DISPONIBILITÀ" value={`${p.quantita} pz`} highlight={low ? COLORS.error : undefined} />
+          {!isCliente && <Spec label="DISPONIBILITÀ" value={`${maxVendibile} pz`} highlight={low ? COLORS.error : undefined} />}
           {!isCliente && <Spec label="SOGLIA SCORTA" value={`${p.soglia_scorta} pz`} />}
           {p.note ? <Spec label="NOTE" value={p.note} /> : null}
         </View>
@@ -163,6 +169,7 @@ const diminuisciQtaCliente = () => {
     {low ? 'NON DISPONIBILE' : 'DISPONIBILE'}
   </Text>
 </View>
+
         <View style={styles.footer}>
           <View style={styles.stockCtrl}>
             <Pressable style={styles.stockBtn} onPress={() => setSaleQty((q) => Math.max(1, q - 1))} disabled={busy || saleQty <= 1} testID="sale-qty-minus">
@@ -185,16 +192,7 @@ const diminuisciQtaCliente = () => {
       )}
   {isCliente && (
   <>
-    <View
-      style={[
-        styles.availabilityBox,
-        low ? styles.availabilityBoxError : styles.availabilityBoxSuccess,
-      ]}
-    >
-      <Text style={styles.availabilityText}>
-        {low ? 'NON DISPONIBILE' : 'DISPONIBILE'}
-      </Text>
-    </View>
+
 
     <View style={styles.footer}>
       <Pressable
@@ -213,36 +211,64 @@ const diminuisciQtaCliente = () => {
       </Pressable>
 
       <View style={styles.cartArea}>
-        <View style={styles.qtySelector}>
-          <Pressable
-            style={styles.qtyButton}
-            onPress={diminuisciQtaCliente}
-            disabled={qtaCliente <= 1 || low}
-          >
-            <Text style={styles.qtyButtonText}>-</Text>
-          </Pressable>
+      <View style={styles.qtySelector}>
+  <Pressable
+    style={styles.qtyButton}
+    onPress={diminuisciQtaCliente}
+    disabled={qtaCliente <= 1}
+  >
+    <Text style={styles.qtyButtonText}>-</Text>
+  </Pressable>
 
-          <Text style={styles.qtyValue}>{qtaCliente}</Text>
+  <Pressable
+    style={styles.qtyValueButton}
+    onPress={() => setQtyPickerOpen(true)}
+  >
+    <Text style={styles.qtyValue}>{qtaCliente}</Text>
+  </Pressable>
 
-          <Pressable
-            style={styles.qtyButton}
-            onPress={aumentaQtaCliente}
-            disabled={qtaCliente >= maxVendibile || low}
-          >
-            <Text style={styles.qtyButtonText}>+</Text>
-          </Pressable>
-        </View>
-
+  <Pressable
+    style={styles.qtyButton}
+    onPress={aumentaQtaCliente}
+    disabled={qtaCliente >= maxOrdinabileCliente}
+  >
+    <Text style={styles.qtyButtonText}>+</Text>
+  </Pressable>
+</View>
         <Pressable
-          style={[styles.cartButton, low && styles.cartButtonDisabled]}
-          disabled={low}
-          onPress={() => {
+          style={styles.cartButton} 
+  onPress={() => {
+  if (low) {
+    Alert.alert(
+      'Prodotto da ordinare',
+      'Ultime scorte disponibili. Ordina prima che finiscano!',
+      [
+        {
+          text: 'Annulla',
+          style: 'cancel',
+        },
+        {
+          text: 'Ordina',
+          onPress: () => {
             aggiungiCarrello(p, qtaCliente);
             Alert.alert(
-              'Carrello',
-              `${qtaCliente} prodotto/i aggiunto/i al carrello`
+              'Aggiunto al carrello',
+              'Prodotto aggiunto al carrello come articolo da ordinare.'
             );
-          }}
+          },
+        },
+      ]
+    );
+
+    return;
+  }
+
+  aggiungiCarrello(p, qtaCliente);
+  Alert.alert(
+    'Carrello',
+    `${qtaCliente} prodotto/i aggiunto/i al carrello`
+  );
+}}
         >
           <Text style={styles.cartIcon}>🛒</Text>
         </Pressable>
@@ -250,6 +276,43 @@ const diminuisciQtaCliente = () => {
     </View>
   </>
 )} 
+<Modal
+  visible={qtyPickerOpen}
+  transparent
+  animationType="fade"
+  onRequestClose={() => setQtyPickerOpen(false)}
+>
+  <View style={styles.qtyPickerOverlay}>
+    <View style={styles.qtyPickerBox}>
+      <View style={styles.qtyPickerHeader}>
+        <Text style={styles.qtyPickerTitle}>Quantità:</Text>
+
+        <Pressable onPress={() => setQtyPickerOpen(false)}>
+          <Text style={styles.qtyPickerClose}>×</Text>
+        </Pressable>
+      </View>
+
+      <ScrollView style={styles.qtyPickerList}>
+        {quantitaDisponibiliCliente.map((num) => (
+          <Pressable
+            key={num}
+            style={[
+              styles.qtyPickerOption,
+              qtaCliente === num && styles.qtyPickerOptionActive,
+            ]}
+            onPress={() => {
+              setQtaCliente(num);
+              setQtyPickerOpen(false);
+            }}
+          >
+            <Text style={styles.qtyPickerOptionText}>{num}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+    </View>
+  </View>
+</Modal>
+
     </SafeAreaView>
   );
   }
@@ -299,8 +362,8 @@ const styles = StyleSheet.create({
   borderWidth: 2,
   borderColor: COLORS.borderStrong,
   backgroundColor: COLORS.surfaceSecondary,
-  paddingVertical: 14,
-  paddingHorizontal: 14,
+  paddingVertical: 10,
+  paddingHorizontal: 10,
   alignItems: 'center',
   justifyContent: 'center',
 },
@@ -314,11 +377,12 @@ wishlistButtonText: {
 },
 
 cartButton: {
+  flex: 1,
   borderWidth: 2,
-  borderColor: COLORS.brand,
-  backgroundColor: COLORS.brand,
-  paddingVertical: 15,
-  paddingHorizontal: 14,
+  borderColor:COLORS.success,
+  backgroundColor:COLORS.success,
+  paddingVertical: 12,
+  paddingHorizontal: 15,
   alignItems: 'center',
   justifyContent: 'center',
 },
@@ -331,8 +395,8 @@ cartButtonText: {
   fontWeight: '900',
 },
 cartIcon: {
-  fontSize: 30,
-  lineHeight: 34,
+  fontSize: 28,
+  lineHeight: 30,
   textAlign: 'center',
 },
 cartButtonDisabled: {
@@ -341,10 +405,10 @@ cartButtonDisabled: {
   opacity: 0.6,
 },
 availabilityBox: {
-  marginHorizontal: 14,
+  marginHorizontal: 10,
   marginBottom: 8,
   borderWidth: 2,
-  paddingVertical: 8,
+  paddingVertical:8  ,
   alignItems: 'center',
   justifyContent: 'center',
 },
@@ -369,38 +433,112 @@ availabilityText: {
 cartArea: {
   flex: 1,
   flexDirection: 'row',
-  gap: 8,
+  gap: 5,
   minWidth: 0,
 },
 qtySelector: {
   flexDirection: 'row',
+  flex: 0.70,
   alignItems: 'center',
+  justifyContent: 'center',
   borderWidth: 2,
   borderColor: COLORS.borderStrong,
   backgroundColor: COLORS.surfaceSecondary,
 },
 
 qtyButton: {
-  width: 34,
-  height: 54,
+  width: 30,
+  height: 44,
   alignItems: 'center',
   justifyContent: 'center',
 },
 
 qtyButtonText: {
   fontFamily: FONTS.mono,
-  fontSize: 22,
+  fontSize: 16,
+  lineHeight: 18,
   color: COLORS.onSurface,
   fontWeight: '900',
 },
 
 qtyValue: {
-  minWidth: 34,
+  minWidth: 24,
   textAlign: 'center',
   fontFamily: FONTS.mono,
-  fontSize: 16,
+  fontSize: 14,
+  color: COLORS.onSurface,
+  fontWeight: '900', 
+},
+
+qtyValueButton: {
+  minWidth: 28,
+  height: 42,
+  alignItems: 'center',
+  justifyContent: 'center',
+
+},
+qtyPickerOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.55)',
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingHorizontal: 28,
+},
+
+qtyPickerBox: {
+  width: '100%',
+  maxWidth: 300,
+  maxHeight: 480,
+  borderWidth: 2,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surface,
+},
+
+qtyPickerHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  paddingHorizontal: 18,
+  paddingVertical: 14,
+  borderBottomWidth: 2,
+  borderBottomColor: COLORS.borderStrong,
+},
+
+qtyPickerTitle: {
+  fontFamily: FONTS.mono,
+  fontSize: 20,
   color: COLORS.onSurface,
   fontWeight: '900',
 },
 
+qtyPickerClose: {
+  fontFamily: FONTS.mono,
+  fontSize: 30,
+  lineHeight: 32,
+  color: COLORS.onSurface,
+  fontWeight: '900',
+},
+
+qtyPickerList: {
+  maxHeight: 430,
+},
+
+qtyPickerOption: {
+  paddingVertical: 15,
+  paddingHorizontal: 25,
+  borderBottomWidth: 1,
+  borderBottomColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surface,
+},
+
+qtyPickerOptionActive: {
+  backgroundColor: COLORS.surfaceSecondary,
+},
+
+qtyPickerOptionText: {
+  fontFamily: FONTS.mono,
+  fontSize: 20,
+  color: COLORS.onSurface,
+  fontWeight: '700',
+},
 });

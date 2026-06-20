@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-﻿import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Modal, FlatList, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
@@ -250,8 +250,16 @@ export default function Catalogo() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-const categoriaDaPagina =
-  typeof params.categoria === 'string' ? params.categoria : '';
+
+const categoriaParam = params.categoria;
+
+const categoriaDaPagina = Array.isArray(categoriaParam)
+  ? categoriaParam[0]
+  : typeof categoriaParam === 'string'
+    ? categoriaParam
+    : '';
+
+const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
 
   const soloSottoScorta = params.sotto_scorta === 'true';
   const soloVendita = params.vendita === 'true';
@@ -264,14 +272,16 @@ const categoriaDaPagina =
   useEffect(() => {
   if (!categoriaDaPagina) return;
 
-  setCategoria(categoriaDaPagina);
+  setCategoria(categoriaDaPagina as any);
   setQ('');
 }, [categoriaDaPagina]);
   const [marcaStandard, setMarcaStandard] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [brandSearch, setBrandSearch] = useState('');
   const [brandsReali, setBrandsReali] = useState<string[]>([]);
-  const cats = CATEGORIE_STANDARD;
+  const cats = catalogoFiltratoDaPagina 
+  ? [categoriaDaPagina]
+  : CATEGORIE_STANDARD;
   const brands = brandsReali.length > 0 ? brandsReali : MARCHE_STANDARD;
   const filteredBrands = brands.filter((m) => m.toLowerCase().includes(brandSearch.trim().toLowerCase()));
 
@@ -478,13 +488,17 @@ const categoriaDaPagina =
       {/* Category chips */}
       <View style={styles.chipsRow}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsContent}>
-          <Pressable
-            style={[styles.chip, !categoria && styles.chipActive]}
-            onPress={() => cambiaCategoria(null)}
-            testID="chip-tutti"
-          >
-            <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>TUTTI</Text>
-          </Pressable>
+          {!catalogoFiltratoDaPagina && (
+  <Pressable
+    style={[styles.chip, !categoria && styles.chipActive]}
+    onPress={() => cambiaCategoria(null)}
+    testID="chip-tutti"
+  >
+    <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>
+      TUTTI
+    </Text>
+  </Pressable>
+)}
           {cats.map((c) => (
             <Pressable
               key={c}

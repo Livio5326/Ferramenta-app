@@ -1,8 +1,27 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS } from '@/src/theme';
 import { useClienteStore } from '@/src/clienteStore';
+import { Image } from 'expo-image';
+
+const BACKEND_URL = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+
+function getFotoUrl(foto?: string) {
+  if (!foto) return null;
+
+  if (foto.startsWith('http')) {
+    return foto;
+  }
+
+  const nomeFile = foto.replace(/^\/+/, '');
+
+  if (nomeFile.startsWith('uploads/')) {
+    return `${BACKEND_URL}/${nomeFile}`;
+  }
+
+  return `${BACKEND_URL}/uploads/cropped/${nomeFile}`;
+}
 
 export default function ListaDesideriClienteScreen() {
   const listaDesideri = useClienteStore((state) => state.listaDesideri);
@@ -26,6 +45,17 @@ export default function ListaDesideriClienteScreen() {
           <View style={styles.list}>
             {listaDesideri.map((item) => (
               <View key={item.id} style={styles.card}>
+                <View style={styles.imageBox}>
+  {getFotoUrl(item.foto) ? (
+    <Image
+      source={{ uri: getFotoUrl(item.foto)! }}
+      style={styles.productImage}
+      contentFit="contain"
+    />
+  ) : (
+    <Text style={styles.noImageText}>NO FOTO</Text>
+  )}
+</View>
                 <Text style={styles.productTitle}>{item.descrizione}</Text>
 
                 {!!item.marca && (
@@ -44,12 +74,18 @@ export default function ListaDesideriClienteScreen() {
 
                 <View style={styles.actions}>
                   <Pressable
-                    style={styles.cartButton}
-                    onPress={() => aggiungiCarrello(item)}
-                  >
-                    <Text style={styles.cartButtonText}>AGGIUNGI AL CARRELLO</Text>
-                  </Pressable>
+  style={styles.cartButton}
+  onPress={() => {
+    aggiungiCarrello(item, item.quantitaCarrello || 1);
 
+    Alert.alert(
+      'Carrello',
+      'Prodotto aggiunto al carrello'
+    );
+  }}
+>
+  <Text style={styles.cartButtonText}>AGGIUNGI AL CARRELLO</Text>
+</Pressable>
                   <Pressable
                     style={styles.removeButton}
                     onPress={() => rimuoviDesideri(item.id)}
@@ -180,4 +216,26 @@ const styles = StyleSheet.create({
     color: COLORS.onSurface,
     fontWeight: '900',
   },
+  imageBox: {
+  width: '100%',
+  height: 130,
+  borderWidth: 2,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surface,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 14,
+},
+
+productImage: {
+  width: '100%',
+  height: '100%',
+},
+
+noImageText: {
+  fontFamily: FONTS.mono,
+  fontSize: 11,
+  color: COLORS.onSurfaceSecondary,
+  fontWeight: '900',
+},
 });

@@ -116,8 +116,14 @@ export default function TabsLayout() {
           href: isCliente ? null : undefined,
         }}
       />
-    </Tabs>
-  );
+      <Tabs.Screen
+        name="checkout-cliente"
+        options={{
+          href: null,
+        }}
+      />
+      </Tabs>
+      );
 }
 
 const styles = StyleSheet.create({

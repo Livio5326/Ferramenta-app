@@ -3,10 +3,31 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS } from '@/src/theme';
 import { useClienteStore } from '@/src/clienteStore';
+import { useRouter } from 'expo-router';import { Image } from 'expo-image';
 
+const BACKEND_URL = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+
+function getFotoUrl(foto?: string) {
+  if (!foto) return null;
+
+  if (foto.startsWith('http')) {
+    return foto;
+  }
+
+  const nomeFile = foto.replace(/^\/+/, '');
+
+  if (nomeFile.startsWith('uploads/')) {
+    return `${BACKEND_URL}/${nomeFile}`;
+  }
+
+  return `${BACKEND_URL}/uploads/cropped/${nomeFile}`;
+}
 export default function CarrelloClienteScreen() {
+  const router = useRouter ();
   const carrello = useClienteStore((state) => state.carrello);
   const rimuoviCarrello = useClienteStore((state) => state.rimuoviCarrello);
+  const aggiornaQuantitaCarrello = useClienteStore(
+  (state) => state.aggiornaQuantitaCarrello);
 
   const totale = carrello.reduce((somma, item) => {
     return somma + Number(item.prezzo || 0) * Number(item.quantitaCarrello || 1);
@@ -30,6 +51,17 @@ export default function CarrelloClienteScreen() {
             <View style={styles.list}>
               {carrello.map((item) => (
                 <View key={item.id} style={styles.card}>
+                  <View style={styles.imageBox}>
+  {getFotoUrl(item.foto) ? (
+    <Image
+      source={{ uri: getFotoUrl(item.foto)! }}
+      style={styles.productImage}
+      contentFit="contain"
+    />
+  ) : (
+    <Text style={styles.noImageText}>NO FOTO</Text>
+  )}
+</View>
                   <Text style={styles.productTitle}>{item.descrizione}</Text>
 
                   {!!item.marca && (
@@ -51,7 +83,33 @@ export default function CarrelloClienteScreen() {
                       € {Number(item.prezzo || 0).toFixed(2).replace('.', ',')}
                     </Text>
                   </View>
+<View style={styles.qtyRow}>
+  <Pressable
+    style={styles.qtyBtn}
+    onPress={() =>
+      aggiornaQuantitaCarrello(
+        item.id,
+        Math.max(1, Number(item.quantitaCarrello || 1) - 1)
+      )
+    }
+  >
+    <Text style={styles.qtyBtnText}>-</Text>
+  </Pressable>
 
+  <Text style={styles.qtyNum}>{item.quantitaCarrello || 1}</Text>
+
+  <Pressable
+    style={styles.qtyBtn}
+    onPress={() =>
+      aggiornaQuantitaCarrello(
+        item.id,
+        Number(item.quantitaCarrello || 1) + 1
+      )
+    }
+  >
+    <Text style={styles.qtyBtnText}>+</Text>
+  </Pressable>
+</View>
                   <Pressable
                     style={styles.removeButton}
                     onPress={() => rimuoviCarrello(item.id)}
@@ -70,16 +128,11 @@ export default function CarrelloClienteScreen() {
             </View>
 
             <Pressable
-              style={styles.buyButton}
-              onPress={() =>
-                Alert.alert(
-                  'Acquista',
-                  'Pagamento da collegare nel prossimo passaggio.'
-                )
-              }
-            >
-              <Text style={styles.buyButtonText}>ACQUISTA</Text>
-            </Pressable>
+  style={styles.buyButton}
+  onPress={() => router.push('/checkout-cliente' as any)}
+>
+  <Text style={styles.buyButtonText}>ACQUISTA</Text>
+</Pressable>
           </>
         )}
       </ScrollView>
@@ -227,4 +280,58 @@ const styles = StyleSheet.create({
     color: COLORS.surface,
     fontWeight: '900',
   },
+  qtyRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 10,
+  marginTop: 10,
+},
+
+qtyBtn: {
+  borderWidth: 2,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surface,
+  paddingVertical: 6,
+  paddingHorizontal: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+qtyBtnText: {
+  fontFamily: FONTS.mono,
+  fontSize: 18,
+  color: COLORS.onSurface,
+  fontWeight: '900',
+},
+
+qtyNum: {
+  minWidth: 28,
+  textAlign: 'center',
+  fontFamily: FONTS.mono,
+  fontSize: 16,
+  color: COLORS.onSurface,
+  fontWeight: '900',
+},
+imageBox: {
+  width: '100%',
+  height: 130,
+  borderWidth: 2,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surface,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 14,
+},
+
+productImage: {
+  width: '100%',
+  height: '100%',
+},
+
+noImageText: {
+  fontFamily: FONTS.mono,
+  fontSize: 11,
+  color: COLORS.onSurfaceSecondary,
+  fontWeight: '900',
+},
 });
