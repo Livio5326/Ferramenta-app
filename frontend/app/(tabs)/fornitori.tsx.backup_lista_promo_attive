@@ -58,22 +58,6 @@ export default function FornitoriScreen() {
   const [codeOverrides, setCodeOverrides] = useState<Record<string, string>>({});
   const [overrideInputs, setOverrideInputs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [activePromos, setActivePromos] = useState<any | null>(null);
-  const [loadingActivePromos, setLoadingActivePromos] = useState(false);
-  const [selectedPromoNome, setSelectedPromoNome] = useState<string | null>(null);
-
-  async function caricaPromozioniAttive() {
-    try {
-      setLoadingActivePromos(true);
-      const res = await api.listActivePromos();
-      setActivePromos(res);
-      setSelectedPromoNome(null);
-    } catch (err: any) {
-      Alert.alert('Errore promozioni attive', err?.message || 'Impossibile caricare le promozioni attive.');
-    } finally {
-      setLoadingActivePromos(false);
-    }
-  }
 
   async function scegliFile() {
     try {
@@ -162,75 +146,6 @@ export default function FornitoriScreen() {
               Alert.alert('Errore conferma', err?.message || 'Aggiornamento non riuscito.');
             } finally {
               setLoading(false);
-            }
-          },
-        },
-      ]
-    );
-  }
-
-  async function eliminaPromo(promoNome: string) {
-    Alert.alert(
-      'Sei sicuro di eliminare?',
-      `Vuoi davvero eliminare la promozione "${promoNome}"?\n\nLa promozione verrà rimossa dai prodotti collegati.\nI prodotti NON verranno cancellati.`,
-      [
-        { text: 'Annulla', style: 'cancel' },
-        {
-          text: 'Sì, elimina',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setLoadingActivePromos(true);
-
-              const resDelete = await api.deletePromoByName(promoNome);
-
-              const res = await api.listActivePromos();
-              setActivePromos(res);
-              setSelectedPromoNome(null);
-
-              Alert.alert(
-                'Promo eliminata',
-                `Promozione rimossa da ${resDelete.eliminati} prodotti.`
-              );
-            } catch (err: any) {
-              Alert.alert('Errore eliminazione promo', err?.message || 'Impossibile eliminare la promozione.');
-            } finally {
-              setLoadingActivePromos(false);
-            }
-          },
-        },
-      ]
-    );
-  }
-
-  async function cambiaStatoPromo(promoNome: string, attiva: boolean) {
-    Alert.alert(
-      attiva ? 'Attivare promozione?' : 'Disattivare promozione?',
-      attiva
-        ? `La promozione "${promoNome}" tornerà attiva sui prodotti collegati.`
-        : `La promozione "${promoNome}" verrà disattivata sui prodotti collegati.`,
-      [
-        { text: 'Annulla', style: 'cancel' },
-        {
-          text: attiva ? 'Attiva' : 'Disattiva',
-          style: attiva ? 'default' : 'destructive',
-          onPress: async () => {
-            try {
-              setLoadingActivePromos(true);
-
-              if (attiva) {
-                await api.activatePromoByName(promoNome);
-              } else {
-                await api.deactivatePromoByName(promoNome);
-              }
-
-              const res = await api.listActivePromos();
-              setActivePromos(res);
-              setSelectedPromoNome(promoNome);
-            } catch (err: any) {
-              Alert.alert('Errore promozione', err?.message || 'Impossibile modificare la promozione.');
-            } finally {
-              setLoadingActivePromos(false);
             }
           },
         },
@@ -514,125 +429,14 @@ export default function FornitoriScreen() {
         )}
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Promozioni attive</Text>
+          <Text style={styles.cardTitle}>Disattiva promozioni</Text>
           <Text style={styles.cardText}>
-            Prima scegli la promozione, poi vedi i prodotti contenuti.
+            Disattiva tutte le promo attive senza cancellare i prezzi standard.
           </Text>
-
-          <TouchableOpacity
-            style={[styles.secondaryButton, loadingActivePromos && styles.disabled]}
-            onPress={caricaPromozioniAttive}
-            disabled={loadingActivePromos}
-          >
-            <Feather name="refresh-cw" size={18} color={COLORS.onSurface} />
-            <Text style={styles.secondaryButtonText}>
-              {loadingActivePromos ? 'CARICAMENTO...' : 'AGGIORNA LISTA'}
-            </Text>
+          <TouchableOpacity style={styles.dangerButton} onPress={disattivaPromo} disabled={loading}>
+            <Text style={styles.buttonText}>DISATTIVA PROMO</Text>
           </TouchableOpacity>
-
-          {activePromos && (
-            <>
-              <View style={styles.statRow}>
-                <Text style={styles.statLabel}>Prodotti totali in promo</Text>
-                <Text style={styles.statValue}>{activePromos.totale_prodotti}</Text>
-              </View>
-
-              {activePromos.riepilogo?.length === 0 && (
-                <Text style={styles.cardText}>Nessuna promozione attiva.</Text>
-              )}
-
-              {activePromos.riepilogo?.map((p: any, index: number) => {
-                const isSelected = selectedPromoNome === p.promo_nome;
-
-                return (
-                  <TouchableOpacity
-                    key={`${p.promo_nome}-${index}`}
-                    style={styles.productRow}
-                    onPress={() =>
-                      setSelectedPromoNome(isSelected ? null : p.promo_nome)
-                    }
-                  >
-                    <Text style={styles.productTitle}>{p.promo_nome}</Text>
-                    <Text style={styles.productText}>Prodotti: {p.prodotti}</Text>
-                    <Text style={styles.productText}>Attivi: {p.prodotti_attivi}</Text>
-                    <Text style={styles.productText}>Stato: {p.attiva ? 'ATTIVA' : 'DISATTIVATA'}</Text>
-                    <Text style={styles.productText}>Inizio: {p.promo_inizio || '-'}</Text>
-                    <Text style={styles.productText}>Fine: {p.promo_fine || '-'}</Text>
-                    <Text style={styles.promoPrice}>
-                      {isSelected ? 'Nascondi prodotti' : 'Vedi prodotti'}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-
-              {selectedPromoNome && (
-                <View style={styles.card}>
-                  <Text style={styles.cardTitle}>{selectedPromoNome}</Text>
-                  <Text style={styles.cardText}>
-                    Prodotti contenuti nella promozione selezionata.
-                  </Text>
-
-                  {(() => {
-                    const promoSelezionata = activePromos.riepilogo?.find(
-                      (p: any) => p.promo_nome === selectedPromoNome
-                    );
-
-                    if (!promoSelezionata) return null;
-
-                    return (
-                      <View style={styles.row}>
-                        {promoSelezionata.attiva ? (
-                          <TouchableOpacity
-                            style={[styles.dangerButton, loadingActivePromos && styles.disabled]}
-                            onPress={() => cambiaStatoPromo(selectedPromoNome, false)}
-                            disabled={loadingActivePromos}
-                          >
-                            <Text style={styles.buttonText}>DISATTIVA QUESTA PROMO</Text>
-                          </TouchableOpacity>
-                        ) : (
-                          <TouchableOpacity
-                            style={[styles.button, loadingActivePromos && styles.disabled]}
-                            onPress={() => cambiaStatoPromo(selectedPromoNome, true)}
-                            disabled={loadingActivePromos}
-                          >
-                            <Text style={styles.buttonText}>ATTIVA QUESTA PROMO</Text>
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                    );
-                  })()}
-
-                  {selectedPromoNome && (
-                    <TouchableOpacity
-                      style={[styles.dangerButton, loadingActivePromos && styles.disabled]}
-                      onPress={() => eliminaPromo(selectedPromoNome)}
-                      disabled={loadingActivePromos}
-                    >
-                      <Text style={styles.buttonText}>ELIMINA PROMO</Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {activePromos.prodotti
-                    ?.filter((p: any) => p.promo_nome === selectedPromoNome)
-                    .map((p: any, index: number) => (
-                      <View key={`${p.id}-${index}`} style={styles.productRow}>
-                        <Text style={styles.productTitle}>{p.descrizione}</Text>
-                        <Text style={styles.productText}>Codice: {p.codice_prodotto || '-'}</Text>
-                        <Text style={styles.productText}>Stato: {p.promo_attiva ? 'ATTIVA' : 'DISATTIVATA'}</Text>
-                        <Text style={styles.productText}>
-                          Prezzo normale: {fmtEUR(p.prezzo_vendita)}
-                        </Text>
-                        <Text style={styles.promoPrice}>
-                          Promo: {fmtEUR(p.prezzo_promo)}
-                        </Text>
-                      </View>
-                    ))}
-                </View>
-              )}
-            </>
-          )}
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );

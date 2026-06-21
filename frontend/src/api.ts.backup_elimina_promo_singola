@@ -141,12 +141,6 @@ export const api = {
       { method: 'POST' }
     ),
 
-  deletePromoByName: (promoNome: string) =>
-    req<{ ok: boolean; promo_nome: string; eliminati: number }>(
-      `/products/promos/${encodeURIComponent(promoNome)}`,
-      { method: 'DELETE' }
-    ),
-
   deactivatePromoPrices: () =>
     req<{ ok: boolean; disattivati: number }>('/products/promo/deactivate', { method: 'POST' }),
 

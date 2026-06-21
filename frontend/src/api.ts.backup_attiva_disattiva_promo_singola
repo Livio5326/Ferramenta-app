@@ -121,31 +121,12 @@ export const api = {
         fornitore?: string;
         prezzo_vendita: number;
         prezzo_promo: number;
-        promo_attiva: boolean;
         promo_nome: string;
         promo_inizio?: string;
         promo_fine?: string;
         ultimo_aggiornamento_promo?: string;
       }>;
-    }>('/products/promos'),
-
-  activatePromoByName: (promoNome: string) =>
-    req<{ ok: boolean; promo_nome: string; attivati: number }>(
-      `/products/promos/${encodeURIComponent(promoNome)}/activate`,
-      { method: 'POST' }
-    ),
-
-  deactivatePromoByName: (promoNome: string) =>
-    req<{ ok: boolean; promo_nome: string; disattivati: number }>(
-      `/products/promos/${encodeURIComponent(promoNome)}/deactivate`,
-      { method: 'POST' }
-    ),
-
-  deletePromoByName: (promoNome: string) =>
-    req<{ ok: boolean; promo_nome: string; eliminati: number }>(
-      `/products/promos/${encodeURIComponent(promoNome)}`,
-      { method: 'DELETE' }
-    ),
+    }>('/products/promos/active'),
 
   deactivatePromoPrices: () =>
     req<{ ok: boolean; disattivati: number }>('/products/promo/deactivate', { method: 'POST' }),

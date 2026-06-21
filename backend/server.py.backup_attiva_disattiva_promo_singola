@@ -645,12 +645,12 @@ async def confirm_import_promo_prices(
     }
 
 
-@api_router.get("/products/promos")
-async def list_promo_prices():
+@api_router.get("/products/promos/active")
+async def list_active_promo_prices():
     docs = await db.products.find(
         {
-            "prezzo_promo": {"$ne": None},
-            "promo_nome": {"$ne": ""}
+            "promo_attiva": True,
+            "prezzo_promo": {"$ne": None}
         },
         {"_id": 0}
     ).sort("promo_nome", 1).to_list(10000)
@@ -664,7 +664,6 @@ async def list_promo_prices():
             continue
 
         promo_nome = d.get("promo_nome") or "Promozione senza nome"
-        promo_attiva = bool(d.get("promo_attiva", False))
 
         prodotti.append({
             "id": d.get("id"),
@@ -676,7 +675,6 @@ async def list_promo_prices():
             "fornitore": d.get("fornitore", ""),
             "prezzo_vendita": d.get("prezzo_vendita", 0),
             "prezzo_promo": prezzo_promo,
-            "promo_attiva": promo_attiva,
             "promo_nome": promo_nome,
             "promo_inizio": d.get("promo_inizio", ""),
             "promo_fine": d.get("promo_fine", ""),
@@ -687,82 +685,16 @@ async def list_promo_prices():
             riepilogo[promo_nome] = {
                 "promo_nome": promo_nome,
                 "prodotti": 0,
-                "prodotti_attivi": 0,
-                "attiva": False,
                 "promo_inizio": d.get("promo_inizio", ""),
                 "promo_fine": d.get("promo_fine", ""),
             }
 
         riepilogo[promo_nome]["prodotti"] += 1
-        if promo_attiva:
-            riepilogo[promo_nome]["prodotti_attivi"] += 1
-            riepilogo[promo_nome]["attiva"] = True
 
     return {
         "totale_prodotti": len(prodotti),
         "riepilogo": list(riepilogo.values()),
         "prodotti": prodotti,
-    }
-
-
-@api_router.post("/products/promos/{promo_nome}/activate")
-async def activate_single_promo(promo_nome: str):
-    now = datetime.now(timezone.utc).isoformat()
-    res = await db.products.update_many(
-        {"promo_nome": promo_nome, "prezzo_promo": {"$ne": None}},
-        {"$set": {
-            "promo_attiva": True,
-            "ultimo_aggiornamento_promo": now,
-            "updated_at": now,
-        }}
-    )
-
-    return {
-        "ok": True,
-        "promo_nome": promo_nome,
-        "attivati": res.modified_count,
-    }
-
-
-@api_router.post("/products/promos/{promo_nome}/deactivate")
-async def deactivate_single_promo(promo_nome: str):
-    now = datetime.now(timezone.utc).isoformat()
-    res = await db.products.update_many(
-        {"promo_nome": promo_nome},
-        {"$set": {
-            "promo_attiva": False,
-            "ultimo_aggiornamento_promo": now,
-            "updated_at": now,
-        }}
-    )
-
-    return {
-        "ok": True,
-        "promo_nome": promo_nome,
-        "disattivati": res.modified_count,
-    }
-
-
-@api_router.delete("/products/promos/{promo_nome}")
-async def delete_single_promo(promo_nome: str):
-    now = datetime.now(timezone.utc).isoformat()
-    res = await db.products.update_many(
-        {"promo_nome": promo_nome},
-        {"$set": {
-            "prezzo_promo": None,
-            "promo_attiva": False,
-            "promo_nome": "",
-            "promo_inizio": "",
-            "promo_fine": "",
-            "ultimo_aggiornamento_promo": now,
-            "updated_at": now,
-        }}
-    )
-
-    return {
-        "ok": True,
-        "promo_nome": promo_nome,
-        "eliminati": res.modified_count,
     }
 
 

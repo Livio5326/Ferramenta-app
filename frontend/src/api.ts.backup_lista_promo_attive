@@ -102,51 +102,6 @@ export const api = {
     return res.json();
   },
 
-  listActivePromos: () =>
-    req<{
-      totale_prodotti: number;
-      riepilogo: Array<{
-        promo_nome: string;
-        prodotti: number;
-        promo_inizio?: string;
-        promo_fine?: string;
-      }>;
-      prodotti: Array<{
-        id: string;
-        codice_prodotto: string;
-        barcode?: string;
-        descrizione: string;
-        marca?: string;
-        marca_standard?: string;
-        fornitore?: string;
-        prezzo_vendita: number;
-        prezzo_promo: number;
-        promo_attiva: boolean;
-        promo_nome: string;
-        promo_inizio?: string;
-        promo_fine?: string;
-        ultimo_aggiornamento_promo?: string;
-      }>;
-    }>('/products/promos'),
-
-  activatePromoByName: (promoNome: string) =>
-    req<{ ok: boolean; promo_nome: string; attivati: number }>(
-      `/products/promos/${encodeURIComponent(promoNome)}/activate`,
-      { method: 'POST' }
-    ),
-
-  deactivatePromoByName: (promoNome: string) =>
-    req<{ ok: boolean; promo_nome: string; disattivati: number }>(
-      `/products/promos/${encodeURIComponent(promoNome)}/deactivate`,
-      { method: 'POST' }
-    ),
-
-  deletePromoByName: (promoNome: string) =>
-    req<{ ok: boolean; promo_nome: string; eliminati: number }>(
-      `/products/promos/${encodeURIComponent(promoNome)}`,
-      { method: 'DELETE' }
-    ),
-
   deactivatePromoPrices: () =>
     req<{ ok: boolean; disattivati: number }>('/products/promo/deactivate', { method: 'POST' }),
 

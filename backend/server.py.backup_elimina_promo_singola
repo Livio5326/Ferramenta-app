@@ -743,29 +743,6 @@ async def deactivate_single_promo(promo_nome: str):
     }
 
 
-@api_router.delete("/products/promos/{promo_nome}")
-async def delete_single_promo(promo_nome: str):
-    now = datetime.now(timezone.utc).isoformat()
-    res = await db.products.update_many(
-        {"promo_nome": promo_nome},
-        {"$set": {
-            "prezzo_promo": None,
-            "promo_attiva": False,
-            "promo_nome": "",
-            "promo_inizio": "",
-            "promo_fine": "",
-            "ultimo_aggiornamento_promo": now,
-            "updated_at": now,
-        }}
-    )
-
-    return {
-        "ok": True,
-        "promo_nome": promo_nome,
-        "eliminati": res.modified_count,
-    }
-
-
 @api_router.post("/products/promo/deactivate")
 async def deactivate_promo_prices():
     now = datetime.now(timezone.utc).isoformat()

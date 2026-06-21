@@ -169,40 +169,6 @@ export default function FornitoriScreen() {
     );
   }
 
-  async function eliminaPromo(promoNome: string) {
-    Alert.alert(
-      'Sei sicuro di eliminare?',
-      `Vuoi davvero eliminare la promozione "${promoNome}"?\n\nLa promozione verrà rimossa dai prodotti collegati.\nI prodotti NON verranno cancellati.`,
-      [
-        { text: 'Annulla', style: 'cancel' },
-        {
-          text: 'Sì, elimina',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setLoadingActivePromos(true);
-
-              const resDelete = await api.deletePromoByName(promoNome);
-
-              const res = await api.listActivePromos();
-              setActivePromos(res);
-              setSelectedPromoNome(null);
-
-              Alert.alert(
-                'Promo eliminata',
-                `Promozione rimossa da ${resDelete.eliminati} prodotti.`
-              );
-            } catch (err: any) {
-              Alert.alert('Errore eliminazione promo', err?.message || 'Impossibile eliminare la promozione.');
-            } finally {
-              setLoadingActivePromos(false);
-            }
-          },
-        },
-      ]
-    );
-  }
-
   async function cambiaStatoPromo(promoNome: string, attiva: boolean) {
     Alert.alert(
       attiva ? 'Attivare promozione?' : 'Disattivare promozione?',
@@ -602,16 +568,6 @@ export default function FornitoriScreen() {
                     );
                   })()}
 
-                  {selectedPromoNome && (
-                    <TouchableOpacity
-                      style={[styles.dangerButton, loadingActivePromos && styles.disabled]}
-                      onPress={() => eliminaPromo(selectedPromoNome)}
-                      disabled={loadingActivePromos}
-                    >
-                      <Text style={styles.buttonText}>ELIMINA PROMO</Text>
-                    </TouchableOpacity>
-                  )}
-
                   {activePromos.prodotti
                     ?.filter((p: any) => p.promo_nome === selectedPromoNome)
                     .map((p: any, index: number) => (
@@ -633,6 +589,15 @@ export default function FornitoriScreen() {
           )}
         </View>
 
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Disattiva promozioni</Text>
+          <Text style={styles.cardText}>
+            Disattiva tutte le promo attive senza cancellare i prezzi standard.
+          </Text>
+          <TouchableOpacity style={styles.dangerButton} onPress={disattivaPromo} disabled={loading}>
+            <Text style={styles.buttonText}>DISATTIVA PROMO</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
