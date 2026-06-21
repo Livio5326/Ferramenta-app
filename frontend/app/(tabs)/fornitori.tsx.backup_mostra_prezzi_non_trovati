@@ -475,7 +475,6 @@ export default function FornitoriScreen() {
                   <Text style={styles.productText}>Codice usato: {r.codice_usato || r.codice_prodotto || '-'}</Text>
                   <Text style={styles.productText}>Barcode: {r.barcode || '-'}</Text>
                   <Text style={styles.productText}>Descrizione: {r.descrizione_file || '-'}</Text>
-                  <Text style={styles.promoPrice}>Prezzo promo file: {fmtEUR(r.prezzo_promo)}</Text>
 
                   <Text style={styles.label}>Codice corretto nel catalogo</Text>
                   <TextInput
