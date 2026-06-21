@@ -8,7 +8,6 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
-import json
 from datetime import datetime, timezone
 from fastapi.staticfiles import StaticFiles
 
@@ -469,10 +468,9 @@ def _leggi_file_promo_sync(filename, content):
     )
 
 
-async def _crea_anteprima_promo(rows, code_overrides=None):
+async def _crea_anteprima_promo(rows):
     risultati = []
     letti = 0
-    code_overrides = code_overrides or {}
     trovati = 0
     aggiornabili = 0
     non_trovati = 0
@@ -516,20 +514,13 @@ async def _crea_anteprima_promo(rows, code_overrides=None):
             "prezzo netto"
         ]))
 
-        codice_originale = codice
-        codice_override = ""
-        if codice and isinstance(code_overrides, dict):
-            codice_override = str(code_overrides.get(codice, "") or "").strip()
-            if codice_override:
-                codice = codice_override
-
         prodotto = None
         match_usato = ""
 
         if codice:
             prodotto = await db.products.find_one({"codice_prodotto": codice}, {"_id": 0})
             if prodotto:
-                match_usato = "codice_prodotto_override" if codice_override else "codice_prodotto"
+                match_usato = "codice_prodotto"
 
         if not prodotto and barcode:
             prodotto = await db.products.find_one({"barcode": barcode}, {"_id": 0})
@@ -550,9 +541,7 @@ async def _crea_anteprima_promo(rows, code_overrides=None):
 
         risultati.append({
             "riga": index,
-            "codice_prodotto": codice_originale,
-            "codice_usato": codice,
-            "codice_override": codice_override,
+            "codice_prodotto": codice,
             "barcode": barcode,
             "descrizione_file": descrizione_file,
             "prezzo_promo": prezzo,
@@ -574,21 +563,10 @@ async def _crea_anteprima_promo(rows, code_overrides=None):
 
 
 @api_router.post("/products/import-promo-prices/preview")
-async def preview_import_promo_prices(
-    file: UploadFile = File(...),
-    code_overrides: str = Form("{}"),
-):
+async def preview_import_promo_prices(file: UploadFile = File(...)):
     content = await file.read()
     rows = _leggi_file_promo_sync(file.filename, content)
-
-    try:
-        overrides = json.loads(code_overrides or "{}")
-        if not isinstance(overrides, dict):
-            overrides = {}
-    except Exception:
-        overrides = {}
-
-    return await _crea_anteprima_promo(rows, overrides)
+    return await _crea_anteprima_promo(rows)
 
 
 @api_router.post("/products/import-promo-prices/confirm")
@@ -596,20 +574,11 @@ async def confirm_import_promo_prices(
     file: UploadFile = File(...),
     promo_nome: str = Form(...),
     promo_inizio: str = Form(""),
-    promo_fine: str = Form(""),
-    code_overrides: str = Form("{}"),
+    promo_fine: str = Form("")
 ):
     content = await file.read()
     rows = _leggi_file_promo_sync(file.filename, content)
-
-    try:
-        overrides = json.loads(code_overrides or "{}")
-        if not isinstance(overrides, dict):
-            overrides = {}
-    except Exception:
-        overrides = {}
-
-    anteprima = await _crea_anteprima_promo(rows, overrides)
+    anteprima = await _crea_anteprima_promo(rows)
 
     aggiornati = 0
     now = datetime.now(timezone.utc).isoformat()

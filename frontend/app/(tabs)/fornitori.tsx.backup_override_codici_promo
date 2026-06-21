@@ -31,8 +31,6 @@ type PreviewResult = {
   righe?: Array<{
     riga: number;
     codice_prodotto: string;
-    codice_usato?: string;
-    codice_override?: string;
     barcode: string;
     descrizione_file: string;
     prezzo_promo: number | null;
@@ -55,8 +53,6 @@ export default function FornitoriScreen() {
   const [promoInizio, setPromoInizio] = useState('');
   const [promoFine, setPromoFine] = useState('');
   const [preview, setPreview] = useState<PreviewResult | null>(null);
-  const [codeOverrides, setCodeOverrides] = useState<Record<string, string>>({});
-  const [overrideInputs, setOverrideInputs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   async function scegliFile() {
@@ -82,8 +78,6 @@ export default function FornitoriScreen() {
         mimeType: asset.mimeType,
       });
       setPreview(null);
-      setCodeOverrides({});
-      setOverrideInputs({});
     } catch (err: any) {
       Alert.alert('Errore file', err?.message || 'Impossibile selezionare il file.');
     }
@@ -97,7 +91,7 @@ export default function FornitoriScreen() {
 
     try {
       setLoading(true);
-      const res = await api.previewPromoImport(file, codeOverrides);
+      const res = await api.previewPromoImport(file);
       setPreview(res);
     } catch (err: any) {
       Alert.alert('Errore anteprima', err?.message || 'Import non riuscito.');
@@ -137,8 +131,7 @@ export default function FornitoriScreen() {
                 file,
                 promoNome.trim(),
                 promoInizio.trim(),
-                promoFine.trim(),
-                codeOverrides
+                promoFine.trim()
               );
               Alert.alert('Import completato', `Prodotti aggiornati: ${res.aggiornati}`);
               setPreview(res.anteprima);
@@ -176,34 +169,6 @@ export default function FornitoriScreen() {
         },
       ]
     );
-  }
-
-  async function applicaCodiceCorretto(codicePromo: string) {
-    const codicePulito = (overrideInputs[codicePromo] || '').trim();
-
-    if (!codicePulito) {
-      Alert.alert('Codice mancante', 'Inserisci il codice corretto presente nel catalogo.');
-      return;
-    }
-
-    const nuovaMappa = {
-      ...codeOverrides,
-      [codicePromo]: codicePulito,
-    };
-
-    setCodeOverrides(nuovaMappa);
-
-    if (!file) return;
-
-    try {
-      setLoading(true);
-      const res = await api.previewPromoImport(file, nuovaMappa);
-      setPreview(res);
-    } catch (err: any) {
-      Alert.alert('Errore anteprima', err?.message || 'Impossibile ricalcolare l’anteprima.');
-    } finally {
-      setLoading(false);
-    }
   }
 
   const righeProblematiche = preview?.righe?.filter(
@@ -330,44 +295,14 @@ export default function FornitoriScreen() {
         {righeProblematiche.length > 0 && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Righe da controllare</Text>
-            {righeProblematiche.map((r, index) => {
-              const codicePromo = r.codice_prodotto || '';
-              const valoreCampo = overrideInputs[codicePromo] ?? codeOverrides[codicePromo] ?? '';
-
-              return (
-                <View key={`${r.riga}-${index}`} style={styles.problemRow}>
-                  <Text style={styles.productTitle}>Riga {r.riga}: {r.stato}</Text>
-                  <Text style={styles.productText}>Codice promo: {r.codice_prodotto || '-'}</Text>
-                  <Text style={styles.productText}>Codice usato: {r.codice_usato || r.codice_prodotto || '-'}</Text>
-                  <Text style={styles.productText}>Barcode: {r.barcode || '-'}</Text>
-                  <Text style={styles.productText}>Descrizione: {r.descrizione_file || '-'}</Text>
-
-                  <Text style={styles.label}>Codice corretto nel catalogo</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={valoreCampo}
-                    onChangeText={(value) =>
-                      setOverrideInputs(prev => ({
-                        ...prev,
-                        [codicePromo]: value,
-                      }))
-                    }
-                    placeholder="Es. codice prodotto presente nel catalogo"
-                    placeholderTextColor={COLORS.onSurfaceTertiary}
-                    autoCapitalize="characters"
-                  />
-
-                  <TouchableOpacity
-                    style={[styles.secondaryButton, loading && styles.disabled]}
-                    onPress={() => applicaCodiceCorretto(codicePromo)}
-                    disabled={loading}
-                  >
-                    <Feather name="edit-3" size={18} color={COLORS.onSurface} />
-                    <Text style={styles.secondaryButtonText}>APPLICA CODICE</Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
+            {righeProblematiche.map((r, index) => (
+              <View key={`${r.riga}-${index}`} style={styles.problemRow}>
+                <Text style={styles.productTitle}>Riga {r.riga}: {r.stato}</Text>
+                <Text style={styles.productText}>Codice: {r.codice_prodotto || '-'}</Text>
+                <Text style={styles.productText}>Barcode: {r.barcode || '-'}</Text>
+                <Text style={styles.productText}>Descrizione: {r.descrizione_file || '-'}</Text>
+              </View>
+            ))}
           </View>
         )}
 

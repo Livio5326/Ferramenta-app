@@ -1,0 +1,487 @@
+     1	import { useState } from 'react';
+     2	import { SafeAreaView } from 'react-native-safe-area-context';
+     3	import {
+     4	  ActivityIndicator,
+     5	  Alert,
+     6	  ScrollView,
+     7	  StyleSheet,
+     8	  Text,
+     9	  TextInput,
+    10	  TouchableOpacity,
+    11	  View,
+    12	} from 'react-native';
+    13	import * as DocumentPicker from 'expo-document-picker';
+    14	import { Feather } from '@expo/vector-icons';
+    15	
+    16	import { api } from '@/src/api';
+    17	import { COLORS, FONTS } from '@/src/theme';
+    18	
+    19	type PromoFile = {
+    20	  uri: string;
+    21	  name?: string;
+    22	  mimeType?: string;
+    23	};
+    24	
+    25	type PreviewResult = {
+    26	  prodotti_letti: number;
+    27	  prodotti_trovati: number;
+    28	  prodotti_aggiornabili: number;
+    29	  prodotti_non_trovati: number;
+    30	  prezzo_mancante_o_non_valido: number;
+    31	  righe?: Array<{
+    32	    riga: number;
+    33	    codice_prodotto: string;
+    34	    barcode: string;
+    35	    descrizione_file: string;
+    36	    prezzo_promo: number | null;
+    37	    stato: string;
+    38	    match_usato: string;
+    39	    product_id: string | null;
+    40	    descrizione_db: string;
+    41	    prezzo_vendita_attuale: number | null;
+    42	  }>;
+    43	};
+    44	
+    45	function fmtEUR(value: number | null | undefined) {
+    46	  if (value === null || value === undefined || Number.isNaN(Number(value))) return '-';
+    47	  return `${Number(value).toFixed(2).replace('.', ',')} €`;
+    48	}
+    49	
+    50	export default function FornitoriScreen() {
+    51	  const [file, setFile] = useState<PromoFile | null>(null);
+    52	  const [promoNome, setPromoNome] = useState('Promo Stanley 2026');
+    53	  const [promoInizio, setPromoInizio] = useState('');
+    54	  const [promoFine, setPromoFine] = useState('');
+    55	  const [preview, setPreview] = useState<PreviewResult | null>(null);
+    56	  const [loading, setLoading] = useState(false);
+    57	
+    58	  async function scegliFile() {
+    59	    try {
+    60	      const result = await DocumentPicker.getDocumentAsync({
+    61	        type: [
+    62	          'text/csv',
+    63	          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    64	          'application/vnd.ms-excel',
+    65	          '*/*',
+    66	        ],
+    67	        copyToCacheDirectory: true,
+    68	      });
+    69	
+    70	      if (result.canceled) return;
+    71	
+    72	      const asset = result.assets?.[0];
+    73	      if (!asset) return;
+    74	
+    75	      setFile({
+    76	        uri: asset.uri,
+    77	        name: asset.name,
+    78	        mimeType: asset.mimeType,
+    79	      });
+    80	      setPreview(null);
+    81	    } catch (err: any) {
+    82	      Alert.alert('Errore file', err?.message || 'Impossibile selezionare il file.');
+    83	    }
+    84	  }
+    85	
+    86	  async function anteprimaImport() {
+    87	    if (!file) {
+    88	      Alert.alert('File mancante', 'Seleziona prima un file CSV o Excel.');
+    89	      return;
+    90	    }
+    91	
+    92	    try {
+    93	      setLoading(true);
+    94	      const res = await api.previewPromoImport(file);
+    95	      setPreview(res);
+    96	    } catch (err: any) {
+    97	      Alert.alert('Errore anteprima', err?.message || 'Import non riuscito.');
+    98	    } finally {
+    99	      setLoading(false);
+   100	    }
+   101	  }
+   102	
+   103	  async function confermaImport() {
+   104	    if (!file) {
+   105	      Alert.alert('File mancante', 'Seleziona prima un file CSV o Excel.');
+   106	      return;
+   107	    }
+   108	
+   109	    if (!promoNome.trim()) {
+   110	      Alert.alert('Nome promozione mancante', 'Inserisci il nome della promozione.');
+   111	      return;
+   112	    }
+   113	
+   114	    if (!preview) {
+   115	      Alert.alert('Anteprima mancante', 'Prima fai l’anteprima, poi conferma.');
+   116	      return;
+   117	    }
+   118	
+   119	    Alert.alert(
+   120	      'Confermare import?',
+   121	      `Aggiornerai ${preview.prodotti_aggiornabili} prodotti con il prezzo promozionale.`,
+   122	      [
+   123	        { text: 'Annulla', style: 'cancel' },
+   124	        {
+   125	          text: 'Conferma',
+   126	          style: 'destructive',
+   127	          onPress: async () => {
+   128	            try {
+   129	              setLoading(true);
+   130	              const res = await api.confirmPromoImport(
+   131	                file,
+   132	                promoNome.trim(),
+   133	                promoInizio.trim(),
+   134	                promoFine.trim()
+   135	              );
+   136	              Alert.alert('Import completato', `Prodotti aggiornati: ${res.aggiornati}`);
+   137	              setPreview(res.anteprima);
+   138	            } catch (err: any) {
+   139	              Alert.alert('Errore conferma', err?.message || 'Aggiornamento non riuscito.');
+   140	            } finally {
+   141	              setLoading(false);
+   142	            }
+   143	          },
+   144	        },
+   145	      ]
+   146	    );
+   147	  }
+   148	
+   149	  async function disattivaPromo() {
+   150	    Alert.alert(
+   151	      'Disattivare promozioni?',
+   152	      'Verranno disattivate tutte le promozioni attive. I prezzi standard non verranno modificati.',
+   153	      [
+   154	        { text: 'Annulla', style: 'cancel' },
+   155	        {
+   156	          text: 'Disattiva',
+   157	          style: 'destructive',
+   158	          onPress: async () => {
+   159	            try {
+   160	              setLoading(true);
+   161	              const res = await api.deactivatePromoPrices();
+   162	              Alert.alert('Promozioni disattivate', `Prodotti aggiornati: ${res.disattivati}`);
+   163	            } catch (err: any) {
+   164	              Alert.alert('Errore', err?.message || 'Disattivazione non riuscita.');
+   165	            } finally {
+   166	              setLoading(false);
+   167	            }
+   168	          },
+   169	        },
+   170	      ]
+   171	    );
+   172	  }
+   173	
+   174	  const righeProblematiche = preview?.righe?.filter(
+   175	    r => r.stato !== 'aggiornabile'
+   176	  ).slice(0, 20) || [];
+   177	
+   178	  return (
+   179	    <SafeAreaView style={styles.safe} edges={['top']}>
+   180	      <ScrollView contentContainerStyle={styles.container}>
+   181	        <View style={styles.header}>
+   182	          <View style={styles.iconBox}>
+   183	            <Feather name="truck" size={38} color={COLORS.brand} />
+   184	          </View>
+   185	          <Text style={styles.title}>FORNITORI</Text>
+   186	          <Text style={styles.subtitle}>
+   187	            Gestione cataloghi, grossisti e promozioni.
+   188	          </Text>
+   189	        </View>
+   190	
+   191	        <View style={styles.card}>
+   192	          <Text style={styles.cardTitle}>Importa promozione</Text>
+   193	          <Text style={styles.cardText}>
+   194	            Carica un file CSV o Excel con codice prodotto o barcode e prezzo promo.
+   195	            Il prezzo standard resta intatto.
+   196	          </Text>
+   197	
+   198	          <Text style={styles.label}>Nome promozione</Text>
+   199	          <TextInput
+   200	            style={styles.input}
+   201	            value={promoNome}
+   202	            onChangeText={setPromoNome}
+   203	            placeholder="Es. Promo Stanley 2026"
+   204	            placeholderTextColor={COLORS.onSurfaceTertiary}
+   205	          />
+   206	
+   207	          <Text style={styles.label}>Data inizio</Text>
+   208	          <TextInput
+   209	            style={styles.input}
+   210	            value={promoInizio}
+   211	            onChangeText={setPromoInizio}
+   212	            placeholder="Es. 2026-01-01"
+   213	            placeholderTextColor={COLORS.onSurfaceTertiary}
+   214	          />
+   215	
+   216	          <Text style={styles.label}>Data fine</Text>
+   217	          <TextInput
+   218	            style={styles.input}
+   219	            value={promoFine}
+   220	            onChangeText={setPromoFine}
+   221	            placeholder="Es. 2026-12-31"
+   222	            placeholderTextColor={COLORS.onSurfaceTertiary}
+   223	          />
+   224	
+   225	          <TouchableOpacity style={styles.secondaryButton} onPress={scegliFile}>
+   226	            <Feather name="file-plus" size={18} color={COLORS.onSurface} />
+   227	            <Text style={styles.secondaryButtonText}>
+   228	              {file?.name ? file.name : 'Seleziona file CSV / Excel'}
+   229	            </Text>
+   230	          </TouchableOpacity>
+   231	
+   232	          <View style={styles.row}>
+   233	            <TouchableOpacity
+   234	              style={[styles.button, loading && styles.disabled]}
+   235	              onPress={anteprimaImport}
+   236	              disabled={loading}
+   237	            >
+   238	              <Text style={styles.buttonText}>ANTEPRIMA</Text>
+   239	            </TouchableOpacity>
+   240	
+   241	            <TouchableOpacity
+   242	              style={[styles.button, styles.confirmButton, loading && styles.disabled]}
+   243	              onPress={confermaImport}
+   244	              disabled={loading}
+   245	            >
+   246	              <Text style={styles.buttonText}>CONFERMA</Text>
+   247	            </TouchableOpacity>
+   248	          </View>
+   249	
+   250	          {loading && <ActivityIndicator style={{ marginTop: 16 }} />}
+   251	        </View>
+   252	
+   253	        {preview && (
+   254	          <View style={styles.card}>
+   255	            <Text style={styles.cardTitle}>Risultato anteprima</Text>
+   256	
+   257	            <View style={styles.statRow}>
+   258	              <Text style={styles.statLabel}>Prodotti letti</Text>
+   259	              <Text style={styles.statValue}>{preview.prodotti_letti}</Text>
+   260	            </View>
+   261	            <View style={styles.statRow}>
+   262	              <Text style={styles.statLabel}>Prodotti trovati</Text>
+   263	              <Text style={styles.statValue}>{preview.prodotti_trovati}</Text>
+   264	            </View>
+   265	            <View style={styles.statRow}>
+   266	              <Text style={styles.statLabel}>Aggiornabili</Text>
+   267	              <Text style={styles.statValue}>{preview.prodotti_aggiornabili}</Text>
+   268	            </View>
+   269	            <View style={styles.statRow}>
+   270	              <Text style={styles.statLabel}>Non trovati</Text>
+   271	              <Text style={styles.statValue}>{preview.prodotti_non_trovati}</Text>
+   272	            </View>
+   273	            <View style={styles.statRow}>
+   274	              <Text style={styles.statLabel}>Prezzo mancante/non valido</Text>
+   275	              <Text style={styles.statValue}>{preview.prezzo_mancante_o_non_valido}</Text>
+   276	            </View>
+   277	          </View>
+   278	        )}
+   279	
+   280	        {preview?.righe?.length ? (
+   281	          <View style={styles.card}>
+   282	            <Text style={styles.cardTitle}>Prime righe aggiornabili</Text>
+   283	            {preview.righe.filter(r => r.stato === 'aggiornabile').slice(0, 10).map((r, index) => (
+   284	              <View key={`${r.riga}-${index}`} style={styles.productRow}>
+   285	                <Text style={styles.productTitle}>{r.descrizione_db || r.descrizione_file}</Text>
+   286	                <Text style={styles.productText}>Codice: {r.codice_prodotto || '-'}</Text>
+   287	                <Text style={styles.productText}>Barcode: {r.barcode || '-'}</Text>
+   288	                <Text style={styles.productText}>Match: {r.match_usato || '-'}</Text>
+   289	                <Text style={styles.promoPrice}>Promo: {fmtEUR(r.prezzo_promo)}</Text>
+   290	              </View>
+   291	            ))}
+   292	          </View>
+   293	        ) : null}
+   294	
+   295	        {righeProblematiche.length > 0 && (
+   296	          <View style={styles.card}>
+   297	            <Text style={styles.cardTitle}>Righe da controllare</Text>
+   298	            {righeProblematiche.map((r, index) => (
+   299	              <View key={`${r.riga}-${index}`} style={styles.problemRow}>
+   300	                <Text style={styles.productTitle}>Riga {r.riga}: {r.stato}</Text>
+   301	                <Text style={styles.productText}>Codice: {r.codice_prodotto || '-'}</Text>
+   302	                <Text style={styles.productText}>Barcode: {r.barcode || '-'}</Text>
+   303	                <Text style={styles.productText}>Descrizione: {r.descrizione_file || '-'}</Text>
+   304	              </View>
+   305	            ))}
+   306	          </View>
+   307	        )}
+   308	
+   309	        <View style={styles.card}>
+   310	          <Text style={styles.cardTitle}>Disattiva promozioni</Text>
+   311	          <Text style={styles.cardText}>
+   312	            Disattiva tutte le promo attive senza cancellare i prezzi standard.
+   313	          </Text>
+   314	          <TouchableOpacity style={styles.dangerButton} onPress={disattivaPromo} disabled={loading}>
+   315	            <Text style={styles.buttonText}>DISATTIVA PROMO</Text>
+   316	          </TouchableOpacity>
+   317	        </View>
+   318	      </ScrollView>
+   319	    </SafeAreaView>
+   320	  );
+   321	}
+   322	
+   323	const styles = StyleSheet.create({
+   324	  safe: {
+   325	    flex: 1,
+   326	    backgroundColor: COLORS.surface,
+   327	  },
+   328	  container: {
+   329	    padding: 18,
+   330	    paddingBottom: 40,
+   331	    gap: 16,
+   332	  },
+   333	  header: {
+   334	    alignItems: 'center',
+   335	    gap: 10,
+   336	    marginBottom: 4,
+   337	  },
+   338	  iconBox: {
+   339	    width: 76,
+   340	    height: 76,
+   341	    borderWidth: 1,
+   342	    borderColor: COLORS.brand,
+   343	    alignItems: 'center',
+   344	    justifyContent: 'center',
+   345	    backgroundColor: COLORS.surface,
+   346	  },
+   347	  title: {
+   348	    fontFamily: FONTS.display,
+   349	    fontSize: 24,
+   350	    color: COLORS.onSurface,
+   351	    fontWeight: '900',
+   352	    letterSpacing: 2,
+   353	  },
+   354	  subtitle: {
+   355	    fontFamily: FONTS.mono,
+   356	    fontSize: 14,
+   357	    color: COLORS.onSurfaceTertiary,
+   358	    textAlign: 'center',
+   359	    lineHeight: 21,
+   360	  },
+   361	  card: {
+   362	    backgroundColor: COLORS.surface,
+   363	    borderWidth: 1,
+   364	    borderColor: COLORS.border,
+   365	    padding: 14,
+   366	    gap: 10,
+   367	  },
+   368	  cardTitle: {
+   369	    fontFamily: FONTS.display,
+   370	    fontSize: 18,
+   371	    fontWeight: '900',
+   372	    color: COLORS.onSurface,
+   373	    letterSpacing: 1,
+   374	  },
+   375	  cardText: {
+   376	    fontFamily: FONTS.mono,
+   377	    fontSize: 13,
+   378	    color: COLORS.onSurfaceTertiary,
+   379	    lineHeight: 19,
+   380	  },
+   381	  label: {
+   382	    fontFamily: FONTS.mono,
+   383	    fontSize: 12,
+   384	    color: COLORS.onSurfaceTertiary,
+   385	    marginTop: 4,
+   386	  },
+   387	  input: {
+   388	    borderWidth: 1,
+   389	    borderColor: COLORS.border,
+   390	    backgroundColor: COLORS.surface,
+   391	    color: COLORS.onSurface,
+   392	    paddingHorizontal: 12,
+   393	    paddingVertical: 10,
+   394	    fontFamily: FONTS.mono,
+   395	    fontSize: 14,
+   396	  },
+   397	  secondaryButton: {
+   398	    borderWidth: 1,
+   399	    borderColor: COLORS.border,
+   400	    padding: 12,
+   401	    flexDirection: 'row',
+   402	    alignItems: 'center',
+   403	    gap: 8,
+   404	    backgroundColor: COLORS.surface,
+   405	  },
+   406	  secondaryButtonText: {
+   407	    flex: 1,
+   408	    fontFamily: FONTS.mono,
+   409	    color: COLORS.onSurface,
+   410	    fontSize: 13,
+   411	  },
+   412	  row: {
+   413	    flexDirection: 'row',
+   414	    gap: 10,
+   415	  },
+   416	  button: {
+   417	    flex: 1,
+   418	    backgroundColor: COLORS.brand,
+   419	    padding: 13,
+   420	    alignItems: 'center',
+   421	  },
+   422	  confirmButton: {
+   423	    backgroundColor: COLORS.surfaceInverse,
+   424	  },
+   425	  dangerButton: {
+   426	    backgroundColor: '#8B1E1E',
+   427	    padding: 13,
+   428	    alignItems: 'center',
+   429	  },
+   430	  disabled: {
+   431	    opacity: 0.5,
+   432	  },
+   433	  buttonText: {
+   434	    fontFamily: FONTS.display,
+   435	    color: COLORS.onSurfaceInverse,
+   436	    fontWeight: '900',
+   437	    letterSpacing: 1,
+   438	  },
+   439	  statRow: {
+   440	    flexDirection: 'row',
+   441	    justifyContent: 'space-between',
+   442	    borderBottomWidth: 1,
+   443	    borderBottomColor: COLORS.border,
+   444	    paddingVertical: 8,
+   445	  },
+   446	  statLabel: {
+   447	    fontFamily: FONTS.mono,
+   448	    color: COLORS.onSurfaceTertiary,
+   449	    fontSize: 13,
+   450	  },
+   451	  statValue: {
+   452	    fontFamily: FONTS.display,
+   453	    color: COLORS.onSurface,
+   454	    fontWeight: '900',
+   455	    fontSize: 16,
+   456	  },
+   457	  productRow: {
+   458	    borderTopWidth: 1,
+   459	    borderTopColor: COLORS.border,
+   460	    paddingTop: 10,
+   461	    gap: 3,
+   462	  },
+   463	  problemRow: {
+   464	    borderTopWidth: 1,
+   465	    borderTopColor: COLORS.border,
+   466	    paddingTop: 10,
+   467	    gap: 3,
+   468	    backgroundColor: 'rgba(139, 30, 30, 0.08)',
+   469	  },
+   470	  productTitle: {
+   471	    fontFamily: FONTS.display,
+   472	    color: COLORS.onSurface,
+   473	    fontSize: 14,
+   474	    fontWeight: '900',
+   475	  },
+   476	  productText: {
+   477	    fontFamily: FONTS.mono,
+   478	    color: COLORS.onSurfaceTertiary,
+   479	    fontSize: 12,
+   480	  },
+   481	  promoPrice: {
+   482	    fontFamily: FONTS.display,
+   483	    color: COLORS.brand,
+   484	    fontSize: 15,
+   485	    fontWeight: '900',
+   486	  },
+   487	});

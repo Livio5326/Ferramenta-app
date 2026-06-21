@@ -1,0 +1,181 @@
+   480	        letti += 1
+   481	
+   482	        codice = _pulisci_testo(_valore_da_riga(row, [
+   483	            "codice_prodotto",
+   484	            "codice prodotto",
+   485	            "codice",
+   486	            "codice_articolo",
+   487	            "codice articolo",
+   488	            "sku"
+   489	        ]))
+   490	
+   491	        barcode = _pulisci_testo(_valore_da_riga(row, [
+   492	            "barcode",
+   493	            "ean",
+   494	            "ean13",
+   495	            "codice_barre",
+   496	            "codice barre"
+   497	        ]))
+   498	
+   499	        descrizione_file = _pulisci_testo(_valore_da_riga(row, [
+   500	            "descrizione",
+   501	            "description",
+   502	            "nome",
+   503	            "prodotto"
+   504	        ]))
+   505	
+   506	        prezzo = _parse_prezzo(_valore_da_riga(row, [
+   507	            "prezzo_promo",
+   508	            "prezzo promo",
+   509	            "prezzo_promozionale",
+   510	            "prezzo promozionale",
+   511	            "promo",
+   512	            "prezzo",
+   513	            "prezzo_netto",
+   514	            "prezzo netto"
+   515	        ]))
+   516	
+   517	        prodotto = None
+   518	        match_usato = ""
+   519	
+   520	        if codice:
+   521	            prodotto = await db.products.find_one({"codice_prodotto": codice}, {"_id": 0})
+   522	            if prodotto:
+   523	                match_usato = "codice_prodotto"
+   524	
+   525	        if not prodotto and barcode:
+   526	            prodotto = await db.products.find_one({"barcode": barcode}, {"_id": 0})
+   527	            if prodotto:
+   528	                match_usato = "barcode"
+   529	
+   530	        stato = "aggiornabile"
+   531	
+   532	        if prezzo is None:
+   533	            prezzo_non_valido += 1
+   534	            stato = "prezzo_non_valido"
+   535	        elif not prodotto:
+   536	            non_trovati += 1
+   537	            stato = "non_trovato"
+   538	        else:
+   539	            trovati += 1
+   540	            aggiornabili += 1
+   541	
+   542	        risultati.append({
+   543	            "riga": index,
+   544	            "codice_prodotto": codice,
+   545	            "barcode": barcode,
+   546	            "descrizione_file": descrizione_file,
+   547	            "prezzo_promo": prezzo,
+   548	            "stato": stato,
+   549	            "match_usato": match_usato,
+   550	            "product_id": prodotto.get("id") if prodotto else None,
+   551	            "descrizione_db": prodotto.get("descrizione") if prodotto else "",
+   552	            "prezzo_vendita_attuale": prodotto.get("prezzo_vendita") if prodotto else None
+   553	        })
+   554	
+   555	    return {
+   556	        "prodotti_letti": letti,
+   557	        "prodotti_trovati": trovati,
+   558	        "prodotti_aggiornabili": aggiornabili,
+   559	        "prodotti_non_trovati": non_trovati,
+   560	        "prezzo_mancante_o_non_valido": prezzo_non_valido,
+   561	        "righe": risultati
+   562	    }
+   563	
+   564	
+   565	@api_router.post("/products/import-promo-prices/preview")
+   566	async def preview_import_promo_prices(file: UploadFile = File(...)):
+   567	    content = await file.read()
+   568	    rows = _leggi_file_promo_sync(file.filename, content)
+   569	    return await _crea_anteprima_promo(rows)
+   570	
+   571	
+   572	@api_router.post("/products/import-promo-prices/confirm")
+   573	async def confirm_import_promo_prices(
+   574	    file: UploadFile = File(...),
+   575	    promo_nome: str = Form(...),
+   576	    promo_inizio: str = Form(""),
+   577	    promo_fine: str = Form("")
+   578	):
+   579	    content = await file.read()
+   580	    rows = _leggi_file_promo_sync(file.filename, content)
+   581	    anteprima = await _crea_anteprima_promo(rows)
+   582	
+   583	    aggiornati = 0
+   584	    now = datetime.now(timezone.utc).isoformat()
+   585	
+   586	    for r in anteprima["righe"]:
+   587	        if r["stato"] != "aggiornabile":
+   588	            continue
+   589	
+   590	        product_id = r.get("product_id")
+   591	        prezzo_promo = r.get("prezzo_promo")
+   592	
+   593	        if not product_id or prezzo_promo is None:
+   594	            continue
+   595	
+   596	        await db.products.update_one(
+   597	            {"id": product_id},
+   598	            {"$set": {
+   599	                "prezzo_promo": prezzo_promo,
+   600	                "promo_attiva": True,
+   601	                "promo_nome": promo_nome,
+   602	                "promo_inizio": promo_inizio,
+   603	                "promo_fine": promo_fine,
+   604	                "ultimo_aggiornamento_promo": now,
+   605	                "updated_at": now
+   606	            }}
+   607	        )
+   608	        aggiornati += 1
+   609	
+   610	    return {
+   611	        "ok": True,
+   612	        "aggiornati": aggiornati,
+   613	        "anteprima": anteprima
+   614	    }
+   615	
+   616	
+   617	@api_router.post("/products/promo/deactivate")
+   618	async def deactivate_promo_prices():
+   619	    now = datetime.now(timezone.utc).isoformat()
+   620	    res = await db.products.update_many(
+   621	        {"promo_attiva": True},
+   622	        {"$set": {
+   623	            "promo_attiva": False,
+   624	            "ultimo_aggiornamento_promo": now,
+   625	            "updated_at": now
+   626	        }}
+   627	    )
+   628	    return {
+   629	        "ok": True,
+   630	        "disattivati": res.modified_count
+   631	    }
+   632	
+   633	
+   634	
+   635	@api_router.get("/products/{pid}", response_model=Product)
+   636	async def get_product(pid: str):
+   637	    doc = await db.products.find_one({"id": pid}, {"_id": 0})
+   638	    if not doc:
+   639	        raise HTTPException(status_code=404, detail="Prodotto non trovato")
+   640	    return Product(**doc)
+   641	
+   642	
+   643	@api_router.post("/products", response_model=Product)
+   644	async def create_product(input: ProductCreate):
+   645	    prod = Product(**input.dict())
+   646	    data = applica_marca_standard_al_prodotto(prod.dict())
+   647	    await db.products.insert_one(data)
+   648	    return prod
+   649	
+   650	
+   651	@api_router.put("/products/{pid}", response_model=Product)
+   652	async def update_product(pid: str, input: ProductUpdate):
+   653	    updates = {k: v for k, v in input.dict().items() if v is not None}
+   654	    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+   655	    res = await db.products.update_one({"id": pid}, {"$set": updates})
+   656	    if res.matched_count == 0:
+   657	        raise HTTPException(status_code=404, detail="Prodotto non trovato")
+   658	    doc = await db.products.find_one({"id": pid}, {"_id": 0})
+   659	    return Product(**doc)
+   660	
