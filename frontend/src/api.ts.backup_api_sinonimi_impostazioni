@@ -167,21 +167,4 @@ export const api = {
     }>('/statistiche'),
   createSale: (items: { product_id: string; descrizione: string; prezzo_vendita: number; quantita: number }[]) =>
     req<{ id: string; totale: number }>('/sales', { method: 'POST', body: JSON.stringify({ items }) }),
-
-  listSearchSynonyms: async () => {
-    return req<{ termine: string; sinonimi: string[] }[]>('/search-synonyms');
-  },
-
-  saveSearchSynonym: async (payload: { termine: string; sinonimi: string[] }) => {
-    return req('/search-synonyms', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  },
-
-  deleteSearchSynonym: async (termine: string) => {
-    return req(`/search-synonyms/${encodeURIComponent(termine)}`, {
-      method: 'DELETE',
-    });
-  },
 };

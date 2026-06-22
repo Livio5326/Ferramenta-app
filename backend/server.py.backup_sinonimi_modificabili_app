@@ -1,5 +1,5 @@
 import re
-from fastapi import FastAPI, APIRouter, HTTPException, Body
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -225,51 +225,11 @@ def clean(doc):
 
 
 # ---------- Routes ----------
-
-async def carica_sinonimi_ricerca_db() -> dict:
-    """
-    Carica i sinonimi ricerca salvati nel database.
-    Collection: search_synonyms
-    Documento esempio:
-    {
-      "termine": "flex",
-      "sinonimi": ["flessibile", "smerigliatrice"]
-    }
-    """
-    sinonimi = {}
-
-    try:
-        docs = await db.search_synonyms.find({}).to_list(1000)
-    except Exception:
-        return sinonimi
-
-    for d in docs:
-        termine = str(d.get("termine", "")).strip().lower()
-        lista = d.get("sinonimi", [])
-
-        if not termine:
-            continue
-
-        if isinstance(lista, str):
-            lista = [x.strip() for x in lista.split(",") if x.strip()]
-
-        puliti = []
-        for s in lista:
-            s_norm = str(s).strip().lower()
-            if s_norm and s_norm not in puliti:
-                puliti.append(s_norm)
-
-        if puliti:
-            sinonimi[termine] = puliti
-
-    return sinonimi
-
-
-def applica_modalita_ricerca(query: dict, q: str | None, search_mode: str | None = "descrizione", sinonimi_extra: dict | None = None) -> dict:
+def applica_modalita_ricerca(query: dict, q: str | None, search_mode: str | None = "descrizione") -> dict:
     """
     Ricerca catalogo migliorata.
 
-    - descrizione: parole in ordine libero + sinonimi base + sinonimi salvati nel DB
+    - descrizione: parole in ordine libero + sinonimi da ferramenta
     - codice: cerca solo nel codice prodotto
     - barcode: cerca solo nel codice a barre, anche se salvato come testo o numero
     """
@@ -350,20 +310,6 @@ def applica_modalita_ricerca(query: dict, q: str | None, search_mode: str | None
         "raccordi": ["raccordo", "tubo", "irrigazione", "idraulica"],
     }
 
-    # Aggiunge/integra sinonimi salvati nel database
-    if sinonimi_extra:
-        for termine, lista in sinonimi_extra.items():
-            termine_norm = str(termine).strip().lower()
-            if not termine_norm:
-                continue
-
-            sinonimi.setdefault(termine_norm, [])
-
-            for s in lista:
-                s_norm = str(s).strip().lower()
-                if s_norm and s_norm not in sinonimi[termine_norm]:
-                    sinonimi[termine_norm].append(s_norm)
-
     parole_originali = [p.strip().lower() for p in testo.split() if p.strip()]
 
     if not parole_originali:
@@ -377,6 +323,7 @@ def applica_modalita_ricerca(query: dict, q: str | None, search_mode: str | None
         if parola in sinonimi:
             gruppo.extend(sinonimi[parola])
 
+        # elimina duplicati mantenendo ordine
         gruppo_pulito = []
         for g in gruppo:
             if g and g not in gruppo_pulito:
@@ -906,8 +853,7 @@ async def get_products_page(
     if disponibile is True:
         query["quantita"] = {"$gt": 0}
 
-    sinonimi_db = await carica_sinonimi_ricerca_db()
-    query = applica_modalita_ricerca(query, q, search_mode, sinonimi_db)
+    query = applica_modalita_ricerca(query, q, search_mode)
 
     limit = max(1, min(int(limit or 30), 100))
     skip = max(0, int(skip or 0))
@@ -928,91 +874,6 @@ async def get_products_page(
         "skip": skip,
         "limit": limit,
         "hasMore": skip + len(items) < total,
-    }
-
-
-
-@api_router.get("/search-synonyms")
-async def list_search_synonyms():
-    """
-    Lista sinonimi ricerca modificabili dall'app.
-    """
-    docs = await db.search_synonyms.find({}, {"_id": 0}).sort("termine", 1).to_list(1000)
-
-    result = []
-    for d in docs:
-        termine = str(d.get("termine", "")).strip().lower()
-        sinonimi = d.get("sinonimi", [])
-
-        if isinstance(sinonimi, str):
-            sinonimi = [x.strip() for x in sinonimi.split(",") if x.strip()]
-
-        result.append({
-            "termine": termine,
-            "sinonimi": sinonimi,
-        })
-
-    return result
-
-
-@api_router.post("/search-synonyms")
-async def save_search_synonym(payload: dict = Body(...)):
-    """
-    Crea o aggiorna una riga sinonimi.
-    Body:
-    {
-      "termine": "flex",
-      "sinonimi": ["flessibile", "smerigliatrice"]
-    }
-    """
-    termine = str(payload.get("termine", "")).strip().lower()
-
-    if not termine:
-        raise HTTPException(status_code=400, detail="Termine obbligatorio")
-
-    sinonimi = payload.get("sinonimi", [])
-
-    if isinstance(sinonimi, str):
-        sinonimi = [x.strip() for x in sinonimi.split(",") if x.strip()]
-
-    puliti = []
-    for s in sinonimi:
-        s_norm = str(s).strip().lower()
-        if s_norm and s_norm != termine and s_norm not in puliti:
-            puliti.append(s_norm)
-
-    await db.search_synonyms.update_one(
-        {"termine": termine},
-        {
-            "$set": {
-                "termine": termine,
-                "sinonimi": puliti,
-            }
-        },
-        upsert=True
-    )
-
-    return {
-        "termine": termine,
-        "sinonimi": puliti,
-    }
-
-
-@api_router.delete("/search-synonyms/{termine}")
-async def delete_search_synonym(termine: str):
-    """
-    Elimina una riga sinonimi.
-    """
-    termine_norm = str(termine).strip().lower()
-
-    if not termine_norm:
-        raise HTTPException(status_code=400, detail="Termine obbligatorio")
-
-    res = await db.search_synonyms.delete_one({"termine": termine_norm})
-
-    return {
-        "deleted": res.deleted_count,
-        "termine": termine_norm,
     }
 
 
