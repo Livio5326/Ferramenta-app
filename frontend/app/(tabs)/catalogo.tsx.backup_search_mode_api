@@ -322,8 +322,7 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
     setLoading(true);
     try {
       const res = await api.listProductsPage({
-        
-        search_mode: searchMode,q: q || undefined,
+        q: q || undefined,
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
@@ -393,8 +392,7 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
     setLoadingMore(true);
     try {
       const res = await api.listProductsPage({
-        
-        search_mode: searchMode,q: q || undefined,
+        q: q || undefined,
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,

@@ -302,7 +302,8 @@ export default function CatalogoVendita() {
     setLoading(true);
     try {
       const res = await api.listProductsPage({
-        q: q || undefined,
+        
+        search_mode: searchMode,q: q || undefined,
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
@@ -372,7 +373,8 @@ export default function CatalogoVendita() {
     setLoadingMore(true);
     try {
       const res = await api.listProductsPage({
-        q: q || undefined,
+        
+        search_mode: searchMode,q: q || undefined,
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
@@ -472,7 +474,7 @@ export default function CatalogoVendita() {
         <TextInput
           value={q}
           onChangeText={setQ}
-          placeholder={searchMode === 'codice' ? 'Cerca per codice prodotto...' : searchMode === 'barcode' ? 'Cerca per codice a barre...' : categoria ? `Cerca descrizione in ${categoria}...` : 'Cerca per descrizione...'}
+          placeholder="Cerca" 
           placeholderTextColor={COLORS.onSurfaceSecondary}
           style={styles.searchInput}
           testID="search-input"

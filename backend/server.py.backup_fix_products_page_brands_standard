@@ -1,4 +1,3 @@
-import re
 from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -28,7 +27,6 @@ app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 from fastapi import UploadFile, File, Form
 import csv
 import io
-from bson import ObjectId
 
 api_router = APIRouter(prefix="/api")
 
@@ -63,6 +61,7 @@ def normalizza_marca_standard(raw: str | None) -> str:
     value = (raw or "").strip()
     key = value.upper().strip()
 
+    import re
     normalized = re.sub(r"[^A-Z0-9]+", " ", key).strip()
 
     BRAND_MAPPING = {
@@ -227,11 +226,11 @@ def clean(doc):
 # ---------- Routes ----------
 def applica_modalita_ricerca(query: dict, q: str | None, search_mode: str | None = "descrizione") -> dict:
     """
-    Applica la ricerca al catalogo.
+    Ricerca catalogo più intelligente.
 
-    - descrizione: cerca parole anche in ordine diverso
-    - codice: cerca solo nel codice prodotto
-    - barcode: cerca solo nel codice a barre, anche se salvato come testo o numero
+    - descrizione: divide la ricerca in parole e le cerca in qualsiasi ordine
+    - codice: cerca nel codice prodotto
+    - barcode: cerca nel codice a barre
     """
     if not q or not str(q).strip():
         return query
@@ -244,36 +243,16 @@ def applica_modalita_ricerca(query: dict, q: str | None, search_mode: str | None
         return query
 
     if mode == "barcode":
-        # Normalizza il barcode digitato manualmente.
-        # Esempio: "800 123 456" diventa anche "800123456"
-        solo_numeri = re.sub(r"\D+", "", testo)
-
-        condizioni_barcode = [
-            {"barcode": testo},
-            {"barcode": {"$regex": re.escape(testo), "$options": "i"}},
-        ]
-
-        if solo_numeri and solo_numeri != testo:
-            condizioni_barcode.append({"barcode": solo_numeri})
-            condizioni_barcode.append({"barcode": {"$regex": re.escape(solo_numeri), "$options": "i"}})
-
-        # Se nel database qualche barcode è stato salvato come numero,
-        # lo cerchiamo anche come intero.
-        if solo_numeri:
-            try:
-                condizioni_barcode.append({"barcode": int(solo_numeri)})
-            except Exception:
-                pass
-
-        query["$or"] = condizioni_barcode
+        query["barcode"] = {"$regex": re.escape(testo), "$options": "i"}
         return query
 
-    # Descrizione intelligente:
+    # Modalità descrizione intelligente:
     # "ferro disco 115" trova anche "Disco da taglio ferro 115 mm"
-    parole = [p.strip() for p in testo.split() if p.strip()]
-
-    if not parole:
-        return query
+    parole = [
+        p.strip()
+        for p in re.split(r"\\s+", testo)
+        if p.strip()
+    ]
 
     condizioni = []
 
@@ -291,7 +270,11 @@ def applica_modalita_ricerca(query: dict, q: str | None, search_mode: str | None
             ]
         })
 
-    query["$and"] = query.get("$and", []) + condizioni
+    if condizioni:
+        if "$and" in query:
+            query["$and"].extend(condizioni)
+        else:
+            query["$and"] = condizioni
 
     return query
 
@@ -739,134 +722,12 @@ async def get_standard_brands():
     return sorted(list(set(clean)), key=lambda x: x.lower())
 
 
-
-@api_router.get("/brands/standard")
-async def get_standard_brands():
-    """
-    Elenco marche standard per i filtri catalogo.
-    """
-    brands = await db.products.distinct("marca_standard")
-
-    clean = []
-    for b in brands:
-        if b is None:
-            continue
-        nome = str(b).strip()
-        if nome:
-            clean.append(nome)
-
-    return sorted(list(set(clean)), key=lambda x: x.lower())
-
-
-@api_router.get("/products/standard-brands")
-async def get_products_standard_brands():
-    """
-    Alias compatibile: stesso risultato di /brands/standard.
-    """
-    brands = await db.products.distinct("marca_standard")
-
-    clean = []
-    for b in brands:
-        if b is None:
-            continue
-        nome = str(b).strip()
-        if nome:
-            clean.append(nome)
-
-    return sorted(list(set(clean)), key=lambda x: x.lower())
-
-
-@api_router.get("/products/page")
-async def get_products_page(
-    q: str | None = None,
-    search_mode: str | None = "descrizione",
-    categoria: str | None = None,
-    marca_standard: str | None = None,
-    disponibile: bool | None = None,
-    limit: int = 30,
-    skip: int = 0,
-):
-    """
-    Catalogo paginato usato dal frontend.
-    """
-    query = {}
-
-    if categoria:
-        query["categoria_standard"] = categoria
-
-    if marca_standard:
-        query["marca_standard"] = marca_standard
-
-    if disponibile is True:
-        query["quantita"] = {"$gt": 0}
-
-    query = applica_modalita_ricerca(query, q, search_mode)
-
-    limit = max(1, min(int(limit or 30), 100))
-    skip = max(0, int(skip or 0))
-
-    total = await db.products.count_documents(query)
-
-    docs = await db.products.find(query).skip(skip).limit(limit).to_list(limit)
-
-    items = []
-    for p in docs:
-        p["id"] = str(p.get("_id"))
-        p.pop("_id", None)
-        items.append(p)
-
-    return {
-        "items": items,
-        "total": total,
-        "skip": skip,
-        "limit": limit,
-        "hasMore": skip + len(items) < total,
-    }
-
-
 @api_router.get("/products/{pid}", response_model=Product)
 async def get_product(pid: str):
-    """
-    Dettaglio prodotto robusto.
-
-    Cerca il prodotto per:
-    - _id MongoDB
-    - id salvato nel documento
-    - codice_prodotto
-    - barcode
-
-    Serve perché dalla ricerca barcode può arrivare un identificativo diverso
-    rispetto all'id MongoDB.
-    """
-    condizioni = [
-        {"id": pid},
-        {"codice_prodotto": pid},
-        {"barcode": pid},
-    ]
-
-    # Se il pid è un ObjectId valido, cerca anche su _id MongoDB
-    try:
-        if ObjectId.is_valid(pid):
-            condizioni.insert(0, {"_id": ObjectId(pid)})
-    except Exception:
-        pass
-
-    # Se il barcode è salvato come numero, cerca anche come intero
-    try:
-        condizioni.append({"barcode": int(pid)})
-    except Exception:
-        pass
-
-    prodotto = await db.products.find_one({"$or": condizioni})
-
-    if not prodotto:
+    doc = await db.products.find_one({"id": pid}, {"_id": 0})
+    if not doc:
         raise HTTPException(status_code=404, detail="Prodotto non trovato")
-
-    prodotto["id"] = str(prodotto.get("_id") or prodotto.get("id") or "")
-    prodotto.pop("_id", None)
-
-    return prodotto
-
+    return Product(**doc)
 
 
 @api_router.post("/products", response_model=Product)
@@ -879,61 +740,13 @@ async def create_product(input: ProductCreate):
 
 @api_router.put("/products/{pid}", response_model=Product)
 async def update_product(pid: str, input: ProductUpdate):
-    """
-    Aggiornamento prodotto robusto.
-
-    Cerca il prodotto per:
-    - _id MongoDB
-    - id salvato nel documento
-    - codice_prodotto
-    - barcode
-
-    Poi aggiorna usando il vero _id MongoDB.
-    """
-    condizioni = [
-        {"id": pid},
-        {"codice_prodotto": pid},
-        {"barcode": pid},
-    ]
-
-    try:
-        if ObjectId.is_valid(pid):
-            condizioni.insert(0, {"_id": ObjectId(pid)})
-    except Exception:
-        pass
-
-    try:
-        condizioni.append({"barcode": int(pid)})
-    except Exception:
-        pass
-
-    prodotto_esistente = await db.products.find_one({"$or": condizioni})
-
-    if not prodotto_esistente:
+    updates = {k: v for k, v in input.dict().items() if v is not None}
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    res = await db.products.update_one({"id": pid}, {"$set": updates})
+    if res.matched_count == 0:
         raise HTTPException(status_code=404, detail="Prodotto non trovato")
-
-    update_data = input.dict(exclude_unset=True)
-
-    if not update_data:
-        prodotto_esistente["id"] = str(prodotto_esistente.get("_id") or prodotto_esistente.get("id") or "")
-        prodotto_esistente.pop("_id", None)
-        return prodotto_esistente
-
-    await db.products.update_one(
-        {"_id": prodotto_esistente["_id"]},
-        {"$set": update_data}
-    )
-
-    prodotto_aggiornato = await db.products.find_one({"_id": prodotto_esistente["_id"]})
-
-    if not prodotto_aggiornato:
-        raise HTTPException(status_code=404, detail="Prodotto non trovato dopo aggiornamento")
-
-    prodotto_aggiornato["id"] = str(prodotto_aggiornato.get("_id") or prodotto_aggiornato.get("id") or "")
-    prodotto_aggiornato.pop("_id", None)
-
-    return prodotto_aggiornato
-
+    doc = await db.products.find_one({"id": pid}, {"_id": 0})
+    return Product(**doc)
 
 
 @api_router.delete("/products/{pid}")
@@ -961,6 +774,7 @@ async def adjust_stock(pid: str, body: StockAdjust):
 
 def calcola_categoria_standard_import(data: dict) -> str:
     """Assegna categoria_standard in modo stabile durante l'import Excel."""
+    import re
 
     def up(v):
         return str(v or "").strip().upper()

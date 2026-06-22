@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Modal, FlatList, Pressable, ScrollView, ActivityIndicator,
   Alert
 } from 'react-native';
@@ -248,23 +248,11 @@ function prodottoInCategoriaStandard(p: any, categoria: string) {
   return categoriaStandardDaImportata(p) === categoria;
 }
 
-export default function Catalogo() {
+export default function CatalogoVendita() {
   const router = useRouter();
   const params = useLocalSearchParams();
-
-
-const categoriaParam = params.categoria;
-
-const categoriaDaPagina = Array.isArray(categoriaParam)
-  ? categoriaParam[0]
-  : typeof categoriaParam === 'string'
-    ? categoriaParam
-    : '';
-
-const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
-
   const soloSottoScorta = params.sotto_scorta === 'true';
-  const soloVendita = params.vendita === 'true';
+  const soloVendita = true;
   const mode = useAppStore((s) => s.mode);
   const addToCart = useAppStore((s) => s.addToCart);
   const isCliente = mode === 'cliente';
@@ -272,19 +260,11 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
   const [q, setQ] = useState('');
   const [searchMode, setSearchMode] = useState<'descrizione' | 'codice' | 'barcode'>('descrizione');
   const [categoria, setCategoria] = useState<string | null>(null);
-  useEffect(() => {
-  if (!categoriaDaPagina) return;
-
-  setCategoria(categoriaDaPagina as any);
-  setQ('');
-}, [categoriaDaPagina]);
   const [marcaStandard, setMarcaStandard] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [brandSearch, setBrandSearch] = useState('');
   const [brandsReali, setBrandsReali] = useState<string[]>([]);
-  const cats = catalogoFiltratoDaPagina 
-  ? [categoriaDaPagina]
-  : CATEGORIE_STANDARD;
+  const cats = CATEGORIE_STANDARD;
   const brands = brandsReali.length > 0 ? brandsReali : MARCHE_STANDARD;
   const filteredBrands = brands.filter((m) => m.toLowerCase().includes(brandSearch.trim().toLowerCase()));
 
@@ -322,12 +302,11 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
     setLoading(true);
     try {
       const res = await api.listProductsPage({
-        
-        search_mode: searchMode,q: q || undefined,
+        q: q || undefined,
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
-        vendibile: soloVendita || undefined,
+        vendibile: true,
         limit: 30,
         skip: 0,
       });
@@ -393,12 +372,11 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
     setLoadingMore(true);
     try {
       const res = await api.listProductsPage({
-        
-        search_mode: searchMode,q: q || undefined,
+        q: q || undefined,
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
-        vendibile: soloVendita || undefined,
+        vendibile: true,
         limit: 30,
         skip: items.length,
       });
@@ -516,17 +494,13 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
       {/* Category chips */}
       <View style={styles.chipsRow}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsContent}>
-          {!catalogoFiltratoDaPagina && (
-  <Pressable
-    style={[styles.chip, !categoria && styles.chipActive]}
-    onPress={() => cambiaCategoria(null)}
-    testID="chip-tutti"
-  >
-    <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>
-      TUTTI
-    </Text>
-  </Pressable>
-)}
+          <Pressable
+            style={[styles.chip, !categoria && styles.chipActive]}
+            onPress={() => cambiaCategoria(null)}
+            testID="chip-tutti"
+          >
+            <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>TUTTI</Text>
+          </Pressable>
           {cats.map((c) => (
             <Pressable
               key={c}
@@ -789,7 +763,7 @@ const styles = StyleSheet.create({
   lowBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: COLORS.error, paddingHorizontal: 6, paddingVertical: 2 },
   lowBadgeText: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onError, fontWeight: '900', letterSpacing: 1 },
   cardBody: { padding: 6, gap: 3 },
-  cardBrand: { fontFamily: FONTS.mono, fontSize: 9, color: COLORS.onSurfaceSecondary, letterSpacing: 1.5, marginBottom: 2 },
+  cardBrand: { fontFamily: FONTS.mono, fontSize: 9, color: COLORS.onSurfaceTertiary, letterSpacing: 1.5, marginBottom: 2 },
   cardTitle: { fontFamily: FONTS.display, fontSize: 13, color: COLORS.onSurface, fontWeight: '800', marginBottom: 4 },
   cardFoot: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   cardSub: {
@@ -801,8 +775,8 @@ const styles = StyleSheet.create({
   cardPrice: { fontFamily: FONTS.mono, fontSize: 13, textAlign: 'left', marginLeft: 6, fontWeight: '900', color: COLORS.brand },
   qtyBox: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'flex-end', gap: 4 },
   qtyNumberBadge: { alignItems: 'center', justifyContent: 'center' },
-qtyLabelSmall: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceSecondary, fontWeight: '700' },
-qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLORS.onSurface, fontWeight: '900', transform: [{ scale: 1.12 }] },
+  qtyLabelSmall: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceTertiary, fontWeight: '700' },
+  qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLORS.onSurface, fontWeight: '900', transform: [{ scale: 1.12 }] },
   cardQty: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurface, fontWeight: '700' },
   cardQtyNumber: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurface, fontWeight: '700' },
   addBtn: { marginTop: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: COLORS.brand, paddingVertical: 6 },
@@ -827,7 +801,7 @@ qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLO
   filtersPanel: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.brand, borderRadius: 14, padding: 12, gap: 8 },
   filtersHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
   filtersTitle: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.onSurface, fontWeight: '900', letterSpacing: 1.5 },
-filterLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceSecondary, marginTop: 6, marginBottom: 2, letterSpacing: 1.5 },
+  filterLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceTertiary, marginTop: 6, marginBottom: 2, letterSpacing: 1.5 },
   filterActions: { flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginTop: 10 },
   filterClearBtn: { flex: 1, borderWidth: 1, borderColor: COLORS.brand, paddingVertical: 10, alignItems: 'center' },
   filterApplyBtn: { flex: 1, backgroundColor: COLORS.brand, paddingVertical: 10, alignItems: 'center' },
@@ -835,25 +809,5 @@ filterLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceSeco
   filterApplyTxt: { fontFamily: FONTS.mono, color: COLORS.surface, fontWeight: '800' },
   brandSearchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surfaceSecondary, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 6 },
   brandSearchInput: { flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: COLORS.onSurface, padding: 0 },
-
-cardNote: {
-  fontFamily: FONTS.mono,
-  fontSize: 11,
-  lineHeight: 16,
-  color: COLORS.onSurfaceSecondary,
-  marginTop: 6,
-},
-
-text: {
-  fontFamily: FONTS.mono,
-  fontSize: 14,
-  color: COLORS.onSurface,
-},
-
-textMuted: {
-  fontFamily: FONTS.mono,
-  fontSize: 12,
-  color: COLORS.onSurfaceSecondary,
-},
 });
 

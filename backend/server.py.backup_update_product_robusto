@@ -879,61 +879,13 @@ async def create_product(input: ProductCreate):
 
 @api_router.put("/products/{pid}", response_model=Product)
 async def update_product(pid: str, input: ProductUpdate):
-    """
-    Aggiornamento prodotto robusto.
-
-    Cerca il prodotto per:
-    - _id MongoDB
-    - id salvato nel documento
-    - codice_prodotto
-    - barcode
-
-    Poi aggiorna usando il vero _id MongoDB.
-    """
-    condizioni = [
-        {"id": pid},
-        {"codice_prodotto": pid},
-        {"barcode": pid},
-    ]
-
-    try:
-        if ObjectId.is_valid(pid):
-            condizioni.insert(0, {"_id": ObjectId(pid)})
-    except Exception:
-        pass
-
-    try:
-        condizioni.append({"barcode": int(pid)})
-    except Exception:
-        pass
-
-    prodotto_esistente = await db.products.find_one({"$or": condizioni})
-
-    if not prodotto_esistente:
+    updates = {k: v for k, v in input.dict().items() if v is not None}
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    res = await db.products.update_one({"id": pid}, {"$set": updates})
+    if res.matched_count == 0:
         raise HTTPException(status_code=404, detail="Prodotto non trovato")
-
-    update_data = input.dict(exclude_unset=True)
-
-    if not update_data:
-        prodotto_esistente["id"] = str(prodotto_esistente.get("_id") or prodotto_esistente.get("id") or "")
-        prodotto_esistente.pop("_id", None)
-        return prodotto_esistente
-
-    await db.products.update_one(
-        {"_id": prodotto_esistente["_id"]},
-        {"$set": update_data}
-    )
-
-    prodotto_aggiornato = await db.products.find_one({"_id": prodotto_esistente["_id"]})
-
-    if not prodotto_aggiornato:
-        raise HTTPException(status_code=404, detail="Prodotto non trovato dopo aggiornamento")
-
-    prodotto_aggiornato["id"] = str(prodotto_aggiornato.get("_id") or prodotto_aggiornato.get("id") or "")
-    prodotto_aggiornato.pop("_id", None)
-
-    return prodotto_aggiornato
-
+    doc = await db.products.find_one({"id": pid}, {"_id": 0})
+    return Product(**doc)
 
 
 @api_router.delete("/products/{pid}")
