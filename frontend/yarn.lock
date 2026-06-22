@@ -3470,11 +3470,6 @@ expo-image@~3.0.11:
   resolved "https://registry.npmjs.org/expo-image/-/expo-image-3.0.11.tgz"
   integrity sha512-4TudfUCLgYgENv+f48omnU8tjS2S0Pd9EaON5/s1ZUBRwZ7K8acEr4NfvLPSaeXvxW24iLAiyQ7sV7BXQH3RoA==
 
-expo-keep-awake@^56.0.3:
-  version "56.0.3"
-  resolved "https://registry.npmjs.org/expo-keep-awake/-/expo-keep-awake-56.0.3.tgz"
-  integrity sha512-CLMJXtEiMKknD3Rpm8CRwE6ZJUzu2yCEmRk1sgfHAJ1zIbuEWY3dpPDubtsnuzWm+2k6Sru+yaFbYsvPWmTiBA==
-
 expo-keep-awake@~15.0.8:
   version "15.0.8"
   resolved "https://registry.npmjs.org/expo-keep-awake/-/expo-keep-awake-15.0.8.tgz"

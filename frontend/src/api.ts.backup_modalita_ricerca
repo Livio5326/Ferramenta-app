@@ -15,10 +15,9 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  listProducts: (params: { q?: string; search_mode?: string; categoria?: string; marca_standard?: string; sotto_scorta?: boolean } = {}) => {
+  listProducts: (params: { q?: string; categoria?: string; marca_standard?: string; sotto_scorta?: boolean } = {}) => {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
-    if (params.search_mode) qs.set('search_mode', params.search_mode);
     if (params.categoria) qs.set('categoria', params.categoria);
     if (params.marca_standard && params.marca_standard !== 'Tutte') qs.set('marca_standard', params.marca_standard);
     if (params.sotto_scorta) qs.set('sotto_scorta', 'true');
@@ -26,11 +25,10 @@ export const api = {
     return req<Product[]>('/products' + (s ? '?' + s : ''));
   },
   listStandardBrands: () => req<{ items: string[] }>('/brands/standard'),
-  listProductsPage: (params: { q?: string; search_mode?: string; categoria?: string; marca_standard?: string; sotto_scorta?: boolean; vendibile?: boolean;
+  listProductsPage: (params: { q?: string; categoria?: string; marca_standard?: string; sotto_scorta?: boolean; vendibile?: boolean;
    limit?: number; skip?: number } = {}) => {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
-    if (params.search_mode) qs.set('search_mode', params.search_mode);
     if (params.categoria) qs.set('categoria', params.categoria);
     if (params.marca_standard && params.marca_standard !== 'Tutte') qs.set('marca_standard', params.marca_standard);
     if (params.sotto_scorta) qs.set('sotto_scorta', 'true');

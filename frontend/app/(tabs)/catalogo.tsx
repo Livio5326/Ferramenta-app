@@ -1,6 +1,8 @@
 import { useRef } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Modal, FlatList, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Modal, FlatList, Pressable, ScrollView, ActivityIndicator,
+  Alert
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -268,6 +270,7 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
   const isCliente = mode === 'cliente';
 
   const [q, setQ] = useState('');
+  const [searchMode, setSearchMode] = useState<'descrizione' | 'codice' | 'barcode'>('descrizione');
   const [categoria, setCategoria] = useState<string | null>(null);
   useEffect(() => {
   if (!categoriaDaPagina) return;
@@ -469,20 +472,43 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
   return (
     <SafeAreaView style={styles.safe} edges={['top']} testID="catalogo-screen">
       <View style={styles.searchBar}>
-        <Feather name="search" size={16} color={COLORS.onSurfaceSecondary} />
+        <Pressable
+            style={styles.searchModeButton}
+            onPress={() =>
+              Alert.alert('Modalità ricerca', 'Scegli dove cercare il prodotto.', [
+                { text: 'Descrizione', onPress: () => setSearchMode('descrizione') },
+                { text: 'Codice prodotto', onPress: () => setSearchMode('codice') },
+                { text: 'Codice a barre', onPress: () => setSearchMode('barcode') },
+                { text: 'Annulla', style: 'cancel' },
+              ])
+            }
+          >
+            <Feather name="search" size={16} color={COLORS.surface} />
+            <Text style={styles.searchModeButtonText}>
+              {searchMode === 'codice' ? 'Cod.' : searchMode === 'barcode' ? 'Bar.' : 'Desc.'}
+            </Text>
+            <Feather name="chevron-down" size={13} color={COLORS.surface} />
+          </Pressable>
         <TextInput
           value={q}
           onChangeText={setQ}
-          placeholder={categoria ? `Cerca in ${categoria}...` : "Cerca in tutto il catalogo..."}
+          placeholder={searchMode === 'codice' ? 'Cerca per codice prodotto...' : searchMode === 'barcode' ? 'Cerca per codice a barre...' : categoria ? `Cerca descrizione in ${categoria}...` : 'Cerca per descrizione...'}
           placeholderTextColor={COLORS.onSurfaceSecondary}
           style={styles.searchInput}
           testID="search-input"
         />
-        <Pressable onPress={() => router.push('/scanner')} testID="scan-btn">
-          <Feather name="maximize" size={20} color={COLORS.brand} />
-        </Pressable>
+        {searchMode === 'barcode' && (
+          <Pressable
+            onPress={() => router.push('/scanner')}
+            testID="scan-btn"
+            style={styles.scanBtn}
+          >
+            <Feather name="maximize" size={17} color="#FFFFFF" />
+            <Text style={styles.scanBtnText}>Scan</Text>
+          </Pressable>
+        )}
         <Pressable onPress={() => setFiltersOpen(true)} style={styles.filterIconBtn} testID="filters-btn">
-          <Feather name="sliders" size={20} color={COLORS.brand} />
+          <Feather name="sliders" size={18} color="#FFFFFF" />
         </Pressable>
       </View>
       {/* Category chips */}
@@ -665,6 +691,65 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.surface },
+  searchModeButton: {
+    minWidth: 74,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: COLORS.brand,
+    borderWidth: 1,
+    borderColor: COLORS.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 5,
+    paddingHorizontal: 8,
+    elevation: 4,
+  },
+  searchModeButtonText: {
+    fontFamily: FONTS.mono,
+    fontSize: 11,
+    fontWeight: '900',
+    color: COLORS.surface,
+    letterSpacing: 0.4,
+  },
+  scanBtn: {
+    minWidth: 76,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#9B1C31',
+    borderWidth: 0,
+    borderColor: '#9B1C31',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    marginLeft: 0,
+    paddingHorizontal: 10,
+    elevation: 4,
+  },
+  scanBtnText: {
+    fontFamily: FONTS.mono,
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  filterBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#2E7D32',
+    borderWidth: 1,
+    borderColor: '#1B5E20',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+    elevation: 4,
+  },
+
+
+
+
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -724,7 +809,18 @@ qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLO
   emptyText: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onSurfaceSecondary, letterSpacing: 1.5 },
   emptyBtn: { borderWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.brand, paddingHorizontal: 18, paddingVertical: 12 },
   emptyBtnTxt: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onBrandPrimary, fontWeight: '900', letterSpacing: 1 },
-  filterIconBtn: { marginLeft: 10 },
+  filterIconBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#2E7D32',
+    borderWidth: 1,
+    borderColor: '#1B5E20',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 0,
+    elevation: 4,
+  },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-start', paddingTop: 95, paddingHorizontal: 12 },
   filtersPanel: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.brand, borderRadius: 14, padding: 12, gap: 8 },
   filtersHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },

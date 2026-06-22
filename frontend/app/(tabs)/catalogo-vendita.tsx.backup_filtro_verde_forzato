@@ -483,8 +483,8 @@ export default function CatalogoVendita() {
             testID="scan-btn"
             style={styles.scanBtn}
           >
-            <Feather name="maximize" size={17} color="#FFFFFF" />
-            <Text style={styles.scanBtnText}>Scan</Text>
+            <Feather name="maximize" size={17} color={COLORS.surface} />
+            <Text style={styles.scanBtnText}>Scanner</Text>
           </Pressable>
         )}
         <Pressable onPress={() => setFiltersOpen(true)} style={styles.filterIconBtn} testID="filters-btn">
@@ -689,17 +689,17 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   scanBtn: {
-    minWidth: 76,
+    minWidth: 92,
     height: 42,
     borderRadius: 12,
-    backgroundColor: '#9B1C31',
-    borderWidth: 0,
-    borderColor: '#9B1C31',
+    backgroundColor: COLORS.brand,
+    borderWidth: 1,
+    borderColor: COLORS.brand,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 6,
-    marginLeft: 0,
+    marginLeft: 8,
     paddingHorizontal: 10,
     elevation: 4,
   },
@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 11,
     fontWeight: '900',
-    color: '#FFFFFF',
+    color: COLORS.surface,
     letterSpacing: 0.5,
   },
   filterBtn: {
@@ -785,18 +785,7 @@ const styles = StyleSheet.create({
   emptyText: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onSurfaceSecondary, letterSpacing: 1.5 },
   emptyBtn: { borderWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.brand, paddingHorizontal: 18, paddingVertical: 12 },
   emptyBtnTxt: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onBrandPrimary, fontWeight: '900', letterSpacing: 1 },
-  filterIconBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: '#2E7D32',
-    borderWidth: 1,
-    borderColor: '#1B5E20',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 0,
-    elevation: 4,
-  },
+  filterIconBtn: { marginLeft: 10 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-start', paddingTop: 95, paddingHorizontal: 12 },
   filtersPanel: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.brand, borderRadius: 14, padding: 12, gap: 8 },
   filtersHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },

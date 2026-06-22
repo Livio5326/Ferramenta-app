@@ -224,22 +224,6 @@ def clean(doc):
 
 
 # ---------- Routes ----------
-def applica_modalita_ricerca(query: dict, q: str | None, search_mode: str | None = "descrizione") -> dict:
-    if not q:
-        return query
-
-    mode = (search_mode or "descrizione").strip().lower()
-
-    if mode == "codice":
-        query["codice_prodotto"] = {"$regex": q, "$options": "i"}
-    elif mode == "barcode":
-        query["barcode"] = {"$regex": q, "$options": "i"}
-    else:
-        query["descrizione"] = {"$regex": q, "$options": "i"}
-
-    return query
-
-
 @api_router.get("/")
 async def root():
     return {"message": "Ferramenta Manager API"}
@@ -248,13 +232,18 @@ async def root():
 @api_router.get("/products", response_model=List[Product])
 async def list_products(
     q: Optional[str] = None,
-    search_mode: Optional[str] = "descrizione",
     categoria: Optional[str] = None,
     marca_standard: Optional[str] = None,
     sotto_scorta: Optional[bool] = None,
 ):
     query = {}
-    query = applica_modalita_ricerca(query, q, search_mode)
+    if q:
+        query["$or"] = [
+            {"descrizione": {"$regex": q, "$options": "i"}},
+            {"barcode": {"$regex": q, "$options": "i"}},
+            {"codice_prodotto": {"$regex": q, "$options": "i"}},
+            {"marca": {"$regex": q, "$options": "i"}},
+        ]
     if categoria:
         query["categoria_standard"] = categoria
     if marca_standard and marca_standard != "Tutte":
@@ -301,7 +290,6 @@ async def get_standard_brands():
 @api_router.get("/products/page")
 async def list_products_page(
     q: Optional[str] = None,
-    search_mode: Optional[str] = "descrizione",
     categoria: Optional[str] = None,
     marca_standard: Optional[str] = None,
     sotto_scorta: Optional[bool] = None,
@@ -319,7 +307,13 @@ async def list_products_page(
 
     query = {}
 
-    query = applica_modalita_ricerca(query, q, search_mode)
+    if q:
+        query["$or"] = [
+            {"descrizione": {"$regex": q, "$options": "i"}},
+            {"barcode": {"$regex": q, "$options": "i"}},
+            {"codice_prodotto": {"$regex": q, "$options": "i"}},
+            {"marca": {"$regex": q, "$options": "i"}},
+        ]
 
     if categoria:
         query["categoria_standard"] = categoria
