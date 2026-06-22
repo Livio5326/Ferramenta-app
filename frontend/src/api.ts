@@ -22,12 +22,14 @@ export const api = {
     if (params.categoria) qs.set('categoria', params.categoria);
     if (params.marca_standard && params.marca_standard !== 'Tutte') qs.set('marca_standard', params.marca_standard);
     if (params.sotto_scorta) qs.set('sotto_scorta', 'true');
+    
+
     const s = qs.toString();
     return req<Product[]>('/products' + (s ? '?' + s : ''));
   },
   listStandardBrands: () => req<{ items: string[] }>('/brands/standard'),
   listProductsPage: (params: { q?: string; search_mode?: string; categoria?: string; marca_standard?: string; sotto_scorta?: boolean; vendibile?: boolean;
-   limit?: number; skip?: number } = {}) => {
+   prezzo_min?: number; prezzo_max?: number; limit?: number; skip?: number } = {}) => {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
     if (params.search_mode) qs.set('search_mode', params.search_mode);
@@ -35,6 +37,8 @@ export const api = {
     if (params.marca_standard && params.marca_standard !== 'Tutte') qs.set('marca_standard', params.marca_standard);
     if (params.sotto_scorta) qs.set('sotto_scorta', 'true');
     if (params.vendibile) qs.set('vendibile', 'true');
+    if (params.prezzo_min !== undefined) qs.set('prezzo_min', String(params.prezzo_min));
+    if (params.prezzo_max !== undefined) qs.set('prezzo_max', String(params.prezzo_max));
     qs.set('limit', String(params.limit ?? 50));
     qs.set('skip', String(params.skip ?? 0));
     return req<{ items: Product[]; total: number; limit: number; skip: number; has_more: boolean }>('/products/page?' + qs.toString());

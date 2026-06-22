@@ -7,7 +7,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import uuid
 import json
 from datetime import datetime, timezone
@@ -889,6 +889,8 @@ async def get_products_page(
     categoria: str | None = None,
     marca_standard: str | None = None,
     disponibile: bool | None = None,
+    prezzo_min: Optional[float] = None,
+    prezzo_max: Optional[float] = None,
     limit: int = 30,
     skip: int = 0,
 ):
@@ -908,6 +910,28 @@ async def get_products_page(
 
     sinonimi_db = await carica_sinonimi_ricerca_db()
     query = applica_modalita_ricerca(query, q, search_mode, sinonimi_db)
+     
+    if prezzo_min is not None or prezzo_max is not None:
+        filtro_prezzo = {}
+
+    if prezzo_min is not None and prezzo_max is not None:
+        filtro_prezzo["prezzo_vendita"] = {
+            "$gte": prezzo_min,
+            "$lte": prezzo_max,
+        }
+    elif prezzo_min is not None:
+        filtro_prezzo["prezzo_vendita"] = {
+            "$gte": prezzo_min,
+        }
+    elif prezzo_max is not None:
+        filtro_prezzo["prezzo_vendita"] = {
+            "$lte": prezzo_max,
+        }
+
+    if query:
+        query = {"$and": [query, filtro_prezzo]}
+    else:
+        query = filtro_prezzo
 
     limit = max(1, min(int(limit or 30), 100))
     skip = max(0, int(skip or 0))

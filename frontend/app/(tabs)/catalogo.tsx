@@ -11,6 +11,7 @@ import { Image } from 'expo-image';
 import { COLORS, FONTS, fmtEUR } from '@/src/theme';
 import { api } from '@/src/api';
 import { Product, useAppStore } from '@/src/store';
+import Slider from '@react-native-community/slider';
 
 function prezzoFinaleProdotto(p: any): number {
   const prezzoPromo = Number(p?.prezzo_promo || 0);
@@ -282,6 +283,9 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [brandSearch, setBrandSearch] = useState('');
   const [brandsReali, setBrandsReali] = useState<string[]>([]);
+  const [filtroPrezzoAttivo, setFiltroPrezzoAttivo] = useState(false);
+  const [prezzoMin, setPrezzoMin] = useState(0);
+  const [prezzoMax, setPrezzoMax] = useState(500);
   const cats = catalogoFiltratoDaPagina 
   ? [categoriaDaPagina]
   : CATEGORIE_STANDARD;
@@ -326,6 +330,8 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
         search_mode: searchMode,q: q || undefined,
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
+        prezzo_min: filtroPrezzoAttivo ? prezzoMin : undefined,
+        prezzo_max: filtroPrezzoAttivo ? prezzoMax : undefined,
         sotto_scorta: soloSottoScorta || undefined,
         vendibile: soloVendita || undefined,
         limit: 30,
@@ -370,7 +376,7 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
         setLoading(false);
       }
     }
-  }, [q, categoria, marcaStandard, soloSottoScorta, soloVendita]);
+  }, [q, categoria, marcaStandard, filtroPrezzoAttivo, prezzoMin, prezzoMax, soloSottoScorta, soloVendita]);
 
   useFocusEffect(useCallback(() => {
     load();
@@ -398,6 +404,8 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
+        prezzo_min: filtroPrezzoAttivo ? prezzoMin : undefined,
+        prezzo_max: filtroPrezzoAttivo ? prezzoMax : undefined,
         vendibile: soloVendita || undefined,
         limit: 30,
         skip: items.length,
@@ -597,6 +605,65 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
                 </Pressable>
               )}
             </View>
+            <View style={styles.priceFilterBox}>
+  <Pressable
+    style={[
+      styles.priceFilterToggle,
+      filtroPrezzoAttivo && styles.priceFilterToggleActive,
+    ]}
+    onPress={() => setFiltroPrezzoAttivo(!filtroPrezzoAttivo)}
+  >
+    <Text
+      style={[
+        styles.priceFilterToggleText,
+        filtroPrezzoAttivo && styles.priceFilterToggleTextActive,
+      ]}
+    >
+      FILTRO PREZZO
+    </Text>
+  </Pressable>
+
+  <Text style={styles.priceFilterTitle}>
+    Da {prezzoMin} € a {prezzoMax} €
+  </Text>
+
+  <Text style={styles.priceFilterLabel}>Prezzo minimo</Text>
+  <Slider
+    minimumValue={0}
+    maximumValue={500}
+    step={5}
+    value={prezzoMin}
+    onValueChange={(value) => {
+      const nuovoMin = Math.min(value, prezzoMax);
+      setPrezzoMin(nuovoMin);
+      setFiltroPrezzoAttivo(true);
+    }}
+  />
+
+  <Text style={styles.priceFilterLabel}>Prezzo massimo</Text>
+  <Slider
+    minimumValue={0}
+    maximumValue={500}
+    step={5}
+    value={prezzoMax}
+    onValueChange={(value) => {
+      const nuovoMax = Math.max(value, prezzoMin);
+      setPrezzoMax(nuovoMax);
+      setFiltroPrezzoAttivo(true);
+    }}
+  />
+
+  <Pressable
+    style={styles.priceFilterReset}
+    onPress={() => {
+      setFiltroPrezzoAttivo(false);
+      setPrezzoMin(0);
+      setPrezzoMax(500);
+    }}
+  >
+    <Text style={styles.priceFilterResetText}>RESET PREZZO</Text>
+  </Pressable>
+</View>
 
             <ScrollView
               horizontal
@@ -854,6 +921,73 @@ textMuted: {
   fontFamily: FONTS.mono,
   fontSize: 12,
   color: COLORS.onSurfaceSecondary,
+},
+priceFilterBox: {
+  marginTop: 18,
+  paddingTop: 16,
+  borderTopWidth: 2,
+  borderTopColor: COLORS.borderStrong,
+},
+
+priceFilterToggle: {
+  borderWidth: 2,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surface,
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+  alignItems: 'center',
+  marginBottom: 14,
+},
+
+priceFilterToggleActive: {
+  backgroundColor: COLORS.brand,
+},
+
+priceFilterToggleText: {
+  fontFamily: FONTS.mono,
+  fontSize: 13,
+  color: COLORS.onSurface,
+  fontWeight: '900',
+  letterSpacing: 2,
+},
+
+priceFilterToggleTextActive: {
+  color: COLORS.surface,
+},
+
+priceFilterTitle: {
+  fontFamily: FONTS.mono,
+  fontSize: 15,
+  color: COLORS.onSurface,
+  fontWeight: '900',
+  marginBottom: 14,
+},
+
+priceFilterLabel: {
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  color: COLORS.onSurfaceSecondary,
+  fontWeight: '900',
+  marginTop: 10,
+  marginBottom: 4,
+  letterSpacing: 1,
+},
+
+priceFilterReset: {
+  marginTop: 14,
+  borderWidth: 2,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surfaceSecondary,
+  paddingVertical: 10,
+  alignItems: 'center',
+},
+
+priceFilterResetText: {
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  color: COLORS.onSurface,
+  fontWeight: '900',
+  letterSpacing: 1,
 },
 });
 
