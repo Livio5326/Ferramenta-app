@@ -55,7 +55,6 @@ export default function FornitoriScreen() {
   const [promoInizio, setPromoInizio] = useState('');
   const [promoFine, setPromoFine] = useState('');
   const [preview, setPreview] = useState<PreviewResult | null>(null);
-  const [importPromoOpen, setImportPromoOpen] = useState(false);
   const [codeOverrides, setCodeOverrides] = useState<Record<string, string>>({});
   const [overrideInputs, setOverrideInputs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -358,18 +357,6 @@ export default function FornitoriScreen() {
           </Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.importPromoToggleBtn}
-          onPress={() => setImportPromoOpen(prev => !prev)}
-        >
-          <Feather name={importPromoOpen ? "x-circle" : "upload-cloud"} size={18} color="#FFFFFF" />
-          <Text style={styles.importPromoToggleText}>
-            {importPromoOpen ? 'Chiudi importazione' : 'Importa promozione'}
-          </Text>
-        </TouchableOpacity>
-
-        {importPromoOpen && (
-          <>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Importa promozione</Text>
           <Text style={styles.cardText}>
@@ -525,8 +512,6 @@ export default function FornitoriScreen() {
               );
             })}
           </View>
-        )}
-          </>
         )}
 
         <View style={styles.card}>
@@ -692,25 +677,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 21,
   },
-  importPromoToggleBtn: {
-    height: 46,
-    borderRadius: 14,
-    backgroundColor: COLORS.brand,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
-    elevation: 4,
-  },
-  importPromoToggleText: {
-    fontFamily: FONTS.mono,
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: 0.4,
-  },
-
   card: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,

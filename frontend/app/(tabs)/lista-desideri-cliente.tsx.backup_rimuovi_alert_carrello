@@ -77,7 +77,12 @@ export default function ListaDesideriClienteScreen() {
   style={styles.cartButton}
   onPress={() => {
     aggiungiCarrello(item, item.quantitaCarrello || 1);
-}}
+
+    Alert.alert(
+      'Carrello',
+      'Prodotto aggiunto al carrello'
+    );
+  }}
 >
   <Text style={styles.cartButtonText}>AGGIUNGI AL CARRELLO</Text>
 </Pressable>

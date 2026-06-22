@@ -180,21 +180,7 @@ const diminuisciQtaCliente = () => {
               <Feather name="plus" size={20} color={COLORS.onSurface} />
             </Pressable>
           </View>
-            <Pressable
-              style={styles.addCartBtn}
-              onPress={() => {
-                const disponibile = Number(p.quantita ?? 0);
-
-                if (disponibile <= 0) {
-                  Alert.alert('Non disponibile', 'Prodotto non disponibile al momento.');
-                  return;
-                }
-
-                addToCart(p, saleQty);
-                Alert.alert('Aggiunto al carrello', `${saleQty} pz aggiunti al carrello.`);
-              }}
-              testID="add-cart-detail"
-            >
+          <Pressable style={styles.addCartBtn} onPress={() => { addToCart(p, saleQty); Alert.alert('Aggiunto', '${saleQty} pz nel carrello'); }} testID="add-cart-detail">
             <Feather name="shopping-cart" size={18} color={COLORS.onSuccess} />
             <Text style={styles.addCartTxt}>VENDI</Text>
           </Pressable>
@@ -265,7 +251,11 @@ const diminuisciQtaCliente = () => {
           text: 'Ordina',
           onPress: () => {
             aggiungiCarrello(p, qtaCliente);
-},
+            Alert.alert(
+              'Aggiunto al carrello',
+              'Prodotto aggiunto al carrello come articolo da ordinare.'
+            );
+          },
         },
       ]
     );
