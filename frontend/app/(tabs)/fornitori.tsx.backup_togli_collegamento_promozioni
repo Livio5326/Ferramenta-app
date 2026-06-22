@@ -1,9 +1,12 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { COLORS, FONTS } from '@/src/theme';
 
 export default function FornitoriScreen() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -28,6 +31,24 @@ export default function FornitoriScreen() {
             Questa sezione sarà dedicata ai fornitori, ai cataloghi e ai listini.
           </Text>
         </View>
+
+        <Pressable
+          style={styles.promoCard}
+          onPress={() => router.push('/impostazioni/promozioni' as any)}
+        >
+          <View style={styles.promoIcon}>
+            <Feather name="tag" size={22} color="#FFFFFF" />
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.promoTitle}>Promozioni spostate</Text>
+            <Text style={styles.promoText}>
+              La gestione delle promozioni ora si trova in Impostazioni.
+            </Text>
+          </View>
+
+          <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -100,5 +121,35 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 13,
     lineHeight: 18,
+  },
+  promoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: COLORS.surfaceSecondary,
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  promoIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: COLORS.brandSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  promoTitle: {
+    fontFamily: FONTS.mono,
+    fontSize: 14,
+    fontWeight: '900',
+    color: COLORS.onSurface,
+  },
+  promoText: {
+    marginTop: 4,
+    color: COLORS.onSurfaceSecondary,
+    fontSize: 12,
+    lineHeight: 17,
   },
 });

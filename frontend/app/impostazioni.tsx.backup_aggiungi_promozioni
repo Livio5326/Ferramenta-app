@@ -38,24 +38,6 @@ export default function ImpostazioniScreen() {
 
           <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
         </Pressable>
-
-        <Pressable
-          style={styles.optionCard}
-          onPress={() => router.push('/impostazioni/promozioni' as any)}
-        >
-          <View style={styles.optionIcon}>
-            <Feather name="tag" size={22} color="#FFFFFF" />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.optionTitle}>Promozioni</Text>
-            <Text style={styles.optionText}>
-              Importa, attiva, disattiva e controlla le promozioni dei cataloghi.
-            </Text>
-          </View>
-
-          <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -99,7 +81,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   optionCard: {
-    marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
