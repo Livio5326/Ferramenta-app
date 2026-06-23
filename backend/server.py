@@ -7,7 +7,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any, Optional
 import uuid
 import json
 from datetime import datetime, timezone
@@ -912,26 +912,24 @@ async def get_products_page(
     query = applica_modalita_ricerca(query, q, search_mode, sinonimi_db)
      
     if prezzo_min is not None or prezzo_max is not None:
-        filtro_prezzo = {}
+        condizione_prezzo = {}
 
-    if prezzo_min is not None and prezzo_max is not None:
-        filtro_prezzo["prezzo_vendita"] = {
-            "$gte": prezzo_min,
-            "$lte": prezzo_max,
-        }
-    elif prezzo_min is not None:
-        filtro_prezzo["prezzo_vendita"] = {
-            "$gte": prezzo_min,
-        }
-    elif prezzo_max is not None:
-        filtro_prezzo["prezzo_vendita"] = {
-            "$lte": prezzo_max,
-        }
+        if prezzo_min is not None:
+            condizione_prezzo["$gte"] = prezzo_min
 
-    if query:
-        query = {"$and": [query, filtro_prezzo]}
-    else:
-        query = filtro_prezzo
+        if prezzo_max is not None:
+            condizione_prezzo["$lte"] = prezzo_max
+
+        if query:
+            query = {
+                "$and": [
+                    query,
+                    {"prezzo_vendita": condizione_prezzo}
+                ]
+            }
+        else:
+            query = {"prezzo_vendita": condizione_prezzo}
+
 
     limit = max(1, min(int(limit or 30), 100))
     skip = max(0, int(skip or 0))

@@ -248,7 +248,8 @@ function categoriaStandardDaImportata(p: any): string {
 function prodottoInCategoriaStandard(p: any, categoria: string) {
   return categoriaStandardDaImportata(p) === categoria;
 }
-
+ const PAGE_SIZE = 30;
+ 
 export default function Catalogo() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -285,7 +286,7 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
   const [brandsReali, setBrandsReali] = useState<string[]>([]);
   const [filtroPrezzoAttivo, setFiltroPrezzoAttivo] = useState(false);
   const [prezzoMin, setPrezzoMin] = useState(0);
-  const [prezzoMax, setPrezzoMax] = useState(500);
+  const [prezzoMax, setPrezzoMax] = useState(1000);
   const cats = catalogoFiltratoDaPagina 
   ? [categoriaDaPagina]
   : CATEGORIE_STANDARD;
@@ -330,11 +331,11 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
         search_mode: searchMode,q: q || undefined,
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
-        prezzo_min: filtroPrezzoAttivo ? prezzoMin : undefined,
-        prezzo_max: filtroPrezzoAttivo ? prezzoMax : undefined,
+        prezzo_min: filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000) ? prezzoMin : undefined,
+        prezzo_max: filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000) ? prezzoMax : undefined,
         sotto_scorta: soloSottoScorta || undefined,
         vendibile: soloVendita || undefined,
-        limit: 30,
+        limit: PAGE_SIZE,
         skip: 0,
       });
       const data = res.items;
@@ -404,10 +405,10 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
         sotto_scorta: soloSottoScorta || undefined,
-        prezzo_min: filtroPrezzoAttivo ? prezzoMin : undefined,
-        prezzo_max: filtroPrezzoAttivo ? prezzoMax : undefined,
+        prezzo_min: filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000) ? prezzoMin : undefined,
+        prezzo_max: filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000) ? prezzoMax : undefined,
         vendibile: soloVendita || undefined,
-        limit: 30,
+        limit: PAGE_SIZE,
         skip: items.length,
       });
 
@@ -531,7 +532,7 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
     testID="chip-tutti"
   >
     <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>
-      TUTTI
+      
     </Text>
   </Pressable>
 )}
@@ -630,26 +631,24 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
   <Text style={styles.priceFilterLabel}>Prezzo minimo</Text>
   <Slider
     minimumValue={0}
-    maximumValue={500}
+    maximumValue={1000}
     step={5}
     value={prezzoMin}
     onValueChange={(value) => {
       const nuovoMin = Math.min(value, prezzoMax);
       setPrezzoMin(nuovoMin);
-      setFiltroPrezzoAttivo(true);
     }}
   />
 
   <Text style={styles.priceFilterLabel}>Prezzo massimo</Text>
   <Slider
     minimumValue={0}
-    maximumValue={500}
+    maximumValue={1000}
     step={5}
     value={prezzoMax}
     onValueChange={(value) => {
       const nuovoMax = Math.max(value, prezzoMin);
       setPrezzoMax(nuovoMax);
-      setFiltroPrezzoAttivo(true);
     }}
   />
 
@@ -658,7 +657,7 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
     onPress={() => {
       setFiltroPrezzoAttivo(false);
       setPrezzoMin(0);
-      setPrezzoMax(500);
+      setPrezzoMax(1000);
     }}
   >
     <Text style={styles.priceFilterResetText}>RESET PREZZO</Text>
