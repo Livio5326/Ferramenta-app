@@ -432,7 +432,7 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
     return (
       <Pressable
         style={styles.card}
-        onPress={() => router.push(`/product/${item.id}`)}
+        onPress={() => router.push(`/product/${item.barcode || item.id}`)}
         testID={`product-card-${item.id}`}
       >
         <View style={styles.cardImgWrap}>
