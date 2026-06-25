@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -8,11 +8,29 @@ import {
   View,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
-import { importInvoiceXml } from "../../src/api";
+import { importInvoiceXml, listInvoiceImports } from "../../src/api";
 
 export default function FornitoriScreen() {
   const [importingInvoice, setImportingInvoice] = useState(false);
   const [invoiceResult, setInvoiceResult] = useState<any>(null);
+  const [invoiceImports, setInvoiceImports] = useState<any[]>([]);
+const [loadingImports, setLoadingImports] = useState(false);
+
+const loadInvoiceImports = async () => {
+  try {
+    setLoadingImports(true);
+    const data = await listInvoiceImports();
+    setInvoiceImports(data.items || []);
+  } catch (err) {
+    console.warn("Errore caricamento storico fatture", err);
+  } finally {
+    setLoadingImports(false);
+  }
+};
+
+useEffect(() => {
+  loadInvoiceImports();
+}, []);
 
   const handleImportInvoiceXml = async () => {
     try {
@@ -47,7 +65,8 @@ export default function FornitoriScreen() {
       });
 
       setInvoiceResult(result);
-
+      await loadInvoiceImports();
+      
       if (result.ok) {
         Alert.alert(
           "Import completato",
@@ -97,6 +116,51 @@ export default function FornitoriScreen() {
         </Pressable>
       </View>
 
+      <View style={styles.card}>
+  <View style={styles.sectionHeader}>
+    <Text style={styles.cardTitle}>Storico fatture importate</Text>
+
+    <Pressable onPress={loadInvoiceImports} disabled={loadingImports}>
+      <Text style={styles.refreshText}>
+        {loadingImports ? "CARICO..." : "AGGIORNA"}
+      </Text>
+    </Pressable>
+  </View>
+
+  {invoiceImports.length === 0 ? (
+    <Text style={styles.cardText}>
+      Nessuna fattura importata trovata.
+    </Text>
+  ) : (
+    invoiceImports.map((item) => (
+      <View key={item.chiave_import} style={styles.invoiceRow}>
+        <Text style={styles.invoiceTitle}>
+          {item.denominazione || "Fornitore non indicato"}
+        </Text>
+
+        <Text style={styles.invoiceText}>
+          Fattura: {item.numero || "N/D"} · Data: {item.data || "N/D"}
+        </Text>
+
+        <View style={styles.invoiceStats}>
+          <Text style={styles.invoiceStat}>
+            Aggiornati: {item.prodotti_aggiornati ?? 0}
+          </Text>
+          <Text style={styles.invoiceStat}>
+            Non trovati: {item.barcode_non_trovati ?? 0}
+          </Text>
+          <Text style={styles.invoiceStat}>
+            Saltati: {item.righe_saltate ?? 0}
+          </Text>
+        </View>
+
+        {item.registrata_manualmente ? (
+          <Text style={styles.manualBadge}>REGISTRATA MANUALMENTE</Text>
+        ) : null}
+      </View>
+    ))
+  )}
+</View>
       {invoiceResult && (
         <View style={styles.resultCard}>
           <Text style={styles.resultTitle}>
@@ -326,4 +390,61 @@ const styles = StyleSheet.create({
     color: "#6F6252",
     lineHeight: 19,
   },
+  sectionHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 10,
+},
+
+refreshText: {
+  fontSize: 12,
+  fontWeight: "900",
+  color: "#315C3A",
+  letterSpacing: 0.8,
+},
+
+invoiceRow: {
+  borderTopWidth: 1,
+  borderTopColor: "#D7C7AF",
+  paddingTop: 12,
+  marginTop: 12,
+},
+
+invoiceTitle: {
+  fontSize: 14,
+  fontWeight: "900",
+  color: "#2F2A22",
+  marginBottom: 4,
+},
+
+invoiceText: {
+  fontSize: 12,
+  color: "#6F6252",
+  marginBottom: 8,
+},
+
+invoiceStats: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 8,
+},
+
+invoiceStat: {
+  fontSize: 11,
+  fontWeight: "800",
+  color: "#315C3A",
+  backgroundColor: "#EFE5D6",
+  paddingHorizontal: 8,
+  paddingVertical: 5,
+  borderRadius: 999,
+},
+
+manualBadge: {
+  marginTop: 8,
+  fontSize: 10,
+  fontWeight: "900",
+  color: "#8B5A2B",
+  letterSpacing: 0.8,
+},
 });

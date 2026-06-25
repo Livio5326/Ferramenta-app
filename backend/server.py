@@ -1101,6 +1101,38 @@ async def import_invoice_xml(file: UploadFile = File(...)):
     }
 
 
+@api_router.get("/invoices/imports")
+async def list_invoice_imports():
+    items = []
+
+    cursor = db.invoice_imports.find(
+        {},
+        {"_id": 0}
+    ).sort("data_import", -1).limit(50)
+
+    async for item in cursor:
+        items.append({
+            "chiave_import": item.get("chiave_import", ""),
+            "numero": item.get("numero", ""),
+            "data": item.get("data", ""),
+            "partita_iva": item.get("partita_iva", ""),
+            "denominazione": item.get("denominazione", ""),
+            "data_import": item.get("data_import", ""),
+            "righe_fattura": item.get("righe_fattura", 0),
+            "prodotti_aggiornati": item.get("prodotti_aggiornati", 0),
+            "barcode_non_trovati": item.get("barcode_non_trovati", 0),
+            "righe_saltate": item.get("righe_saltate", 0),
+            "report": item.get("report", ""),
+            "file_non_trovati": item.get("file_non_trovati", ""),
+            "registrata_manualmente": item.get("registrata_manualmente", False),
+        })
+
+    return {
+        "items": items,
+        "total": len(items)
+    }
+
+
 @api_router.get("/products/{pid}", response_model=Product)
 async def get_product(pid: str):
     """

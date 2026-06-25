@@ -202,7 +202,7 @@ export async function importInvoiceXml(file: {
     type: file.mimeType || "text/xml",
   } as any);
 
-  const res = await fetch(`${API_BASE}/invoices/import-xml`, {
+  const res = await fetch(`${BASE}/invoices/import-xml`, {
     method: "POST",
     body: formData,
   });
@@ -214,6 +214,25 @@ export async function importInvoiceXml(file: {
     data = JSON.parse(text);
   } catch {
     data = { ok: false, errore: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.errore || data?.detail || text);
+  }
+
+  return data;
+}
+
+export async function listInvoiceImports() {
+  const res = await fetch(`${BASE}/invoices/imports`);
+
+  const text = await res.text();
+
+  let data: any = null;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { items: [], total: 0, errore: text };
   }
 
   if (!res.ok) {
