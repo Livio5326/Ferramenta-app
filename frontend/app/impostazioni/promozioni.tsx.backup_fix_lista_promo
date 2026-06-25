@@ -67,17 +67,12 @@ export default function PromozioniScreen() {
     try {
       setLoadingActivePromos(true);
       const res = await api.listActivePromos();
-
-      const riepilogoOrdinato = Array.isArray(res?.riepilogo)
-        ? [...res.riepilogo].sort((a, b) =>
+      const listaPromo = Array.isArray(res)
+        ? [...res].sort((a, b) =>
             String(a?.promo_nome || '').localeCompare(String(b?.promo_nome || ''))
           )
         : [];
-
-      setActivePromos({
-        ...res,
-        riepilogo: riepilogoOrdinato,
-      });
+      setActivePromos(listaPromo);
       setSelectedPromoNome(null);
     } catch (err: any) {
       Alert.alert('Errore promozioni attive', err?.message || 'Impossibile caricare le promozioni attive.');
@@ -674,6 +669,7 @@ export default function PromozioniScreen() {
                       <View key={`${p.id}-${index}`} style={styles.productRow}>
                         <Text style={styles.productTitle}>{p.descrizione}</Text>
                         <Text style={styles.productText}>Codice: {p.codice_prodotto || '-'}</Text>
+                        <Text style={styles.productText}>Stato: {p.promo_attiva ? 'ATTIVA' : 'DISATTIVATA'}</Text>
                         <Text style={styles.productText}>
                           Prezzo normale: {fmtEUR(p.prezzo_vendita)}
                         </Text>
@@ -786,73 +782,48 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 14,
   },
-   secondaryButton: {
-  borderWidth: 1,
-  borderColor: COLORS.border,
-  paddingVertical: 13,
-  paddingHorizontal: 14,
-  borderRadius: 14,
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 8,
-  backgroundColor: COLORS.surface,
-  marginTop: 10,
-},
-
-secondaryButtonText: {
-  flexShrink: 1,
-  fontFamily: FONTS.mono,
-  color: COLORS.onSurface,
-  fontSize: 13,
-  fontWeight: '800',
-  textAlign: 'center',
-},
-
-row: {
-  flexDirection: 'row',
-  gap: 10,
-  marginTop: 10,
-},
-
-button: {
-  flex: 1,
-  backgroundColor: COLORS.brand,
-  paddingVertical: 14,
-  paddingHorizontal: 12,
-  borderRadius: 14,
-  alignItems: 'center',
-  justifyContent: 'center',
-  minHeight: 48,
-},
-
-confirmButton: {
-  backgroundColor: COLORS.surfaceInverse,
-},
-
-dangerButton: {
-  flex: 1,
-  backgroundColor: '#8B1E1E',
-  paddingVertical: 14,
-  paddingHorizontal: 12,
-  borderRadius: 14,
-  alignItems: 'center',
-  justifyContent: 'center',
-  minHeight: 48,
-},
-
-disabled: {
-  opacity: 0.5,
-},
-
-buttonText: {
-  fontFamily: FONTS.display,
-  color: COLORS.onSurfaceInverse,
-  fontWeight: '900',
-  fontSize: 13,
-  letterSpacing: 0.8,
-  textAlign: 'center',
-},
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.surface,
+  },
+  secondaryButtonText: {
+    flex: 1,
+    fontFamily: FONTS.mono,
+    color: COLORS.onSurface,
+    fontSize: 13,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  button: {
+    flex: 1,
+    backgroundColor: COLORS.brand,
+    padding: 13,
+    alignItems: 'center',
+  },
+  confirmButton: {
+    backgroundColor: COLORS.surfaceInverse,
+  },
+  dangerButton: {
+    backgroundColor: '#8B1E1E',
+    padding: 13,
+    alignItems: 'center',
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    fontFamily: FONTS.display,
+    color: COLORS.onSurfaceInverse,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
   statRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -871,139 +842,107 @@ buttonText: {
     fontWeight: '900',
     fontSize: 16,
   },
-promoListCard: {
-  borderRadius: 18,
-  padding: 14,
-  marginTop: 10,
-  backgroundColor: COLORS.surface,
-  borderWidth: 1,
-  borderColor: COLORS.border,
-},
-
-promoListCardSelected: {
-  borderColor: COLORS.brand,
-  backgroundColor: COLORS.surfaceSecondary,
-},
-
-promoCardHeader: {
-  flexDirection: 'row',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  gap: 10,
-  marginBottom: 12,
-},
-
-promoDateText: {
-  marginTop: 4,
-  fontFamily: FONTS.mono,
-  fontSize: 11,
-  color: COLORS.onSurfaceSecondary,
-},
-
-promoStatusBadge: {
-  paddingHorizontal: 10,
-  paddingVertical: 6,
-  borderRadius: 999,
-  minWidth: 82,
-  alignItems: 'center',
-},
-
-promoStatusActive: {
-  backgroundColor: '#1F7A3A',
-},
-
-promoStatusInactive: {
-  backgroundColor: '#6B7280',
-},
-
-promoStatusText: {
-  fontFamily: FONTS.mono,
-  fontSize: 10,
-  fontWeight: '900',
-  color: '#FFFFFF',
-  letterSpacing: 0.6,
-},
-
-promoStatsRow: {
-  flexDirection: 'row',
-  gap: 10,
-  marginBottom: 10,
-},
-
-promoStatBox: {
-  flex: 1,
-  borderRadius: 14,
-  backgroundColor: COLORS.surfaceSecondary,
-  paddingVertical: 12,
-  paddingHorizontal: 10,
-  borderWidth: 1,
-  borderColor: COLORS.border,
-},
-
-promoStatLabel: {
-  fontFamily: FONTS.mono,
-  fontSize: 10,
-  fontWeight: '900',
-  color: COLORS.onSurfaceSecondary,
-  marginBottom: 5,
-  letterSpacing: 0.5,
-},
-
-promoStatValue: {
-  fontFamily: FONTS.display,
-  fontSize: 22,
-  fontWeight: '900',
-  color: COLORS.onSurface,
-},
-
-promoOpenText: {
-  fontFamily: FONTS.mono,
-  fontSize: 12,
-  fontWeight: '900',
-  color: COLORS.brand,
-  marginTop: 4,
-},
-
-productRow: {
-  marginTop: 10,
-  borderRadius: 16,
-  borderWidth: 1,
-  borderColor: COLORS.border,
-  backgroundColor: COLORS.surfaceSecondary,
-  padding: 12,
-  gap: 5,
-},
-
-problemRow: {
-  marginTop: 10,
-  borderRadius: 16,
-  borderWidth: 1,
-  borderColor: '#8B1E1E',
-  backgroundColor: 'rgba(139, 30, 30, 0.08)',
-  padding: 12,
-  gap: 5,
-},
-
-productTitle: {
-  fontFamily: FONTS.display,
-  color: COLORS.onSurface,
-  fontSize: 15,
-  fontWeight: '900',
-  marginBottom: 3,
-},
-
-productText: {
-  fontFamily: FONTS.mono,
-  color: COLORS.onSurfaceTertiary,
-  fontSize: 12,
-  lineHeight: 17,
-},
-
-promoPrice: {
-  marginTop: 4,
-  fontFamily: FONTS.display,
-  color: COLORS.brand,
-  fontSize: 17,
-  fontWeight: '900',
-},
+  promoListCard: {
+    borderRadius: 16,
+    padding: 14,
+    marginTop: 10,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  promoListCardSelected: {
+    borderColor: COLORS.brand,
+    backgroundColor: COLORS.surfaceSecondary,
+  },
+  promoCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginBottom: 12,
+  },
+  promoDateText: {
+    marginTop: 4,
+    fontSize: 11,
+    color: COLORS.onSurfaceSecondary,
+  },
+  promoStatusBadge: {
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  promoStatusActive: {
+    backgroundColor: '#1F7A3A',
+  },
+  promoStatusInactive: {
+    backgroundColor: '#6B7280',
+  },
+  promoStatusText: {
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  promoStatsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
+  },
+  promoStatBox: {
+    flex: 1,
+    borderRadius: 12,
+    backgroundColor: COLORS.surfaceSecondary,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  promoStatLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    fontWeight: '900',
+    color: COLORS.onSurfaceSecondary,
+    marginBottom: 4,
+  },
+  promoStatValue: {
+    fontFamily: FONTS.display,
+    fontSize: 20,
+    fontWeight: '900',
+    color: COLORS.onSurface,
+  },
+  promoOpenText: {
+    fontFamily: FONTS.mono,
+    fontSize: 12,
+    fontWeight: '900',
+    color: COLORS.brand,
+    marginTop: 2,
+  },
+  productRow: {
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    paddingTop: 10,
+    gap: 3,
+  },
+  problemRow: {
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    paddingTop: 10,
+    gap: 3,
+    backgroundColor: 'rgba(139, 30, 30, 0.08)',
+  },
+  productTitle: {
+    fontFamily: FONTS.display,
+    color: COLORS.onSurface,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  productText: {
+    fontFamily: FONTS.mono,
+    color: COLORS.onSurfaceTertiary,
+    fontSize: 12,
+  },
+  promoPrice: {
+    fontFamily: FONTS.display,
+    color: COLORS.brand,
+    fontSize: 15,
+    fontWeight: '900',
+  },
 });
