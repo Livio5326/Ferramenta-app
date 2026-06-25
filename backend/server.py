@@ -1,5 +1,5 @@
 import re
-from fastapi import FastAPI, APIRouter, HTTPException, Body
+from fastapi import FastAPI, APIRouter, HTTPException, Body, UploadFile, File
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -1035,6 +1035,36 @@ async def delete_search_synonym(termine: str):
     return {
         "deleted": res.deleted_count,
         "termine": termine_norm,
+    }
+
+
+@api_router.post("/invoices/upload-xml")
+async def upload_invoice_xml(file: UploadFile = File(...)):
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Nome file mancante")
+
+    if not file.filename.lower().endswith(".xml"):
+        raise HTTPException(status_code=400, detail="Carica solo file XML")
+
+    upload_dir = Path("import_fatture")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    safe_name = file.filename.replace("/", "_").replace("\\", "_")
+    destination = upload_dir / safe_name
+
+    content = await file.read()
+
+    if not content:
+        raise HTTPException(status_code=400, detail="File XML vuoto")
+
+    with open(destination, "wb") as f:
+        f.write(content)
+
+    return {
+        "ok": True,
+        "filename": safe_name,
+        "path": str(destination),
+        "message": "Fattura XML caricata correttamente"
     }
 
 
