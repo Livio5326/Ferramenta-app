@@ -12,6 +12,7 @@ import uuid
 import json
 from datetime import datetime, timezone
 from fastapi.staticfiles import StaticFiles
+from import_fatture_service import importa_fattura_xml_da_file
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -1065,6 +1066,38 @@ async def upload_invoice_xml(file: UploadFile = File(...)):
         "filename": safe_name,
         "path": str(destination),
         "message": "Fattura XML caricata correttamente"
+    }
+
+
+@api_router.post("/invoices/import-xml")
+async def import_invoice_xml(file: UploadFile = File(...)):
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Nome file mancante")
+
+    if not file.filename.lower().endswith(".xml"):
+        raise HTTPException(status_code=400, detail="Carica solo file XML")
+
+    upload_dir = ROOT_DIR / "import_fatture"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    safe_name = file.filename.replace("/", "_").replace("\\", "_")
+    destination = upload_dir / safe_name
+
+    content = await file.read()
+
+    if not content:
+        raise HTTPException(status_code=400, detail="File XML vuoto")
+
+    with open(destination, "wb") as f:
+        f.write(content)
+
+    risultato = await importa_fattura_xml_da_file(db, destination)
+
+    return {
+        "ok": risultato.get("ok", False),
+        "filename": safe_name,
+        "path": str(destination),
+        **risultato,
     }
 
 

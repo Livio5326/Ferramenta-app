@@ -1,0 +1,321 @@
+import csv
+import xml.etree.ElementTree as ET
+from datetime import datetime
+from pathlib import Path
+
+
+REPORTS_DIR = "import_fatture/report"
+
+
+def pulisci(valore):
+    if valore is None:
+        return ""
+    return str(valore).strip()
+
+
+def numero_intero(valore):
+    valore = pulisci(valore).replace(",", ".")
+    if valore == "":
+        return 0
+
+    try:
+        return int(float(valore))
+    except ValueError:
+        return 0
+
+
+def testo_figlio(elemento, nome):
+    trovato = elemento.find(nome)
+    if trovato is None or trovato.text is None:
+        return ""
+    return pulisci(trovato.text)
+
+
+def trova_testo_xml(root, percorso):
+    trovato = root.find(percorso)
+    if trovato is None or trovato.text is None:
+        return ""
+    return pulisci(trovato.text)
+
+
+def dati_fattura(root):
+    numero = trova_testo_xml(root, ".//DatiGeneraliDocumento/Numero")
+    data = trova_testo_xml(root, ".//DatiGeneraliDocumento/Data")
+    partita_iva = trova_testo_xml(
+        root,
+        ".//CedentePrestatore/DatiAnagrafici/IdFiscaleIVA/IdCodice"
+    )
+    denominazione = trova_testo_xml(
+        root,
+        ".//CedentePrestatore/DatiAnagrafici/Anagrafica/Denominazione"
+    )
+
+    chiave_import = f"{partita_iva}|{numero}|{data}"
+
+    return {
+        "numero": numero,
+        "data": data,
+        "partita_iva": partita_iva,
+        "denominazione": denominazione,
+        "chiave_import": chiave_import,
+    }
+
+
+def trova_ean(dettaglio_linea):
+    for codice in dettaglio_linea.findall("CodiceArticolo"):
+        tipo = testo_figlio(codice, "CodiceTipo").upper()
+        valore = testo_figlio(codice, "CodiceValore")
+
+        if tipo == "EAN" and valore:
+            return valore
+
+    return ""
+
+
+def trova_codice_fornitore(dettaglio_linea):
+    for codice in dettaglio_linea.findall("CodiceArticolo"):
+        tipo = testo_figlio(codice, "CodiceTipo").upper()
+        valore = testo_figlio(codice, "CodiceValore")
+
+        if tipo != "EAN" and valore:
+            return valore
+
+    return ""
+
+
+def salva_non_trovati_csv(info_fattura, non_trovati):
+    if not non_trovati:
+        return ""
+
+    report_dir = Path(REPORTS_DIR)
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    numero_pulito = info_fattura["numero"].replace("/", "_").replace(" ", "_")
+    data_pulita = info_fattura["data"].replace("/", "_").replace(" ", "_")
+
+    nome_file = f"non_trovati_{numero_pulito}_{data_pulita}.csv"
+    percorso_file = report_dir / nome_file
+
+    with open(percorso_file, "w", newline="", encoding="utf-8-sig") as f:
+        campi = [
+            "linea",
+            "barcode",
+            "codice_fornitore",
+            "descrizione",
+            "quantita",
+            "prezzo_unitario",
+        ]
+
+        writer = csv.DictWriter(f, fieldnames=campi)
+        writer.writeheader()
+
+        for item in non_trovati:
+            writer.writerow({
+                "linea": item.get("linea", ""),
+                "barcode": item.get("barcode", ""),
+                "codice_fornitore": item.get("codice_fornitore", ""),
+                "descrizione": item.get("descrizione", ""),
+                "quantita": item.get("quantita", ""),
+                "prezzo_unitario": item.get("prezzo_unitario", ""),
+            })
+
+    return str(percorso_file)
+
+
+def salva_report(file_xml, info_fattura, linee, aggiornati, non_trovati, saltati):
+    report_dir = Path(REPORTS_DIR)
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    numero_pulito = info_fattura["numero"].replace("/", "_").replace(" ", "_")
+    data_pulita = info_fattura["data"].replace("/", "_").replace(" ", "_")
+
+    nome_report = f"report_{numero_pulito}_{data_pulita}.txt"
+    percorso_report = report_dir / nome_report
+
+    with open(percorso_report, "w", encoding="utf-8") as report:
+        report.write("REPORT IMPORT FATTURA XML\n")
+        report.write("=" * 60 + "\n\n")
+
+        report.write(f"Fornitore: {info_fattura['denominazione']}\n")
+        report.write(f"Partita IVA: {info_fattura['partita_iva']}\n")
+        report.write(f"Numero fattura: {info_fattura['numero']}\n")
+        report.write(f"Data fattura: {info_fattura['data']}\n")
+        report.write(f"File XML: {file_xml}\n")
+        report.write(f"Data import: {datetime.now().isoformat()}\n\n")
+
+        report.write("RISULTATO\n")
+        report.write("-" * 60 + "\n")
+        report.write(f"Righe fattura lette: {len(linee)}\n")
+        report.write(f"Prodotti aggiornati: {aggiornati}\n")
+        report.write(f"Barcode non trovati: {len(non_trovati)}\n")
+        report.write(f"Righe saltate: {len(saltati)}\n\n")
+
+        if non_trovati:
+            report.write("BARCODE NON TROVATI NEL CATALOGO\n")
+            report.write("-" * 60 + "\n")
+            for item in non_trovati:
+                report.write(
+                    f"Linea {item['linea']} | barcode {item['barcode']} | "
+                    f"quantità {item['quantita']} | {item['descrizione']}\n"
+                )
+            report.write("\n")
+
+        if saltati:
+            report.write("RIGHE SALTATE\n")
+            report.write("-" * 60 + "\n")
+            for item in saltati:
+                report.write(
+                    f"Linea {item['linea']} | barcode {item['barcode']} | "
+                    f"quantità {item['quantita']} | {item['descrizione']}\n"
+                )
+            report.write("\n")
+
+    return str(percorso_report)
+
+
+async def importa_fattura_xml_da_file(db, percorso_xml):
+    file_xml = Path(percorso_xml)
+
+    if not file_xml.exists():
+        return {
+            "ok": False,
+            "errore": f"File non trovato: {file_xml}"
+        }
+
+    tree = ET.parse(file_xml)
+    root = tree.getroot()
+
+    info_fattura = dati_fattura(root)
+
+    if not info_fattura["numero"] or not info_fattura["data"] or not info_fattura["partita_iva"]:
+        return {
+            "ok": False,
+            "errore": "Impossibile leggere numero, data o partita IVA della fattura"
+        }
+
+    gia_importata = await db.invoice_imports.find_one({
+        "chiave_import": info_fattura["chiave_import"]
+    })
+
+    if gia_importata:
+        return {
+            "ok": False,
+            "gia_importata": True,
+            "errore": "Questa fattura risulta già importata",
+            "fornitore": gia_importata.get("denominazione", ""),
+            "partita_iva": gia_importata.get("partita_iva", ""),
+            "numero": gia_importata.get("numero", ""),
+            "data": gia_importata.get("data", ""),
+            "data_import": gia_importata.get("data_import", ""),
+        }
+
+    linee = root.findall(".//DettaglioLinee")
+
+    if not linee:
+        return {
+            "ok": False,
+            "errore": "Nessuna riga prodotto trovata nel file XML"
+        }
+
+    aggiornati = 0
+    non_trovati = []
+    saltati = []
+
+    for dettaglio in linee:
+        numero_linea = testo_figlio(dettaglio, "NumeroLinea")
+        descrizione_fattura = testo_figlio(dettaglio, "Descrizione")
+        quantita_arrivata = numero_intero(testo_figlio(dettaglio, "Quantita"))
+        barcode = trova_ean(dettaglio)
+
+        if barcode == "" or quantita_arrivata <= 0:
+            saltati.append({
+                "linea": numero_linea,
+                "barcode": barcode,
+                "quantita": quantita_arrivata,
+                "descrizione": descrizione_fattura,
+            })
+            continue
+
+        condizioni = [
+            {"barcode": barcode},
+        ]
+
+        try:
+            condizioni.append({"barcode": int(barcode)})
+        except Exception:
+            pass
+
+        prodotto = await db.products.find_one({"$or": condizioni})
+
+        if not prodotto:
+            codice_fornitore = trova_codice_fornitore(dettaglio)
+
+            non_trovati.append({
+                "linea": numero_linea,
+                "barcode": barcode,
+                "codice_fornitore": codice_fornitore,
+                "quantita": quantita_arrivata,
+                "prezzo_unitario": testo_figlio(dettaglio, "PrezzoUnitario"),
+                "descrizione": descrizione_fattura,
+            })
+            continue
+
+        quantita_attuale = numero_intero(prodotto.get("quantita", 0))
+        nuova_quantita = quantita_attuale + quantita_arrivata
+
+        await db.products.update_one(
+            {"_id": prodotto["_id"]},
+            {
+                "$set": {
+                    "quantita": nuova_quantita,
+                    "ultimo_carico_fattura": datetime.now().isoformat(),
+                    "updated_at": datetime.now().isoformat(),
+                }
+            }
+        )
+
+        aggiornati += 1
+
+    percorso_non_trovati = salva_non_trovati_csv(info_fattura, non_trovati)
+
+    percorso_report = salva_report(
+        file_xml=file_xml,
+        info_fattura=info_fattura,
+        linee=linee,
+        aggiornati=aggiornati,
+        non_trovati=non_trovati,
+        saltati=saltati,
+    )
+
+    await db.invoice_imports.insert_one({
+        "chiave_import": info_fattura["chiave_import"],
+        "numero": info_fattura["numero"],
+        "data": info_fattura["data"],
+        "partita_iva": info_fattura["partita_iva"],
+        "denominazione": info_fattura["denominazione"],
+        "file": str(file_xml),
+        "report": percorso_report,
+        "file_non_trovati": percorso_non_trovati,
+        "data_import": datetime.now().isoformat(),
+        "righe_fattura": len(linee),
+        "prodotti_aggiornati": aggiornati,
+        "barcode_non_trovati": len(non_trovati),
+        "righe_saltate": len(saltati),
+    })
+
+    return {
+        "ok": True,
+        "fornitore": info_fattura["denominazione"],
+        "partita_iva": info_fattura["partita_iva"],
+        "numero": info_fattura["numero"],
+        "data": info_fattura["data"],
+        "righe_fattura": len(linee),
+        "prodotti_aggiornati": aggiornati,
+        "barcode_non_trovati": len(non_trovati),
+        "righe_saltate": len(saltati),
+        "report": percorso_report,
+        "file_non_trovati": percorso_non_trovati,
+        "non_trovati": non_trovati[:20],
+        "saltati": saltati[:20],
+    }
+
