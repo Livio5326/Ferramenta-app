@@ -287,6 +287,7 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
   const [filtroPrezzoAttivo, setFiltroPrezzoAttivo] = useState(false);
   const [prezzoMin, setPrezzoMin] = useState(0);
   const [prezzoMax, setPrezzoMax] = useState(1000);
+  const [priceFilterOpen, setPriceFilterOpen] = useState(false);
   const cats = catalogoFiltratoDaPagina 
   ? [categoriaDaPagina]
   : CATEGORIE_STANDARD;
@@ -605,64 +606,7 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
                   <Feather name="x" size={16} color={COLORS.onSurfaceSecondary} />
                 </Pressable>
               )}
-            </View>
-            <View style={styles.priceFilterBox}>
-  <Pressable
-    style={[
-      styles.priceFilterToggle,
-      filtroPrezzoAttivo && styles.priceFilterToggleActive,
-    ]}
-    onPress={() => setFiltroPrezzoAttivo(!filtroPrezzoAttivo)}
-  >
-    <Text
-      style={[
-        styles.priceFilterToggleText,
-        filtroPrezzoAttivo && styles.priceFilterToggleTextActive,
-      ]}
-    >
-      FILTRO PREZZO
-    </Text>
-  </Pressable>
-
-  <Text style={styles.priceFilterTitle}>
-    Da {prezzoMin} € a {prezzoMax} €
-  </Text>
-
-  <Text style={styles.priceFilterLabel}>Prezzo minimo</Text>
-  <Slider
-    minimumValue={0}
-    maximumValue={1000}
-    step={5}
-    value={prezzoMin}
-    onValueChange={(value) => {
-      const nuovoMin = Math.min(value, prezzoMax);
-      setPrezzoMin(nuovoMin);
-    }}
-  />
-
-  <Text style={styles.priceFilterLabel}>Prezzo massimo</Text>
-  <Slider
-    minimumValue={0}
-    maximumValue={1000}
-    step={5}
-    value={prezzoMax}
-    onValueChange={(value) => {
-      const nuovoMax = Math.max(value, prezzoMin);
-      setPrezzoMax(nuovoMax);
-    }}
-  />
-
-  <Pressable
-    style={styles.priceFilterReset}
-    onPress={() => {
-      setFiltroPrezzoAttivo(false);
-      setPrezzoMin(0);
-      setPrezzoMax(1000);
-    }}
-  >
-    <Text style={styles.priceFilterResetText}>RESET PREZZO</Text>
-  </Pressable>
-</View>
+             </View>
 
             <ScrollView
               horizontal
@@ -690,6 +634,88 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
                 </Pressable>
               ))}
             </ScrollView>
+
+
+<View style={styles.priceFilterBox}>
+  <View style={styles.priceCompactRow}>
+    <Pressable
+      style={[
+        styles.priceMiniToggle,
+        filtroPrezzoAttivo && styles.priceMiniToggleActive,
+      ]}
+      onPress={() => setPriceFilterOpen(!priceFilterOpen)}
+    >
+      <Text
+        style={[
+          styles.priceMiniToggleText,
+          filtroPrezzoAttivo && styles.priceMiniToggleTextActive,
+        ]}
+      >
+        PREZZO
+      </Text>
+
+      <Feather
+        name={priceFilterOpen ? 'chevron-up' : 'chevron-down'}
+        size={16}
+        color={filtroPrezzoAttivo ? COLORS.onSurfaceInverse : COLORS.onSurface}
+      />
+    </Pressable>
+
+    {priceFilterOpen && (
+      <View style={styles.priceCompactInputs}>
+        <TextInput
+          value={String(prezzoMin)}
+          onChangeText={(text) => {
+            const valore = Number(text.replace(',', '.')) || 0;
+            setPrezzoMin(valore);
+          }}
+          keyboardType="numeric"
+          placeholder="Min"
+          placeholderTextColor={COLORS.onSurfaceSecondary}
+          style={styles.priceCompactInput}
+        />
+
+        <TextInput
+          value={String(prezzoMax)}
+          onChangeText={(text) => {
+            const valore = Number(text.replace(',', '.')) || 0;
+            setPrezzoMax(valore);
+          }}
+          keyboardType="numeric"
+          placeholder="Max"
+          placeholderTextColor={COLORS.onSurfaceSecondary}
+          style={styles.priceCompactInput}
+        />
+      </View>
+    )}
+  </View>
+
+  {priceFilterOpen && (
+    <View style={styles.priceCompactActions}>
+      <Pressable
+        style={styles.priceSmallApplyBtn}
+        onPress={() => {
+          setFiltroPrezzoAttivo(true);
+          setPriceFilterOpen(false);
+        }}
+      >
+        <Text style={styles.priceSmallApplyTxt}>APPLICA</Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.priceSmallResetBtn}
+        onPress={() => {
+          setFiltroPrezzoAttivo(false);
+          setPrezzoMin(0);
+          setPrezzoMax(1000);
+          setPriceFilterOpen(false);
+        }}
+      >
+        <Text style={styles.priceSmallResetTxt}>RESET</Text>
+      </Pressable>
+    </View>
+  )}
+</View>
 
             <View style={styles.filterActions}>
               <Pressable
@@ -838,9 +864,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
 
-  chip: { height: 36, paddingHorizontal: 14, justifyContent: 'center', borderWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surface, flexShrink: 0 },
+  chip: { height: 36, paddingHorizontal: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surface, borderRadius: 12, },
   chipActive: { backgroundColor: COLORS.surfaceInverse, borderColor: COLORS.surfaceInverse },
-  chipTxt: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurface, letterSpacing: 1, fontWeight: '700' },
+  chipTxt: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurface, letterSpacing: 1, fontWeight: '600' },
   chipTxtActive: { color: COLORS.onSurfaceInverse },
   card: {
     width: '50%',
@@ -895,10 +921,47 @@ qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLO
   filtersTitle: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.onSurface, fontWeight: '900', letterSpacing: 1.5 },
 filterLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceSecondary, marginTop: 6, marginBottom: 2, letterSpacing: 1.5 },
   filterActions: { flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginTop: 10 },
-  filterClearBtn: { flex: 1, borderWidth: 1, borderColor: COLORS.brand, paddingVertical: 10, alignItems: 'center' },
-  filterApplyBtn: { flex: 1, backgroundColor: COLORS.brand, paddingVertical: 10, alignItems: 'center' },
-  filterClearTxt: { fontFamily: FONTS.mono, color: COLORS.brand, fontWeight: '800' },
-  filterApplyTxt: { fontFamily: FONTS.mono, color: COLORS.surface, fontWeight: '800' },
+  filterClearBtn: {
+  flex: 1,
+  borderWidth: 1.5,
+  borderColor: COLORS.brand,
+  backgroundColor: COLORS.surface,
+  paddingVertical: 13,
+  paddingHorizontal: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: 48,
+  borderRadius: 14,
+},
+
+filterApplyBtn: {
+  flex: 1,
+  backgroundColor: COLORS.brand,
+  borderWidth: 1.5,
+  borderColor: COLORS.brand,
+  paddingVertical: 13,
+  paddingHorizontal: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: 48,
+  borderRadius: 14,
+},
+
+filterClearTxt: {
+  fontFamily: FONTS.mono,
+  color: COLORS.brand,
+  fontWeight: '900',
+  fontSize: 14,
+  letterSpacing: 1,
+},
+
+filterApplyTxt: {
+  fontFamily: FONTS.mono,
+  color: COLORS.surface,
+  fontWeight: '900',
+  fontSize: 14,
+  letterSpacing: 1,
+},
   brandSearchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surfaceSecondary, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 6 },
   brandSearchInput: { flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: COLORS.onSurface, padding: 0 },
 
@@ -922,20 +985,119 @@ textMuted: {
   color: COLORS.onSurfaceSecondary,
 },
 priceFilterBox: {
-  marginTop: 18,
-  paddingTop: 16,
-  borderTopWidth: 2,
-  borderTopColor: COLORS.borderStrong,
+  marginTop: 14,
 },
 
+priceCompactRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 10,
+},
+
+priceMiniToggle: {
+  width: 120,
+  minHeight: 44,
+  borderWidth: 1.5,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surface,
+  borderRadius: 14,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+},
+
+priceMiniToggleActive: {
+  backgroundColor: COLORS.brand,
+  borderColor: COLORS.brand,
+},
+
+priceMiniToggleText: {
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  color: COLORS.onSurface,
+  fontWeight: '900',
+  letterSpacing: 1.4,
+},
+
+priceMiniToggleTextActive: {
+  color: COLORS.onSurfaceInverse,
+},
+
+priceCompactInputs: {
+  flex: 1,
+  flexDirection: 'row',
+  gap: 8,
+},
+
+priceCompactInput: {
+  flex: 1,
+  minHeight: 44,
+  borderWidth: 1,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surfaceSecondary,
+  color: COLORS.onSurface,
+  paddingHorizontal: 10,
+  fontSize: 16,
+  fontFamily: FONTS.mono,
+  textAlign: 'center',
+  borderRadius: 12,
+},
+
+priceCompactActions: {
+  flexDirection: 'row',
+  justifyContent: 'flex-end',
+  gap: 8,
+  marginTop: 8,
+},
+
+priceSmallApplyBtn: {
+  minHeight: 38,
+  paddingHorizontal: 18,
+  borderRadius: 12,
+  backgroundColor: COLORS.brand,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+priceSmallResetBtn: {
+  minHeight: 38,
+  paddingHorizontal: 18,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surface,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+priceSmallApplyTxt: {
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  fontWeight: '900',
+  color: COLORS.surface,
+  letterSpacing: 1,
+},
+
+priceSmallResetTxt: {
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  fontWeight: '900',
+  color: COLORS.brand,
+  letterSpacing: 1,
+},
 priceFilterToggle: {
-  borderWidth: 2,
+  borderWidth: 1.5,
   borderColor: COLORS.borderStrong,
   backgroundColor: COLORS.surface,
   paddingVertical: 12,
   paddingHorizontal: 14,
+  flexDirection: 'row',
   alignItems: 'center',
-  marginBottom: 14,
+  justifyContent: 'center', 
+  gap: 8,
+  minHeight: 38, 
+  borderRadius: 12,
 },
 
 priceFilterToggleActive: {
@@ -970,6 +1132,19 @@ priceFilterLabel: {
   marginTop: 10,
   marginBottom: 4,
   letterSpacing: 1,
+},
+
+priceInput: {
+  borderWidth: 1,
+  borderColor: COLORS.borderStrong,
+  backgroundColor: COLORS.surfaceSecondary,
+  color: COLORS.onSurface,
+  paddingVertical: 7,
+  paddingHorizontal: 12,
+  fontSize: 18,
+  fontFamily: FONTS.mono,
+  minHeight: 48,
+  marginTop: 6,
 },
 
 priceFilterReset: {
