@@ -189,3 +189,36 @@ export const api = {
     });
   },
 };
+export async function importInvoiceXml(file: {
+  uri: string;
+  name: string;
+  mimeType?: string;
+}) {
+  const formData = new FormData();
+
+  formData.append("file", {
+    uri: file.uri,
+    name: file.name || "fattura.xml",
+    type: file.mimeType || "text/xml",
+  } as any);
+
+  const res = await fetch(`${API_BASE}/invoices/import-xml`, {
+    method: "POST",
+    body: formData,
+  });
+
+  const text = await res.text();
+
+  let data: any = null;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { ok: false, errore: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.errore || data?.detail || text);
+  }
+
+  return data;
+}

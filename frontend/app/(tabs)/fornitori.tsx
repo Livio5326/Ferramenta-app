@@ -1,104 +1,329 @@
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
-import { COLORS, FONTS } from '@/src/theme';
+import React, { useState } from "react";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import * as DocumentPicker from "expo-document-picker";
+import { importInvoiceXml } from "../../src/api";
 
 export default function FornitoriScreen() {
+  const [importingInvoice, setImportingInvoice] = useState(false);
+  const [invoiceResult, setInvoiceResult] = useState<any>(null);
+
+  const handleImportInvoiceXml = async () => {
+    try {
+      const picked = await DocumentPicker.getDocumentAsync({
+        type: ["text/xml", "application/xml", "text/*"],
+        copyToCacheDirectory: true,
+      });
+
+      if (picked.canceled) {
+        return;
+      }
+
+      const file = picked.assets?.[0];
+
+      if (!file) {
+        Alert.alert("Errore", "Nessun file selezionato");
+        return;
+      }
+
+      if (!file.name?.toLowerCase().endsWith(".xml")) {
+        Alert.alert("File non valido", "Seleziona una fattura in formato XML");
+        return;
+      }
+
+      setImportingInvoice(true);
+      setInvoiceResult(null);
+
+      const result = await importInvoiceXml({
+        uri: file.uri,
+        name: file.name || "fattura.xml",
+        mimeType: file.mimeType || "text/xml",
+      });
+
+      setInvoiceResult(result);
+
+      if (result.ok) {
+        Alert.alert(
+          "Import completato",
+          `Fornitore: ${result.fornitore || "N/D"}\n` +
+            `Numero fattura: ${result.numero || "N/D"}\n\n` +
+            `Prodotti aggiornati: ${result.prodotti_aggiornati}\n` +
+            `Barcode non trovati: ${result.barcode_non_trovati}\n` +
+            `Righe saltate: ${result.righe_saltate}`
+        );
+      } else {
+        Alert.alert(
+          "Import non eseguito",
+          result.errore || "Errore sconosciuto"
+        );
+      }
+    } catch (err: any) {
+      Alert.alert("Errore import", err?.message || "Errore durante import XML");
+    } finally {
+      setImportingInvoice(false);
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.iconBox}>
-            <Feather name="truck" size={34} color={COLORS.brand} />
-          </View>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Fornitori</Text>
+        <Text style={styles.subtitle}>
+          Gestione carichi merce e fatture XML fornitori.
+        </Text>
+      </View>
 
-          <Text style={styles.title}>FORNITORI</Text>
-          <Text style={styles.subtitle}>
-            Gestione cataloghi, grossisti e fornitori.
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Import fattura XML</Text>
+        <Text style={styles.cardText}>
+          Carica una fattura elettronica XML. L’app leggerà gli EAN, aggiornerà
+          le quantità dei prodotti già presenti e segnalerà quelli non trovati.
+        </Text>
+
+        <Pressable
+          style={[styles.primaryButton, importingInvoice && styles.disabled]}
+          onPress={handleImportInvoiceXml}
+          disabled={importingInvoice}
+        >
+          <Text style={styles.primaryButtonText}>
+            {importingInvoice ? "IMPORT IN CORSO..." : "IMPORTA FATTURA XML"}
           </Text>
-        </View>
+        </Pressable>
+      </View>
 
-        <View style={styles.card}>
-          <View style={styles.cardIcon}>
-            <Feather name="package" size={24} color="#FFFFFF" />
-          </View>
-
-          <Text style={styles.cardTitle}>Gestione fornitori</Text>
-          <Text style={styles.cardText}>
-            Questa sezione sarà dedicata ai fornitori, ai cataloghi e ai listini.
+      {invoiceResult && (
+        <View style={styles.resultCard}>
+          <Text style={styles.resultTitle}>
+            {invoiceResult.ok ? "Ultimo import completato" : "Import non eseguito"}
           </Text>
+
+          <Text style={styles.resultText}>
+            Fornitore: {invoiceResult.fornitore || invoiceResult.denominazione || "N/D"}
+          </Text>
+          <Text style={styles.resultText}>
+            Numero fattura: {invoiceResult.numero || "N/D"}
+          </Text>
+          <Text style={styles.resultText}>
+            Data fattura: {invoiceResult.data || "N/D"}
+          </Text>
+
+          {invoiceResult.ok ? (
+            <>
+              <View style={styles.statsRow}>
+                <View style={styles.statBox}>
+                  <Text style={styles.statValue}>
+                    {invoiceResult.prodotti_aggiornati ?? 0}
+                  </Text>
+                  <Text style={styles.statLabel}>Aggiornati</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statValue}>
+                    {invoiceResult.barcode_non_trovati ?? 0}
+                  </Text>
+                  <Text style={styles.statLabel}>Non trovati</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statValue}>
+                    {invoiceResult.righe_saltate ?? 0}
+                  </Text>
+                  <Text style={styles.statLabel}>Saltati</Text>
+                </View>
+              </View>
+
+              {invoiceResult.file_non_trovati ? (
+                <Text style={styles.smallText}>
+                  File non trovati creato: {invoiceResult.file_non_trovati}
+                </Text>
+              ) : null}
+
+              {invoiceResult.report ? (
+                <Text style={styles.smallText}>
+                  Report creato: {invoiceResult.report}
+                </Text>
+              ) : null}
+            </>
+          ) : (
+            <Text style={styles.errorText}>
+              {invoiceResult.errore || "Errore sconosciuto"}
+            </Text>
+          )}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      )}
+
+      <View style={styles.noteCard}>
+        <Text style={styles.noteTitle}>Nota pratica</Text>
+        <Text style={styles.noteText}>
+          Se la fattura è già stata importata, il sistema la blocca e non
+          modifica le quantità. Finalmente un software che non si fida del dito
+          umano sul tasto due volte.
+        </Text>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
   container: {
-    padding: 18,
-    paddingBottom: 32,
+    flex: 1,
+    backgroundColor: "#F4EFE6",
   },
+
+  content: {
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 40,
+  },
+
   header: {
-    alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  iconBox: {
-    width: 74,
-    height: 74,
-    borderRadius: 22,
-    backgroundColor: COLORS.surfaceSecondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
+
   title: {
-    fontFamily: FONTS.display,
-    fontSize: 24,
-    fontWeight: '900',
-    color: COLORS.onSurface,
-    letterSpacing: 1.2,
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#2F2A22",
+    letterSpacing: 0.5,
   },
+
   subtitle: {
     marginTop: 6,
-    textAlign: 'center',
-    color: COLORS.onSurfaceSecondary,
-    fontSize: 13,
+    fontSize: 14,
+    color: "#6F6252",
+    lineHeight: 20,
   },
+
   card: {
-    backgroundColor: COLORS.surfaceSecondary,
+    backgroundColor: "#FFF9EF",
     borderRadius: 18,
-    padding: 18,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: "#D7C7AF",
+    padding: 16,
     marginBottom: 14,
-    alignItems: 'center',
   },
-  cardIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 15,
-    backgroundColor: COLORS.brand,
-    alignItems: 'center',
-    justifyContent: 'center',
+
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#2F2A22",
+    marginBottom: 8,
+  },
+
+  cardText: {
+    fontSize: 14,
+    color: "#6F6252",
+    lineHeight: 20,
+    marginBottom: 14,
+  },
+
+  primaryButton: {
+    backgroundColor: "#315C3A",
+    borderRadius: 14,
+    minHeight: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 14,
+  },
+
+  primaryButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "900",
+    fontSize: 14,
+    letterSpacing: 1,
+  },
+
+  disabled: {
+    opacity: 0.55,
+  },
+
+  resultCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#D7C7AF",
+    padding: 16,
+    marginBottom: 14,
+  },
+
+  resultTitle: {
+    fontSize: 17,
+    fontWeight: "900",
+    color: "#2F2A22",
+    marginBottom: 10,
+  },
+
+  resultText: {
+    fontSize: 13,
+    color: "#4A4033",
+    marginBottom: 5,
+  },
+
+  statsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 14,
     marginBottom: 12,
   },
-  cardTitle: {
-    fontFamily: FONTS.mono,
+
+  statBox: {
+    flex: 1,
+    backgroundColor: "#EFE5D6",
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+
+  statValue: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#315C3A",
+  },
+
+  statLabel: {
+    marginTop: 4,
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#6F6252",
+  },
+
+  smallText: {
+    fontSize: 11,
+    color: "#6F6252",
+    marginTop: 6,
+  },
+
+  errorText: {
+    marginTop: 10,
+    fontSize: 13,
+    color: "#8B1E1E",
+    fontWeight: "800",
+  },
+
+  noteCard: {
+    backgroundColor: "#EFE5D6",
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#D7C7AF",
+  },
+
+  noteTitle: {
     fontSize: 15,
-    fontWeight: '900',
-    color: COLORS.onSurface,
+    fontWeight: "900",
+    color: "#2F2A22",
     marginBottom: 6,
   },
-  cardText: {
-    color: COLORS.onSurfaceSecondary,
-    textAlign: 'center',
+
+  noteText: {
     fontSize: 13,
-    lineHeight: 18,
+    color: "#6F6252",
+    lineHeight: 19,
   },
 });
