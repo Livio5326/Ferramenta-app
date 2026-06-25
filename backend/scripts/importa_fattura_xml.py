@@ -1,3 +1,4 @@
+import csv
 import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime
@@ -76,6 +77,56 @@ def trova_ean(dettaglio_linea):
             return valore
 
     return ""
+
+
+def trova_codice_fornitore(dettaglio_linea):
+    for codice in dettaglio_linea.findall("CodiceArticolo"):
+        tipo = testo_figlio(codice, "CodiceTipo").upper()
+        valore = testo_figlio(codice, "CodiceValore")
+
+        if tipo != "EAN" and valore:
+            return valore
+
+    return ""
+
+
+def salva_non_trovati_csv(info_fattura, non_trovati):
+    if not non_trovati:
+        return ""
+
+    report_dir = Path(REPORTS_DIR)
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    numero_pulito = info_fattura["numero"].replace("/", "_").replace(" ", "_")
+    data_pulita = info_fattura["data"].replace("/", "_").replace(" ", "_")
+
+    nome_file = f"non_trovati_{numero_pulito}_{data_pulita}.csv"
+    percorso_file = report_dir / nome_file
+
+    with open(percorso_file, "w", newline="", encoding="utf-8-sig") as f:
+        campi = [
+            "linea",
+            "barcode",
+            "codice_fornitore",
+            "descrizione",
+            "quantita",
+            "prezzo_unitario",
+        ]
+
+        writer = csv.DictWriter(f, fieldnames=campi)
+        writer.writeheader()
+
+        for item in non_trovati:
+            writer.writerow({
+                "linea": item.get("linea", ""),
+                "barcode": item.get("barcode", ""),
+                "codice_fornitore": item.get("codice_fornitore", ""),
+                "descrizione": item.get("descrizione", ""),
+                "quantita": item.get("quantita", ""),
+                "prezzo_unitario": item.get("prezzo_unitario", ""),
+            })
+
+    return str(percorso_file)
 
 
 def salva_report(file_xml, info_fattura, linee, aggiornati, non_trovati, saltati):
@@ -205,7 +256,9 @@ def importa_fattura_xml(percorso_xml):
             non_trovati.append({
                 "linea": numero_linea,
                 "barcode": barcode,
+                "codice_fornitore": codice_fornitore,
                 "quantita": quantita_arrivata,
+                "prezzo_unitario": testo_figlio(dettaglio,"PrezzoUnitario"),
                 "descrizione": descrizione_fattura,
             })
             continue
@@ -233,6 +286,8 @@ def importa_fattura_xml(percorso_xml):
             f"codice {codice_prodotto} | {descrizione_catalogo} | "
             f"quantità {quantita_attuale} -> {nuova_quantita}"
         )
+    
+    percorso_non_trovati = salva_non_trovati_csv(info_fattura, non_trovati)
 
     percorso_report = salva_report(
         file_xml=file_xml,
@@ -251,6 +306,7 @@ def importa_fattura_xml(percorso_xml):
         "denominazione": info_fattura["denominazione"],
         "file": str(file_xml),
         "report": percorso_report,
+        "file_non_trovati": percorso_non_trovati,
         "data_import": datetime.now().isoformat(),
         "righe_fattura": len(linee),
         "prodotti_aggiornati": aggiornati,
@@ -265,6 +321,8 @@ def importa_fattura_xml(percorso_xml):
     print(f"Barcode non trovati: {len(non_trovati)}")
     print(f"Righe saltate: {len(saltati)}")
     print(f"Report salvato in: {percorso_report}")
+    if percorso_non_trovati:
+        print(f"File non trovati salvato in: {percorso_non_trovati}")
 
     if non_trovati:
         print("")
