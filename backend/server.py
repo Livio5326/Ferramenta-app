@@ -1152,9 +1152,33 @@ async def update_product(pid: str, input: ProductUpdate):
 
 @api_router.delete("/products/{pid}")
 async def delete_product(pid: str):
-    res = await db.products.delete_one({"id": pid})
+    condizioni = [
+        {"id": pid},
+        {"codice_prodotto": pid},
+        {"barcode": pid},
+    ]
+
+    try:
+        if ObjectId.is_valid(pid):
+            condizioni.insert(0, {"_id": ObjectId(pid)})
+    except Exception:
+        pass
+
+    try:
+        condizioni.append({"barcode": int(pid)})
+    except Exception:
+        pass
+
+    prodotto = await db.products.find_one({"$or": condizioni})
+
+    if not prodotto:
+        raise HTTPException(status_code=404, detail="Prodotto non trovato")
+
+    res = await db.products.delete_one({"_id": prodotto["_id"]})
+
     if res.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Prodotto non trovato")
+
     return {"ok": True}
 
 
