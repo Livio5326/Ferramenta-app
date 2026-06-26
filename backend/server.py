@@ -882,6 +882,35 @@ async def get_products_standard_brands():
 
     return sorted(list(set(clean)), key=lambda x: x.lower())
 
+@api_router.get("/products/brands")
+async def get_product_brands():
+    brands_set = set()
+
+    cursor = db.products.find(
+        {},
+        {
+            "marca": 1,
+            "marca_standard": 1,
+        }
+    )
+
+    async for p in cursor:
+        marca_standard = str(p.get("marca_standard") or "").strip()
+        marca = str(p.get("marca") or "").strip()
+
+        if marca_standard and marca_standard.lower() not in ["da classificare", "nessuna", "null", "undefined"]:
+            brands_set.add(marca_standard)
+
+        if marca and marca.lower() not in ["da classificare", "nessuna", "null", "undefined"]:
+            brands_set.add(marca)
+
+    brands = sorted(brands_set, key=lambda x: x.lower())
+
+    return {
+        "brands": brands,
+        "total": len(brands),
+    }
+
 
 @api_router.get("/products/page")
 async def get_products_page(

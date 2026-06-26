@@ -55,6 +55,9 @@ export const api = {
     qs.set('skip', String(params.skip ?? 0));
     return req<{ items: Product[]; total: number; limit: number; skip: number; has_more: boolean }>('/products/page?' + qs.toString());
   },
+  listProductBrands: async () => {
+    return req<{ brands: string[]; total: number }>("/products/brands");
+  },
   getProduct: (id: string) => req<Product>(`/products/${id}`),
   getByBarcode: (b: string) => req<Product>(`/products/barcode/${encodeURIComponent(b)}`),
   createProduct: (p: Partial<Product>) =>

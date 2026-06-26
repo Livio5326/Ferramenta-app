@@ -219,16 +219,16 @@ export default function CatalogoVenditaScreen() {
     let alive = true;
 
     api
-      .listStandardBrands()
+      .listProductBrands()
       .then((res: any) => {
         if (!alive) return;
-        const received = res?.items || [];
+        const received = res?.brands || [];
         if (Array.isArray(received) && received.length > 0) {
           setBrandsReali(["Tutte", ...received.filter((m: string) => m !== "Tutte")]);
         }
       })
       .catch((err: any) => {
-        console.warn("Errore caricamento marche standard", err);
+        console.warn("Errore caricamento marche prodotti", err);
       });
 
     return () => {
