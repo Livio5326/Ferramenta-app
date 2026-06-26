@@ -139,7 +139,7 @@ function testoProdottoFiltro(p: Product) {
 }
 
 function getProductId(p: Product) {
-  return String(p.barcode || p.id || p._id || p.codice_prodotto || "");
+  return String(p.id || p._id || p.codice_prodotto || p.barcode || "");
 }
 
 function getProductTitle(p: Product) {

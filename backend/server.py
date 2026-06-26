@@ -903,7 +903,12 @@ async def get_products_page(
     and_filters = []
 
     if categoria:
-        query["categoria_standard"] = categoria
+        and_filters.append({
+            "$or": [
+                {"categoria_standard": categoria},
+                {"categoria": categoria},
+            ]
+        })
 
     if marca_standard:
         marca_pulita = marca_standard.strip()
@@ -920,26 +925,19 @@ async def get_products_page(
             ]
         })
 
-        if da_completare:
-            and_filters.append({
-                "$or": [
-                    {"prezzo_vendita": {"$in": [0, None, ""]}},
-                    {"prezzo_vendita": {"$exists": False}},
-                    {"barcode": {"$in": ["", None]}},
-                    {"barcode": {"$exists": False}},
-                    {"categoria": "Da classificare"},
-                    {"categoria_standard": "Da classificare"},
-                    {
-                        "$and": [
-                            {"$or": [{"foto": {"$in": ["", None]}}, {"foto": {"$exists": False}}]},
-                            {"$or": [{"image_url": {"$in": ["", None]}}, {"image_url": {"$exists": False}}]},
-                            {"$or": [{"immagine": {"$in": ["", None]}}, {"immagine": {"$exists": False}}]},
-                            {"$or": [{"immagine_url": {"$in": ["", None]}}, {"immagine_url": {"$exists": False}}]},
-                        ]
-                    },
-                ]
-            })
-
+    if da_completare:
+        and_filters.append({
+            "$or": [
+                {"prezzo_vendita": {"$in": [0, None, ""]}},
+                {"prezzo_vendita": {"$exists": False}},
+                {"barcode": {"$in": ["", None]}},
+                {"barcode": {"$exists": False}},
+                {"foto": {"$in": ["", None]}},
+                {"foto": {"$exists": False}},
+                {"categoria_standard": {"$in": ["", None, "Da classificare"]}},
+                {"categoria_standard": {"$exists": False}},
+            ]
+        })
     if disponibile is True:
         query["quantita"] = {"$gt": 0}
 
