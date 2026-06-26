@@ -8,13 +8,40 @@ import {
   View,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
-import { importInvoiceXml, listInvoiceImports } from "../../src/api";
+import { importInvoiceXml, listInvoiceImports, getMissingInvoiceProducts, createPendingInvoiceProducts } from "../../src/api";
 
 export default function FornitoriScreen() {
   const [importingInvoice, setImportingInvoice] = useState(false);
   const [invoiceResult, setInvoiceResult] = useState<any>(null);
   const [invoiceImports, setInvoiceImports] = useState<any[]>([]);
-const [loadingImports, setLoadingImports] = useState(false);
+  const [loadingImports, setLoadingImports] = useState(false);
+  const [missingProducts, setMissingProducts] = useState<any[]>([]);
+  const [loadingMissing, setLoadingMissing] = useState(false);
+  const handleCreateSelectedProducts = async () => {
+  try {
+    const selectedItems = missingProducts.filter((item) => item.selected);
+
+    if (selectedItems.length === 0) {
+      Alert.alert("Nessun prodotto", "Seleziona almeno un prodotto da creare.");
+      return;
+    }
+
+    const result = await createPendingInvoiceProducts(selectedItems);
+
+    Alert.alert(
+      "Prodotti creati",
+      `Creati: ${result.creati}\nGià presenti: ${result.gia_presenti}\nSaltati: ${result.saltati}`
+    );
+
+    setMissingProducts([]);
+    await loadInvoiceImports();
+  } catch (err: any) {
+    Alert.alert(
+      "Errore creazione prodotti",
+      err?.message || "Errore durante la creazione dei prodotti"
+    );
+  }
+};
 
 const loadInvoiceImports = async () => {
   try {
@@ -25,6 +52,28 @@ const loadInvoiceImports = async () => {
     console.warn("Errore caricamento storico fatture", err);
   } finally {
     setLoadingImports(false);
+  }
+};
+
+const loadMissingProducts = async (filePath: string) => {
+  try {
+    setLoadingMissing(true);
+
+    const data = await getMissingInvoiceProducts(filePath);
+
+    setMissingProducts(
+      (data.items || []).map((item: any) => ({
+        ...item,
+        selected: true,
+      }))
+    );
+  } catch (err: any) {
+    Alert.alert(
+      "Errore",
+      err?.message || "Errore caricamento prodotti non trovati"
+    );
+  } finally {
+    setLoadingMissing(false);
   }
 };
 
@@ -154,6 +203,18 @@ useEffect(() => {
           </Text>
         </View>
 
+       {item.file_non_trovati ? (
+  <Pressable
+    style={styles.missingButton}
+    onPress={() => loadMissingProducts(item.file_non_trovati)}
+    disabled={loadingMissing}
+  >
+    <Text style={styles.missingButtonText}>
+      {loadingMissing ? "CARICO..." : "VEDI PRODOTTI NON TROVATI"}
+    </Text>
+  </Pressable>
+) : null}
+
         {item.registrata_manualmente ? (
           <Text style={styles.manualBadge}>REGISTRATA MANUALMENTE</Text>
         ) : null}
@@ -221,6 +282,62 @@ useEffect(() => {
           )}
         </View>
       )}
+
+      {missingProducts.length > 0 ? (
+  <View style={styles.card}>
+    <Text style={styles.cardTitle}>Prodotti non trovati</Text>
+
+    <Text style={styles.cardText}>
+      Deseleziona i prodotti che NON vuoi creare. Quelli selezionati verranno
+      creati nel catalogo con prezzo vendita 0.
+    </Text>
+
+    {missingProducts.map((item, index) => (
+      <Pressable
+        key={`${item.barcode}_${index}`}
+        style={[
+          styles.missingProductRow,
+          item.selected && styles.missingProductSelected,
+        ]}
+        onPress={() => {
+          setMissingProducts((prev) =>
+            prev.map((p, i) =>
+              i === index ? { ...p, selected: !p.selected } : p
+            )
+          );
+        }}
+      >
+        <View style={styles.checkboxBox}>
+          <Text style={styles.checkboxText}>{item.selected ? "✓" : ""}</Text>
+        </View>
+
+        <View style={styles.missingProductInfo}>
+          <Text style={styles.missingProductTitle}>
+            {item.descrizione || "Senza descrizione"}
+          </Text>
+
+          <Text style={styles.missingProductText}>
+            Barcode: {item.barcode || "N/D"}
+          </Text>
+
+          <Text style={styles.missingProductText}>
+            Codice: {item.codice_fornitore || "N/D"} · Qta:{" "}
+            {item.quantita || "0"} · Acquisto: {item.prezzo_unitario || "0"} €
+          </Text>
+        </View>
+      </Pressable>
+    ))}
+
+     <Pressable
+  style={styles.primaryButton}
+  onPress={handleCreateSelectedProducts}
+>
+  <Text style={styles.primaryButtonText}>
+    CREA PRODOTTI SELEZIONATI
+  </Text>
+</Pressable>
+  </View>
+) : null}
 
       <View style={styles.noteCard}>
         <Text style={styles.noteTitle}>Nota pratica</Text>
@@ -446,5 +563,71 @@ manualBadge: {
   fontWeight: "900",
   color: "#8B5A2B",
   letterSpacing: 0.8,
+},
+
+missingButton: {
+  marginTop: 10,
+  backgroundColor: "#EFE5D6",
+  borderRadius: 12,
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  alignItems: "center",
+},
+
+missingButtonText: {
+  fontSize: 11,
+  fontWeight: "900",
+  color: "#8B1E1E",
+  letterSpacing: 0.7,
+},
+
+missingProductRow: {
+  flexDirection: "row",
+  gap: 10,
+  borderWidth: 1,
+  borderColor: "#D7C7AF",
+  backgroundColor: "#FFF9EF",
+  borderRadius: 14,
+  padding: 12,
+  marginBottom: 10,
+},
+
+missingProductSelected: {
+  borderColor: "#315C3A",
+  backgroundColor: "#F1F7EF",
+},
+
+checkboxBox: {
+  width: 26,
+  height: 26,
+  borderRadius: 8,
+  borderWidth: 2,
+  borderColor: "#315C3A",
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 2,
+},
+
+checkboxText: {
+  color: "#315C3A",
+  fontWeight: "900",
+  fontSize: 16,
+},
+
+missingProductInfo: {
+  flex: 1,
+},
+
+missingProductTitle: {
+  fontSize: 13,
+  fontWeight: "900",
+  color: "#2F2A22",
+  marginBottom: 5,
+},
+
+missingProductText: {
+  fontSize: 11,
+  color: "#6F6252",
+  marginBottom: 3,
 },
 });

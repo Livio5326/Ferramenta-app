@@ -37,6 +37,7 @@ export const api = {
     if (params.marca_standard && params.marca_standard !== 'Tutte') qs.set('marca_standard', params.marca_standard);
     if (params.sotto_scorta) qs.set('sotto_scorta', 'true');
     if (params.vendibile) qs.set('vendibile', 'true');
+    if (params.da_completare) qs.set('da_completare', 'true');  
     if (params.prezzo_min !== undefined) qs.set('prezzo_min', String(params.prezzo_min));
     if (params.prezzo_max !== undefined) qs.set('prezzo_max', String(params.prezzo_max));
     qs.set('limit', String(params.limit ?? 50));
@@ -233,6 +234,53 @@ export async function listInvoiceImports() {
     data = JSON.parse(text);
   } catch {
     data = { items: [], total: 0, errore: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.errore || data?.detail || text);
+  }
+
+  return data;
+}
+
+export async function getMissingInvoiceProducts(filePath: string) {
+  const qs = new URLSearchParams();
+  qs.set("file_path", filePath);
+
+  const res = await fetch(`${BASE}/invoices/missing-products?${qs.toString()}`);
+
+  const text = await res.text();
+
+  let data: any = null;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { items: [], total: 0, errore: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.errore || data?.detail || text);
+  }
+
+  return data;
+}
+
+export async function createPendingInvoiceProducts(items: any[]) {
+  const res = await fetch(`${BASE}/invoices/pending-products/create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ items }),
+  });
+
+  const text = await res.text();
+
+  let data: any = null;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { ok: false, errore: text };
   }
 
   if (!res.ok) {

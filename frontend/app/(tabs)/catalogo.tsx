@@ -1,542 +1,610 @@
-import { useRef } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Modal, FlatList, Pressable, ScrollView, ActivityIndicator,
-  Alert
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  Modal,
+  Pressable,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 
-import { COLORS, FONTS, fmtEUR } from '@/src/theme';
-import { api } from '@/src/api';
-import { Product, useAppStore } from '@/src/store';
-import Slider from '@react-native-community/slider';
+import { api } from "../../src/api";
+import { useAppStore } from "../../src/store";
 
-function prezzoFinaleProdotto(p: any): number {
-  const prezzoPromo = Number(p?.prezzo_promo || 0);
-  if (p?.promo_attiva && prezzoPromo > 0) return prezzoPromo;
-  return Number(p?.prezzo_vendita || 0);
-}
+const PAGE_SIZE = 30;
 
-function haPromoProdotto(p: any): boolean {
-  return Boolean(p?.promo_attiva && Number(p?.prezzo_promo || 0) > 0);
-}
+const COLORS = {
+  surface: "#F4EFE7",
+  card: "#FFF9EF",
+  text: "#2F2A22",
+  muted: "#7A6B5B",
+  border: "#D7C7AF",
+  green: "#315C3A",
+  greenDark: "#213F28",
+  red: "#8B1E1E",
+  orange: "#9B4E18",
+  chip: "#EFE5D6",
+  white: "#FFFFFF",
+};
 
 const CATEGORIE_STANDARD = [
-  'Utensili manuali',
-  'Strumenti di misura',
-  'Utensili a filo',
-  'Utensili a batteria',
-  'Accessori',
-  'Portautensili',
-  'Ferramenta',
-  'Fissaggio',
-  'Giardinaggio',
-  'Vernici',
-  'Idraulica',
-  'Elettrico',
-  'Antinfortunistica',
-  'Auto',
-  'Casa',
-  'Chiavi',
-  'Altro',
+  "Utensili manuali",
+  "Strumenti di misura",
+  "Utensili a filo",
+  "Utensili a batteria",
+  "Accessori",
+  "Portautensili",
+  "Ferramenta",
+  "Fissaggio",
+  "Giardinaggio",
+  "Vernici",
+  "Idraulica",
+  "Elettrico",
+  "Antinfortunistica",
+  "Auto",
+  "Casa",
+  "Chiavi",
+  "Altro",
 ];
 
+const MARCHE_STANDARD = [
+  "Tutte",
+  "Ambrovit",
+  "Stanley",
+  "Black & Decker",
+  "DeWalt",
+  "USAG",
+  "Beta",
+  "Bosch",
+  "Makita",
+  "Einhell",
+  "Fischer",
+  "Arexons",
+  "Saratoga",
+  "Vileda",
+  "Mapei",
+  "Cisa",
+  "Mottura",
+  "Yale",
+  "Tesa",
+  "Wolfcraft",
+  "Kapriol",
+  "Sika",
+  "Pattex",
+  "Henkel",
+  "Bostik",
+  "WD-40",
+  "Svitol",
+];
 
-function testoProdottoFiltro(p: any) {
+type Product = {
+  id?: string;
+  _id?: string;
+  barcode?: string;
+  codice_prodotto?: string;
+  codice_fornitore?: string;
+  nome?: string;
+  descrizione?: string;
+  categoria?: string;
+  marca?: string;
+  marca_standard?: string;
+  fornitore?: string;
+  quantita?: number | null;
+  soglia_scorta?: number | null;
+  prezzo_acquisto?: number | null;
+  prezzo_vendita?: number | null;
+  prezzo_promo?: number | null;
+  promo_attiva?: boolean;
+  foto?: string;
+  image_url?: string;
+  immagine?: string;
+  immagine_url?: string;
+  note?: string;
+};
+
+function prezzoFinaleProdotto(p: Product): number {
+  const prezzoPromo = Number(p.prezzo_promo || 0);
+  if (p.promo_attiva && prezzoPromo > 0) return prezzoPromo;
+  return Number(p.prezzo_vendita || 0);
+}
+
+function haPromoProdotto(p: Product): boolean {
+  return Boolean(p.promo_attiva && Number(p.prezzo_promo || 0) > 0);
+}
+
+function testoProdottoFiltro(p: Product) {
   return [
     p.descrizione,
     p.nome,
     p.categoria,
     p.marca,
+    p.marca_standard,
     p.fornitore,
     p.note,
     p.codice_prodotto,
+    p.codice_fornitore,
     p.barcode,
   ]
     .filter(Boolean)
-    .join(' ')
+    .join(" ")
     .toLowerCase();
 }
 
-
-const MARCHE_STANDARD = [
-  'STANLEY',
-  'BLACK+DECKER',
-  'DEWALT',
-  'BOSCH',
-  'MAKITA',
-  'MILWAUKEE',
-  'METABO',
-  'HIKOKI',
-  'RYOBI',
-  'EINHELL',
-  'DREMEL',
-  'FESTOOL',
-  'FEIN',
-  'AEG',
-  'SKIL',
-  'PARKSIDE',
-  'WERA',
-  'KNIPEX',
-  'USAG',
-  'BETA',
-  'FACOM',
-  'IRWIN',
-  'BAHCO',
-  'GEDORE',
-  'WIHA',
-  'HAZET',
-  'RUBI',
-  'VALEX',
-  'FERVI',
-  'KRINO',
-  'MAURER',
-  'MUNDIAL',
-  'NORTON',
-  'TYROLIT',
-  'SAIT',
-  'RHODIUS',
-  'ABRACUT',
-  'FISCHER',
-  'SPIT',
-  'HILTI',
-  'WURTH',
-  'RAWLPLUG',
-  'PATTEX',
-  'BOSTIK',
-  'SARATOGA',
-  'MAPEI',
-  'SIKA',
-  'LOCTITE',
-  'AREXONS',
-  'SVITOL',
-  'WD-40',
-  'TANGIT',
-  'MAXMEYER',
-  'BOERO',
-  'DUCO',
-  'TIXE',
-  'SAYERLACK',
-  'V33',
-  'OSRAM',
-  'VIMAR',
-  'BTICINO',
-  'LEGRAND',
-  'GEWISS',
-  'AVE',
-  'PHILIPS',
-  'BEGHELLI',
-  'LIFE',
-  'FANTON',
-  '3M',
-  'SINGER SAFETY',
-  'DELTA PLUS',
-  'DIADORA',
-  'U-POWER',
-  'BASE',
-  'COFRA',
-  'PORTWEST',
-  'CISA',
-  'YALE',
-  'VIRO',
-  'ISEO',
-  'MOTTURA',
-  'PREFER',
-  'ABUS',
-  'MASTER LOCK',
-  'SECUREMME',
-  'GROHE',
-  'FAR',
-  'GEBERIT',
-  'CALEFFI',
-  'FERRARI',
-  'TECE',
-  'GARDENA',
-  'CLABER',
-  'FISKARS',
-  'STIHL',
-  'HUSQVARNA',
-  'AL-KO',
-  'GIMI',
-  'VILEDA',
-  'FARAONE',
-  'SICOS',
-  'MELICONI',
-  'PAPILLON',
-  'AMBROVIT',
-  'ALTRO',
-];
-
-function categoriaStandardDaImportata(p: any): string {
-  const standard = String(p.categoria_standard || '').trim();
-
-  if (standard) {
-    return standard;
-  }
-
-  const categoriaImportata = String(p.categoria || '').toLowerCase();
-  const marca = String(p.marca || '').toLowerCase();
-  const fornitore = String(p.fornitore || '').toLowerCase();
-  const descrizione = String(p.descrizione || '').toLowerCase();
-  const note = String(p.note || '').toLowerCase();
-  const codice = String(p.codice_prodotto || '').toUpperCase();
-
-  const testo = `${categoriaImportata} ${descrizione} ${note} ${codice}`;
-
-  const haWattaggio = /\b\d{2,4}\s*(w|watt|watts)\b/.test(testo);
-  const haBatteria =
-    testo.includes('batteria') ||
-    testo.includes('batterie') ||
-    testo.includes('cordless') ||
-    testo.includes('18v') ||
-    testo.includes('20v') ||
-    testo.includes('12v') ||
-    testo.includes('54v') ||
-    testo.includes('v20') ||
-    testo.includes('li-ion') ||
-    testo.includes('litio');
-
-  if (categoriaImportata.includes('portautensili')) return 'Portautensili';
-  if (categoriaImportata.includes('strumenti di misura') || categoriaImportata.includes('strumentazione elettronica')) return 'Strumenti di misura';
-  if (categoriaImportata.includes('utensileria manuale') || categoriaImportata.includes('utensileria meccanica')) return 'Utensili manuali';
-  if (categoriaImportata.includes('giardino') || categoriaImportata.includes('gamma giardino')) return 'Giardinaggio';
-  if (categoriaImportata.includes('batterie e caricabatterie')) return 'Accessori';
-  if (categoriaImportata.includes('cura della casa')) return 'Casa';
-
-  if (categoriaImportata.includes('elettroutensili a batteria')) return 'Utensili a batteria';
-  if (categoriaImportata.includes('elettroutensili a filo')) return 'Utensili a filo';
-
-  if (categoriaImportata.includes('elettroutensili')) {
-    if (haBatteria && !haWattaggio) return 'Utensili a batteria';
-    return 'Utensili a filo';
-  }
-
-  if (categoriaImportata.includes('accessori')) {
-    if (codice.startsWith('FME') || codice.startsWith('SFME') || codice.startsWith('SFMEE') || codice.startsWith('SM') || codice.startsWith('FMEG')) {
-      return 'Utensili a filo';
-    }
-
-    if (codice.startsWith('SFMC') || codice.startsWith('SCMW') || codice.startsWith('SFMCMW') || codice.startsWith('SCOEP')) {
-      if (testo.includes('rasaerba') || testo.includes('giardino') || testo.includes('taglia')) {
-        return 'Giardinaggio';
-      }
-
-      return 'Utensili a batteria';
-    }
-
-    return 'Accessori';
-  }
-
-  if (categoriaImportata.includes('fissaggio')) return 'Fissaggio';
-  if (categoriaImportata.includes('vernici') || categoriaImportata.includes('pittura')) return 'Vernici';
-  if (categoriaImportata.includes('idraulica')) return 'Idraulica';
-  if (categoriaImportata.includes('elettrico')) return 'Elettrico';
-  if (categoriaImportata.includes('antinfortunistica') || categoriaImportata.includes('dpi')) return 'Antinfortunistica';
-  if (categoriaImportata.includes('auto')) return 'Auto';
-  if (categoriaImportata.includes('casa')) return 'Casa';
-
-  if (marca.includes('black') || fornitore.includes('black')) {
-    if (haBatteria && !haWattaggio) return 'Utensili a batteria';
-    if (haWattaggio || categoriaImportata.includes('elettroutensili')) return 'Utensili a filo';
-  }
-
-  return 'Altro';
+function getProductId(p: Product) {
+  return String(p.barcode || p.id || p._id || p.codice_prodotto || "");
 }
 
-function prodottoInCategoriaStandard(p: any, categoria: string) {
-  return categoriaStandardDaImportata(p) === categoria;
+function getProductTitle(p: Product) {
+  return String(p.descrizione || p.nome || "Prodotto senza descrizione");
 }
- const PAGE_SIZE = 30;
- 
-export default function Catalogo() {
-  const router = useRouter();
-  const params = useLocalSearchParams();
 
+function getProductPhoto(p: Product) {
+  return p.foto || p.image_url || p.immagine || p.immagine_url || "";
+}
 
-const categoriaParam = params.categoria;
+function buildImageUri(foto: string) {
+  if (!foto) return "";
+  const value = String(foto);
+  if (value.startsWith("http") || value.startsWith("data:")) return value;
 
-const categoriaDaPagina = Array.isArray(categoriaParam)
-  ? categoriaParam[0]
-  : typeof categoriaParam === 'string'
-    ? categoriaParam
-    : '';
+  const base = (process.env.EXPO_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
+  if (!base) return value;
 
-const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
+  return `${base}/uploads/cropped/${value}`;
+}
 
-  const soloSottoScorta = params.sotto_scorta === 'true';
-  const soloVendita = params.vendita === 'true';
-  const mode = useAppStore((s) => s.mode);
-  const addToCart = useAppStore((s) => s.addToCart);
-  const isCliente = mode === 'cliente';
+export default function CatalogoScreen() {
+  const params = useLocalSearchParams<{
+    categoria?: string;
+    sotto_scorta?: string;
+    vendita?: string;
+  }>();
 
-  const [q, setQ] = useState('');
-  const [searchMode, setSearchMode] = useState<'descrizione' | 'codice' | 'barcode'>('descrizione');
-  const [categoria, setCategoria] = useState<string | null>(null);
-  useEffect(() => {
-  if (!categoriaDaPagina) return;
+  const mode = useAppStore((s: any) => s.mode);
+  const addToCart = useAppStore((s: any) => s.addToCart);
+  const isCliente = mode === "cliente";
 
-  setCategoria(categoriaDaPagina as any);
-  setQ('');
-}, [categoriaDaPagina]);
+  const categoriaDaPagina = typeof params.categoria === "string" ? params.categoria : "";
+  const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
+
+  const soloSottoScorta = params.sotto_scorta === "true";
+  const soloVendita = params.vendita === "true";
+
+  const [q, setQ] = useState("");
+  const [searchMode, setSearchMode] = useState<"descrizione" | "codice" | "barcode">("descrizione");
+
+  const [categoria, setCategoria] = useState<string | null>(
+    catalogoFiltratoDaPagina ? categoriaDaPagina : null
+  );
+
   const [marcaStandard, setMarcaStandard] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [brandSearch, setBrandSearch] = useState('');
+  const [brandSearch, setBrandSearch] = useState("");
   const [brandsReali, setBrandsReali] = useState<string[]>([]);
+
   const [filtroPrezzoAttivo, setFiltroPrezzoAttivo] = useState(false);
   const [prezzoMin, setPrezzoMin] = useState(0);
   const [prezzoMax, setPrezzoMax] = useState(1000);
   const [priceFilterOpen, setPriceFilterOpen] = useState(false);
-  const cats = catalogoFiltratoDaPagina 
-  ? [categoriaDaPagina]
-  : CATEGORIE_STANDARD;
+  const [filtroDaCompletare, setFiltroDaCompletare] = useState(false);
+
+  const [items, setItems] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const skipRef = useRef(0);
+  const loadingRef = useRef(false);
+  const hasMoreRef = useRef(true);
+  const requestRef = useRef(0);
+  const listaRef = useRef<FlatList<Product>>(null);
+
+  const cats = catalogoFiltratoDaPagina ? [categoriaDaPagina] : CATEGORIE_STANDARD;
+
   const brands = brandsReali.length > 0 ? brandsReali : MARCHE_STANDARD;
-  const filteredBrands = brands.filter((m) => m.toLowerCase().includes(brandSearch.trim().toLowerCase()));
+  const filteredBrands = brands.filter((m) =>
+    m.toLowerCase().includes(brandSearch.toLowerCase())
+  );
 
   useEffect(() => {
     let alive = true;
 
-    api.listStandardBrands()
-      .then((res) => {
+    api
+      .listStandardBrands()
+      .then((res: any) => {
         if (!alive) return;
-        setBrandsReali(res.items || []);
+        const received = res?.items || [];
+        if (Array.isArray(received) && received.length > 0) {
+          setBrandsReali(["Tutte", ...received.filter((m: string) => m !== "Tutte")]);
+        }
       })
-      .catch((err) => {
-        console.warn('Errore caricamento marche standard', err);
+      .catch((err: any) => {
+        console.warn("Errore caricamento marche standard", err);
       });
 
     return () => {
       alive = false;
     };
   }, []);
-  const [items, setItems] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const richiestaCatalogoRef = useRef(0);
-  const listaRef = useRef<FlatList<Product>>(null);
-  const cambiaCategoria = useCallback((nuovaCategoria: string | null) => {
-    richiestaCatalogoRef.current += 1;
-    setCategoria(nuovaCategoria);
-}, []);
 
+  useEffect(() => {
+    if (!catalogoFiltratoDaPagina) return;
+    setCategoria(categoriaDaPagina);
+    setQ("");
+  }, [catalogoFiltratoDaPagina, categoriaDaPagina]);
 
-  const load = useCallback(async () => {
-    const richiestaId = ++richiestaCatalogoRef.current;
+  const loadInitial = useCallback(async () => {
+    const requestId = ++requestRef.current;
+
+    loadingRef.current = true;
     setLoading(true);
+    setHasMore(true);
+    hasMoreRef.current = true;
+    skipRef.current = 0;
+
     try {
       const res = await api.listProductsPage({
-        
-        search_mode: searchMode,q: q || undefined,
+        search_mode: searchMode,
+        q: q || undefined,
         categoria: categoria || undefined,
         marca_standard: marcaStandard || undefined,
-        prezzo_min: filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000) ? prezzoMin : undefined,
-        prezzo_max: filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000) ? prezzoMax : undefined,
         sotto_scorta: soloSottoScorta || undefined,
         vendibile: soloVendita || undefined,
+        da_completare: filtroDaCompletare || undefined,
+        prezzo_min:
+          filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000)
+            ? prezzoMin
+            : undefined,
+        prezzo_max:
+          filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000)
+            ? prezzoMax
+            : undefined,
         limit: PAGE_SIZE,
         skip: 0,
       });
-      const data = res.items;
-      setHasMore(Boolean(res.has_more));
-      if (richiestaId !== richiestaCatalogoRef.current) return;
+
+      if (requestId !== requestRef.current) return;
+
+      const data: Product[] = Array.isArray(res?.items) ? res.items : [];
+
       const prodottiVisibili = soloVendita
         ? data.filter((p) => Number(p.quantita ?? 0) > 0)
         : data;
-    setTimeout(() => {
-        // listaRef.current?.scrollToOffset({ offset: 0, animated: false });
+
+      setItems(prodottiVisibili);
+
+      const more = data.length === PAGE_SIZE;
+      setHasMore(more);
+      hasMoreRef.current = more;
+      skipRef.current = PAGE_SIZE;
+
+      setTimeout(() => {
+        listaRef.current?.scrollToOffset({ offset: 0, animated: false });
       }, 50);
-
-      setItems( soloSottoScorta
-    ? [...prodottiVisibili].sort((a, b) => {
-        const urgenzaA = (a.quantita ?? 0) / Math.max(a.soglia_scorta ?? 1, 1);
-        const urgenzaB = (b.quantita ?? 0) / Math.max(b.soglia_scorta ?? 1, 1);
-
-        if (urgenzaA !== urgenzaB) return urgenzaA - urgenzaB;
-        return (a.quantita ?? 0) - (b.quantita ?? 0);
-      })
-    : [...prodottiVisibili].sort((a, b) => {
-              const dispA = Number(a.quantita ?? 0) > 0 ? 0 : 1;
-              const dispB = Number(b.quantita ?? 0) > 0 ? 0 : 1;
-              if (dispA !== dispB) return dispA - dispB;
-
-              const marca = String(a.marca ?? "").localeCompare(String(b.marca ?? ""), "it");
-              if (marca !== 0) return marca;
-
-              const descrizione = String(a.descrizione ?? "").localeCompare(String(b.descrizione ?? ""), "it");
-              if (descrizione !== 0) return descrizione;
-
-              return String(a.codice_prodotto ?? "").localeCompare(String(b.codice_prodotto ?? ""), "it");
-            })
-   );
-    } catch (e) {
-      console.warn(e);
+    } catch (e: any) {
+      console.warn("Errore caricamento catalogo", e);
+      Alert.alert("Errore", e?.message || "Errore caricamento catalogo");
+      setItems([]);
+      setHasMore(false);
+      hasMoreRef.current = false;
     } finally {
-      if (richiestaId === richiestaCatalogoRef.current) {
-        setLoading(false);
-      }
+      loadingRef.current = false;
+      setLoading(false);
     }
-  }, [q, categoria, marcaStandard, filtroPrezzoAttivo, prezzoMin, prezzoMax, soloSottoScorta, soloVendita]);
+  }, [
+    searchMode,
+    q,
+    categoria,
+    marcaStandard,
+    soloSottoScorta,
+    soloVendita,
+    filtroPrezzoAttivo,
+    prezzoMin,
+    prezzoMax,
+    filtroDaCompletare,
+  ]);
 
-  useFocusEffect(useCallback(() => {
-    load();
-  }, [load]));
+  const loadMore = useCallback(async () => {
+    if (loadingRef.current || loadingMore || refreshing || !hasMoreRef.current) return;
 
-  
+    loadingRef.current = true;
+    setLoadingMore(true);
+
+    try {
+      const currentSkip = skipRef.current;
+
+      const res = await api.listProductsPage({
+        search_mode: searchMode,
+        q: q || undefined,
+        categoria: categoria || undefined,
+        marca_standard: marcaStandard || undefined,
+        sotto_scorta: soloSottoScorta || undefined,
+        vendibile: soloVendita || undefined,
+        da_completare: filtroDaCompletare || undefined,
+        prezzo_min:
+          filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000)
+            ? prezzoMin
+            : undefined,
+        prezzo_max:
+          filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000)
+            ? prezzoMax
+            : undefined,
+        limit: PAGE_SIZE,
+        skip: currentSkip,
+      });
+
+      const data: Product[] = Array.isArray(res?.items) ? res.items : [];
+
+      const prodottiVisibili = soloVendita
+        ? data.filter((p) => Number(p.quantita ?? 0) > 0)
+        : data;
+
+      setItems((prev) => {
+        const already = new Set(prev.map((p) => getProductId(p)));
+        const nuovi = prodottiVisibili.filter((p) => {
+          const id = getProductId(p);
+          if (!id) return true;
+          return !already.has(id);
+        });
+
+        return [...prev, ...nuovi];
+      });
+
+      const more = data.length === PAGE_SIZE;
+      setHasMore(more);
+      hasMoreRef.current = more;
+      skipRef.current = currentSkip + PAGE_SIZE;
+    } catch (e: any) {
+      console.warn("Errore caricamento altri prodotti", e);
+    } finally {
+      loadingRef.current = false;
+      setLoadingMore(false);
+    }
+  }, [
+    loadingMore,
+    refreshing,
+    searchMode,
+    q,
+    categoria,
+    marcaStandard,
+    soloSottoScorta,
+    soloVendita,
+    filtroPrezzoAttivo,
+    prezzoMin,
+    prezzoMax,
+    filtroDaCompletare,
+  ]);
+
+  useEffect(() => {
+    loadInitial();
+  }, [loadInitial]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await load();
+      await loadInitial();
     } finally {
       setRefreshing(false);
     }
-  }, [load]);
+  }, [loadInitial]);
 
-  const loadMore = useCallback(async () => {
-    if (loading || loadingMore || refreshing || !hasMore) return;
+  const cambiaCategoria = useCallback((nuovaCategoria: string | null) => {
+    setCategoria(nuovaCategoria);
+    setQ("");
+    setItems([]);
+    setHasMore(true);
+    hasMoreRef.current = true;
+    skipRef.current = 0;
+  }, []);
 
-    setLoadingMore(true);
-    try {
-      const res = await api.listProductsPage({
-        
-        search_mode: searchMode,q: q || undefined,
-        categoria: categoria || undefined,
-        marca_standard: marcaStandard || undefined,
-        sotto_scorta: soloSottoScorta || undefined,
-        prezzo_min: filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000) ? prezzoMin : undefined,
-        prezzo_max: filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000) ? prezzoMax : undefined,
-        vendibile: soloVendita || undefined,
-        limit: PAGE_SIZE,
-        skip: items.length,
-      });
+  const cambiaMarca = useCallback((marca: string | null) => {
+    setMarcaStandard(marca && marca !== "Tutte" ? marca : null);
+    setItems([]);
+    setHasMore(true);
+    hasMoreRef.current = true;
+    skipRef.current = 0;
+  }, []);
 
-      const data = res.items;
-      const prodottiVisibili = soloVendita
-        ? data.filter((p) => Number(p.quantita ?? 0) > 0)
-        : data;
+  const changeSearchMode = useCallback((modeValue: "descrizione" | "codice" | "barcode") => {
+    setSearchMode(modeValue);
+    setQ("");
+    setItems([]);
+    setHasMore(true);
+    hasMoreRef.current = true;
+    skipRef.current = 0;
+  }, []);
 
-      setItems((prev) => [...prev, ...prodottiVisibili]);
-      setHasMore(Boolean(res.has_more));
-    } catch (e) {
-      console.warn(e);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [loading, loadingMore, refreshing, hasMore, q, categoria, marcaStandard, soloSottoScorta, soloVendita, items.length]);
+  const renderCard = useCallback(
+    ({ item }: { item: Product }) => {
+      const low = Number(item.quantita ?? 0) <= Number(item.soglia_scorta ?? 0);
+      const prezzo = prezzoFinaleProdotto(item);
+      const hasPromo = haPromoProdotto(item);
+      const foto = getProductPhoto(item);
+      const uri = buildImageUri(foto);
+      const productId = getProductId(item);
 
-  const renderCard = ({ item }: { item: Product }) => {
-    const low = item.quantita <= item.soglia_scorta;
-    return (
-      <Pressable
-        style={styles.card}
-        onPress={() => router.push(`/product/${item.barcode || item.id}`)}
-        testID={`product-card-${item.id}`}
-      >
-        <View style={styles.cardImgWrap}>
-          {item.foto ? (
-<Image
-  source={{
-    uri: String(item.foto).startsWith('http') || String(item.foto).startsWith('data:')
-      ? item.foto
-      : ((process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/uploads/cropped/' + item.foto),
-  }}
-  style={styles.cardImg}
-  contentFit="contain"
-/>
-          ) : (
-            <View style={styles.cardPlaceholder}>
-              <Feather name="package" size={32} color={COLORS.brandTertiary} />
-            </View>
-          )}
-          {low && !isCliente && (
-            <View style={styles.lowBadge}>
-              <Text style={styles.lowBadgeText}>LOW</Text>
-            </View>
-          )}
-        </View>
-        <View style={styles.cardBody}>
-  <Text style={styles.cardBrand}>{item.marca || '-'}</Text>
-
-  <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
-    {item.descrizione}
-  </Text>
-
-  {!!item.codice_prodotto && (
-    <Text style={styles.cardSub} numberOfLines={1} ellipsizeMode="tail">
-      {item.codice_prodotto}
-    </Text>
-  )}
-</View> 
-
-           <View style={styles.cardFoot}>
-           <Text style={styles.cardPrice}>{fmtEUR(prezzoFinaleProdotto(item))}</Text>
-            {!isCliente && Number(item.quantita ?? 0) > 0 && (
-              <Text style={[styles.cardQty, low && { color: COLORS.error }]}>QTA {item.quantita}</Text>
+      return (
+        <Pressable
+          style={styles.card}
+          onPress={() => {
+            if (!productId) return;
+            router.push(`/product/${encodeURIComponent(productId)}`);
+          }}
+          testID={`product-card-${productId}`}
+        >
+          <View style={styles.cardImgWrap}>
+            {uri ? (
+              <Image source={{ uri }} style={styles.cardImg} resizeMode="contain" />
+            ) : (
+              <View style={styles.placeholderImg}>
+                <Text style={styles.placeholderText}>NO FOTO</Text>
+              </View>
             )}
           </View>
-      </Pressable>
-    );
-  };
+
+          <View style={styles.cardBody}>
+            <Text style={styles.cardBrand} numberOfLines={1}>
+              {item.marca_standard || item.marca || item.fornitore || "Senza marca"}
+            </Text>
+
+            <Text style={styles.cardTitle} numberOfLines={3}>
+              {getProductTitle(item)}
+            </Text>
+
+            <Text style={styles.cardCode} numberOfLines={1}>
+              Cod: {item.codice_prodotto || item.codice_fornitore || item.barcode || "N/D"}
+            </Text>
+
+            <Text style={styles.cardCategory} numberOfLines={1}>
+              {item.categoria || "Da classificare"}
+            </Text>
+
+            <View style={styles.cardBottom}>
+              <View>
+                <Text style={[styles.price, hasPromo && styles.pricePromo]}>
+                  € {prezzo.toFixed(2)}
+                </Text>
+
+                {hasPromo ? (
+                  <Text style={styles.promoBadge}>PROMO</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.qtyBox}>
+                <Text style={[styles.qty, low && styles.qtyLow]}>
+                  QTA {Number(item.quantita ?? 0)}
+                </Text>
+              </View>
+            </View>
+
+            {isCliente ? (
+              <Pressable
+                style={styles.addButton}
+                onPress={(event) => {
+                  event.stopPropagation();
+                  addToCart?.(item);
+                  Alert.alert("Carrello", "Prodotto aggiunto al carrello.");
+                }}
+              >
+                <Text style={styles.addButtonText}>AGGIUNGI</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        </Pressable>
+      );
+    },
+    [addToCart, isCliente]
+  );
+
+  const headerSubtitle = useMemo(() => {
+    if (catalogoFiltratoDaPagina) return categoriaDaPagina;
+    if (categoria) return categoria;
+    return "Tutti i prodotti";
+  }, [catalogoFiltratoDaPagina, categoriaDaPagina, categoria]);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']} testID="catalogo-screen">
-      <View style={styles.searchBar}>
-        <Pressable
-            style={styles.searchModeButton}
-            onPress={() =>
-              Alert.alert('Modalità ricerca', 'Scegli dove cercare il prodotto.', [
-                { text: 'Descrizione', onPress: () => setSearchMode('descrizione') },
-                { text: 'Codice prodotto', onPress: () => setSearchMode('codice') },
-                { text: 'Codice a barre', onPress: () => setSearchMode('barcode') },
-                { text: 'Annulla', style: 'cancel' },
-              ])
-            }
-          >
-            <Feather name="search" size={16} color={COLORS.surface} />
-            <Text style={styles.searchModeButtonText}>
-              {searchMode === 'codice' ? 'Cod.' : searchMode === 'barcode' ? 'Bar.' : 'Desc.'}
-            </Text>
-            <Feather name="chevron-down" size={13} color={COLORS.surface} />
-          </Pressable>
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>Catalogo</Text>
+          <Text style={styles.subtitle}>{headerSubtitle}</Text>
+        </View>
+
+        <Pressable style={styles.filterButton} onPress={() => setFiltersOpen(true)}>
+          <Text style={styles.filterButtonText}>Filtri</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.searchBox}>
         <TextInput
           value={q}
           onChangeText={setQ}
-          placeholder="Cerca" 
-          placeholderTextColor={COLORS.onSurfaceSecondary}
+          placeholder={
+            searchMode === "barcode"
+              ? "Cerca barcode"
+              : searchMode === "codice"
+                ? "Cerca codice"
+                : "Cerca"
+          }
+          placeholderTextColor={COLORS.muted}
           style={styles.searchInput}
-          testID="search-input"
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
         />
-        {searchMode === 'barcode' && (
-          <Pressable
-            onPress={() => router.push('/scanner')}
-            testID="scan-btn"
-            style={styles.scanBtn}
+      </View>
+
+      <View style={styles.searchModeRow}>
+        <Pressable
+          style={[styles.modeChip, searchMode === "descrizione" && styles.modeChipActive]}
+          onPress={() => changeSearchMode("descrizione")}
+        >
+          <Text
+            style={[
+              styles.modeChipText,
+              searchMode === "descrizione" && styles.modeChipTextActive,
+            ]}
           >
-            <Feather name="maximize" size={17} color="#FFFFFF" />
-            <Text style={styles.scanBtnText}>Scan</Text>
-          </Pressable>
-        )}
-        <Pressable onPress={() => setFiltersOpen(true)} style={styles.filterIconBtn} testID="filters-btn">
-          <Feather name="sliders" size={18} color="#FFFFFF" />
+            Descrizione
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[styles.modeChip, searchMode === "codice" && styles.modeChipActive]}
+          onPress={() => changeSearchMode("codice")}
+        >
+          <Text
+            style={[
+              styles.modeChipText,
+              searchMode === "codice" && styles.modeChipTextActive,
+            ]}
+          >
+            Codice
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[styles.modeChip, searchMode === "barcode" && styles.modeChipActive]}
+          onPress={() => changeSearchMode("barcode")}
+        >
+          <Text
+            style={[
+              styles.modeChipText,
+              searchMode === "barcode" && styles.modeChipTextActive,
+            ]}
+          >
+            Barcode
+          </Text>
         </Pressable>
       </View>
-      {/* Category chips */}
-      <View style={styles.chipsRow}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsContent}>
-          {!catalogoFiltratoDaPagina && (
-  <Pressable
-    style={[styles.chip, !categoria && styles.chipActive]}
-    onPress={() => cambiaCategoria(null)}
-    testID="chip-tutti"
-  >
-    <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>
-      
-    </Text>
-  </Pressable>
-)}
+
+      <View style={styles.chipsWrap}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsContent}
+        >
+          {!catalogoFiltratoDaPagina ? (
+            <Pressable
+              style={[styles.chip, !categoria && styles.chipActive]}
+              onPress={() => cambiaCategoria(null)}
+              testID="chip-tutti"
+            >
+              <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>
+                TUTTI
+              </Text>
+            </Pressable>
+          ) : null}
+
           {cats.map((c) => (
             <Pressable
               key={c}
@@ -544,11 +612,57 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
               onPress={() => cambiaCategoria(c)}
               testID={`chip-${c}`}
             >
-              <Text style={[styles.chipTxt, categoria === c && styles.chipTxtActive]}>{c.toUpperCase()}</Text>
+              <Text style={[styles.chipTxt, categoria === c && styles.chipTxtActive]}>
+                {c.toUpperCase()}
+              </Text>
             </Pressable>
           ))}
         </ScrollView>
-</View>
+      </View>
+
+      {loading && items.length === 0 ? (
+        <View style={styles.loadingCenter}>
+          <ActivityIndicator size="large" />
+          <Text style={styles.loadingText}>Caricamento prodotti...</Text>
+        </View>
+      ) : (
+        <FlatList
+          key={`catalogo-${categoria ?? "tutti"}-${marcaStandard ?? "tutte-marche"}-${soloSottoScorta}-${soloVendita}`}
+          ref={listaRef}
+          data={items}
+          numColumns={2}
+          keyExtractor={(it, index) => `${getProductId(it)}-${index}`}
+          renderItem={renderCard}
+          initialNumToRender={8}
+          maxToRenderPerBatch={6}
+          updateCellsBatchingPeriod={30}
+          windowSize={5}
+          removeClippedSubviews
+          keyboardShouldPersistTaps="handled"
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator style={{ padding: 16 }} />
+            ) : null
+          }
+          ListEmptyComponent={
+            !loading ? (
+              <View style={styles.emptyBox}>
+                <Text style={styles.emptyTitle}>Nessun prodotto trovato</Text>
+                <Text style={styles.emptyText}>
+                  Cambia ricerca o filtri per visualizzare altri prodotti.
+                </Text>
+              </View>
+            ) : null
+          }
+          contentContainerStyle={styles.listContent}
+          columnWrapperStyle={styles.columnWrapper}
+        />
+      )}
 
       <Modal
         visible={filtersOpen}
@@ -559,609 +673,572 @@ const catalogoFiltratoDaPagina = categoriaDaPagina.length > 0;
         <View style={styles.modalOverlay}>
           <View style={styles.filtersPanel}>
             <View style={styles.filtersHeader}>
-              <Text style={styles.filtersTitle}>FILTRI</Text>
+              <Text style={styles.filtersTitle}>Filtri</Text>
               <Pressable onPress={() => setFiltersOpen(false)}>
-                <Feather name="x" size={22} color={COLORS.onSurface} />
+                <Text style={styles.closeText}>CHIUDI</Text>
               </Pressable>
             </View>
 
-            <Text style={styles.filterLabel}>CATEGORIA</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chips}
-            >
-              <Pressable
-                style={[styles.chip, !categoria && styles.chipActive]}
-                onPress={() => cambiaCategoria(null)}
-              >
-                <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>TUTTE</Text>
-              </Pressable>
+            <Text style={styles.filterLabel}>Marca</Text>
 
-              {cats.map((c) => (
-                <Pressable
-                  key={c}
-                  style={[styles.chip, categoria === c && styles.chipActive]}
-                  onPress={() => cambiaCategoria(c)}
-                >
-                  <Text style={[styles.chipTxt, categoria === c && styles.chipTxtActive]}>
-                    {c.toUpperCase()}
-                  </Text>
-                </Pressable>
-              ))}
+            <TextInput
+              value={brandSearch}
+              onChangeText={setBrandSearch}
+              placeholder="Cerca marca..."
+              placeholderTextColor={COLORS.muted}
+              style={styles.brandSearch}
+            />
+
+            <ScrollView style={styles.brandList}>
+              {filteredBrands.map((m) => {
+                const active = !marcaStandard && m === "Tutte" || marcaStandard === m;
+
+                return (
+                  <Pressable
+                    key={m}
+                    style={[styles.brandRow, active && styles.brandRowActive]}
+                    onPress={() => cambiaMarca(m)}
+                  >
+                    <Text style={[styles.brandText, active && styles.brandTextActive]}>
+                      {m}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </ScrollView>
 
-            <Text style={styles.filterLabel}>MARCA</Text>
-            <View style={styles.brandSearchBox}>
-              <Feather name="search" size={15} color={COLORS.onSurfaceSecondary} />
-              <TextInput
-                value={brandSearch}
-                onChangeText={setBrandSearch}
-                placeholder="Cerca marca..."
-                placeholderTextColor={COLORS.onSurfaceSecondary}
-                style={styles.brandSearchInput}
-              />
-              {brandSearch.length > 0 && (
-                <Pressable onPress={() => setBrandSearch('')}>
-                  <Feather name="x" size={16} color={COLORS.onSurfaceSecondary} />
-                </Pressable>
-              )}
-             </View>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chips}
+            <Pressable
+              style={[
+                styles.completeToggle,
+                filtroDaCompletare && styles.completeToggleActive,
+              ]}
+              onPress={() => setFiltroDaCompletare((prev) => !prev)}
             >
-              <Pressable
-                style={[styles.chip, !marcaStandard && styles.chipActive]}
-                onPress={() => setMarcaStandard(null)}
+              <Text
+                style={[
+                  styles.completeToggleText,
+                  filtroDaCompletare && styles.completeToggleTextActive,
+                ]}
               >
-                <Text style={[styles.chipTxt, !marcaStandard && styles.chipTxtActive]}>
-                  TUTTE MARCHE
-                </Text>
-              </Pressable>
+                DA COMPLETARE {filtroDaCompletare ? "ATTIVO" : "DISATTIVO"}
+              </Text>
+            </Pressable>
 
-              {filteredBrands.map((m) => (
+            <Pressable
+              style={styles.priceToggle}
+              onPress={() => setPriceFilterOpen((prev) => !prev)}
+            >
+              <Text style={styles.priceToggleText}>
+                Filtro prezzo {filtroPrezzoAttivo ? "attivo" : "disattivo"}
+              </Text>
+            </Pressable>
+
+            {priceFilterOpen ? (
+              <View style={styles.priceBox}>
+                <Text style={styles.filterLabel}>Prezzo minimo</Text>
+                <TextInput
+                  value={String(prezzoMin)}
+                  onChangeText={(v) => setPrezzoMin(Number(v.replace(",", ".")) || 0)}
+                  keyboardType="numeric"
+                  style={styles.priceInput}
+                />
+
+                <Text style={styles.filterLabel}>Prezzo massimo</Text>
+                <TextInput
+                  value={String(prezzoMax)}
+                  onChangeText={(v) => setPrezzoMax(Number(v.replace(",", ".")) || 0)}
+                  keyboardType="numeric"
+                  style={styles.priceInput}
+                />
+
                 <Pressable
-                  key={m}
-                  style={[styles.chip, marcaStandard === m && styles.chipActive]}
-                  onPress={() => setMarcaStandard(m)}
+                  style={[
+                    styles.applyPrice,
+                    filtroPrezzoAttivo && styles.applyPriceActive,
+                  ]}
+                  onPress={() => setFiltroPrezzoAttivo((prev) => !prev)}
                 >
-                  <Text style={[styles.chipTxt, marcaStandard === m && styles.chipTxtActive]}>
-                    {m}
+                  <Text
+                    style={[
+                      styles.applyPriceText,
+                      filtroPrezzoAttivo && styles.applyPriceTextActive,
+                    ]}
+                  >
+                    {filtroPrezzoAttivo ? "DISATTIVA PREZZO" : "ATTIVA PREZZO"}
                   </Text>
                 </Pressable>
-              ))}
-            </ScrollView>
+              </View>
+            ) : null}
 
-
-<View style={styles.priceFilterBox}>
-  <View style={styles.priceCompactRow}>
-    <Pressable
-      style={[
-        styles.priceMiniToggle,
-        filtroPrezzoAttivo && styles.priceMiniToggleActive,
-      ]}
-      onPress={() => setPriceFilterOpen(!priceFilterOpen)}
-    >
-      <Text
-        style={[
-          styles.priceMiniToggleText,
-          filtroPrezzoAttivo && styles.priceMiniToggleTextActive,
-        ]}
-      >
-        PREZZO
-      </Text>
-
-      <Feather
-        name={priceFilterOpen ? 'chevron-up' : 'chevron-down'}
-        size={16}
-        color={filtroPrezzoAttivo ? COLORS.onSurfaceInverse : COLORS.onSurface}
-      />
-    </Pressable>
-
-    {priceFilterOpen && (
-      <View style={styles.priceCompactInputs}>
-        <TextInput
-          value={String(prezzoMin)}
-          onChangeText={(text) => {
-            const valore = Number(text.replace(',', '.')) || 0;
-            setPrezzoMin(valore);
-          }}
-          keyboardType="numeric"
-          placeholder="Min"
-          placeholderTextColor={COLORS.onSurfaceSecondary}
-          style={styles.priceCompactInput}
-        />
-
-        <TextInput
-          value={String(prezzoMax)}
-          onChangeText={(text) => {
-            const valore = Number(text.replace(',', '.')) || 0;
-            setPrezzoMax(valore);
-          }}
-          keyboardType="numeric"
-          placeholder="Max"
-          placeholderTextColor={COLORS.onSurfaceSecondary}
-          style={styles.priceCompactInput}
-        />
-      </View>
-    )}
-  </View>
-
-  {priceFilterOpen && (
-    <View style={styles.priceCompactActions}>
-      <Pressable
-        style={styles.priceSmallApplyBtn}
-        onPress={() => {
-          setFiltroPrezzoAttivo(true);
-          setPriceFilterOpen(false);
-        }}
-      >
-        <Text style={styles.priceSmallApplyTxt}>APPLICA</Text>
-      </Pressable>
-
-      <Pressable
-        style={styles.priceSmallResetBtn}
-        onPress={() => {
-          setFiltroPrezzoAttivo(false);
-          setPrezzoMin(0);
-          setPrezzoMax(1000);
-          setPriceFilterOpen(false);
-        }}
-      >
-        <Text style={styles.priceSmallResetTxt}>RESET</Text>
-      </Pressable>
-    </View>
-  )}
-</View>
-
-            <View style={styles.filterActions}>
-              <Pressable
-                style={styles.filterClearBtn}
-                onPress={() => {
-                  cambiaCategoria(null);
-                  setMarcaStandard(null);
-                  setBrandSearch('');
-                }}
-              >
-                <Text style={styles.filterClearTxt}>RESET</Text>
-              </Pressable>
-
-              <Pressable
-                style={styles.filterApplyBtn}
-                onPress={() => setFiltersOpen(false)}
-              >
-                <Text style={styles.filterApplyTxt}>APPLICA</Text>
-              </Pressable>
-            </View>
+            <Pressable
+              style={styles.resetButton}
+              onPress={() => {
+                setMarcaStandard(null);
+                setBrandSearch("");
+                setFiltroPrezzoAttivo(false);
+                setPrezzoMin(0);
+                setPrezzoMax(1000);
+                setFiltersOpen(false);
+                setFiltroDaCompletare(false);
+              }}
+            >
+              <Text style={styles.resetButtonText}>RESET FILTRI</Text>
+            </Pressable>
           </View>
         </View>
       </Modal>
-
-      {loading && items.length === 0 ? (
-        <View style={styles.center}><ActivityIndicator color={COLORS.brand} /></View>
-      ) : items.length === 0 ? (
-        <View style={styles.center}>
-          <Feather name="package" size={48} color={COLORS.brandTertiary} />
-          <Text style={styles.emptyText}>NESSUN PRODOTTO TROVATO</Text>
-          {!isCliente && (
-            <Pressable style={styles.emptyBtn} onPress={() => router.push('/product/new')} testID="empty-add-btn">
-              <Text style={styles.emptyBtnTxt}>+ AGGIUNGI PRODOTTO</Text>
-            </Pressable>
-          )}
-        </View>
-      ) : (
-        <FlatList
-          key={`catalogo-${categoria ?? 'tutti'}-${marcaStandard ?? 'tutte-marche'}-${soloSottoScorta}-${soloVendita}-${q}`}
-          ref={listaRef}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        
-        
-        
-        
-          data={items}
-          numColumns={2}
-          keyExtractor={(it, index) => `${it.id}-${index}`}
-          renderItem={renderCard}
-          initialNumToRender={8}
-          maxToRenderPerBatch={6}
-          updateCellsBatchingPeriod={30}
-          windowSize={5}
-          removeClippedSubviews={true}
-          keyboardShouldPersistTaps="handled"
-          onEndReached={loadMore}
-          onEndReachedThreshold={1.2}
-          ListFooterComponent={loadingMore ? <ActivityIndicator style={{ padding: 16 }} /> : null}
-          contentContainerStyle={{ paddingBottom: 24 }}
-          columnWrapperStyle={{ borderBottomWidth: 0 }}
-        />
-      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.surface },
-  searchModeButton: {
-    minWidth: 74,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: COLORS.brand,
-    borderWidth: 1,
-    borderColor: COLORS.brand,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 5,
-    paddingHorizontal: 8,
-    elevation: 4,
-  },
-  searchModeButtonText: {
-    fontFamily: FONTS.mono,
-    fontSize: 11,
-    fontWeight: '900',
-    color: COLORS.surface,
-    letterSpacing: 0.4,
-  },
-  scanBtn: {
-    minWidth: 76,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: '#9B1C31',
-    borderWidth: 0,
-    borderColor: '#9B1C31',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 6,
-    marginLeft: 0,
-    paddingHorizontal: 10,
-    elevation: 4,
-  },
-  scanBtnText: {
-    fontFamily: FONTS.mono,
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-  filterBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: '#2E7D32',
-    borderWidth: 1,
-    borderColor: '#1B5E20',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 8,
-    elevation: 4,
-  },
-
-
-
-
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 2,
-    borderColor: COLORS.borderStrong,
-    backgroundColor: COLORS.surfaceSecondary,
-  },
-  searchInput: { flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: COLORS.onSurface, paddingVertical: 4 },
-  chipsRow: { height: 56, borderBottomWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surface, justifyContent: 'center' },
-  chipsContent: { paddingHorizontal: 12, gap: 8, alignItems: 'center' },
-  chips: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-
-  chip: { height: 36, paddingHorizontal: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surface, borderRadius: 12, },
-  chipActive: { backgroundColor: COLORS.surfaceInverse, borderColor: COLORS.surfaceInverse },
-  chipTxt: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurface, letterSpacing: 1, fontWeight: '600' },
-  chipTxtActive: { color: COLORS.onSurfaceInverse },
-  card: {
-    width: '50%',
-    borderRightWidth: 2,
-    borderBottomWidth: 2,
-    borderColor: COLORS.borderStrong,
+  safe: {
+    flex: 1,
     backgroundColor: COLORS.surface,
   },
-  cardImgWrap: { width: '100%', aspectRatio: 1.25, backgroundColor: COLORS.surfaceSecondary, position: 'relative' },
-  cardImg: { width: '100%', height: '100%' },
-  cardPlaceholder: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
-  lowBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: COLORS.error, paddingHorizontal: 6, paddingVertical: 2 },
-  lowBadgeText: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onError, fontWeight: '900', letterSpacing: 1 },
-  cardBody: { padding: 6, gap: 3 },
-  cardBrand: { fontFamily: FONTS.mono, fontSize: 9, color: COLORS.onSurfaceSecondary, letterSpacing: 1.5, marginBottom: 2 },
-  cardTitle: { fontFamily: FONTS.display, fontSize: 13, color: COLORS.onSurface, fontWeight: '800', marginBottom: 4 },
-  cardFoot: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  cardSub: {
-    fontFamily: FONTS.mono,
+
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 44,
+    paddingBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  title: {
+    fontSize: 32,
+    fontWeight: "900",
+    color: COLORS.text,
+  },
+
+  subtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: COLORS.muted,
+    fontWeight: "700",
+  },
+
+  filterButton: {
+    backgroundColor: COLORS.green,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+  },
+
+  filterButtonText: {
+    color: COLORS.white,
+    fontWeight: "900",
     fontSize: 12,
-    color: COLORS.onSurfaceTertiary,
+    letterSpacing: 0.6,
   },
 
-  cardPrice: { fontFamily: FONTS.mono, fontSize: 13, textAlign: 'left', marginLeft: 6, fontWeight: '900', color: COLORS.brand },
-  qtyBox: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'flex-end', gap: 4 },
-  qtyNumberBadge: { alignItems: 'center', justifyContent: 'center' },
-qtyLabelSmall: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceSecondary, fontWeight: '700' },
-qtyValueBig: { fontFamily: FONTS.mono, fontSize: 18, lineHeight: 20, color: COLORS.onSurface, fontWeight: '900', transform: [{ scale: 1.12 }] },
-  cardQty: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurface, fontWeight: '700' },
-  cardQtyNumber: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurface, fontWeight: '700' },
-  addBtn: { marginTop: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: COLORS.brand, paddingVertical: 6 },
-  addBtnTxt: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onBrandPrimary, fontWeight: '900', letterSpacing: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
-  emptyText: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onSurfaceSecondary, letterSpacing: 1.5 },
-  emptyBtn: { borderWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.brand, paddingHorizontal: 18, paddingVertical: 12 },
-  emptyBtnTxt: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onBrandPrimary, fontWeight: '900', letterSpacing: 1 },
-  filterIconBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: '#2E7D32',
+  searchBox: {
+    marginHorizontal: 18,
+    marginBottom: 8,
+    backgroundColor: COLORS.white,
     borderWidth: 1,
-    borderColor: '#1B5E20',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 0,
-    elevation: 4,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    paddingHorizontal: 14,
   },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-start', paddingTop: 95, paddingHorizontal: 12 },
-  filtersPanel: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.brand, borderRadius: 14, padding: 12, gap: 8 },
-  filtersHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  filtersTitle: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.onSurface, fontWeight: '900', letterSpacing: 1.5 },
-filterLabel: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceSecondary, marginTop: 6, marginBottom: 2, letterSpacing: 1.5 },
-  filterActions: { flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginTop: 10 },
-  filterClearBtn: {
-  flex: 1,
-  borderWidth: 1.5,
-  borderColor: COLORS.brand,
-  backgroundColor: COLORS.surface,
-  paddingVertical: 13,
-  paddingHorizontal: 12,
-  alignItems: 'center',
-  justifyContent: 'center',
-  minHeight: 48,
-  borderRadius: 14,
-},
 
-filterApplyBtn: {
-  flex: 1,
-  backgroundColor: COLORS.brand,
-  borderWidth: 1.5,
-  borderColor: COLORS.brand,
-  paddingVertical: 13,
-  paddingHorizontal: 12,
-  alignItems: 'center',
-  justifyContent: 'center',
-  minHeight: 48,
-  borderRadius: 14,
-},
+  searchInput: {
+    height: 48,
+    color: COLORS.text,
+    fontSize: 15,
+    fontWeight: "700",
+  },
 
-filterClearTxt: {
-  fontFamily: FONTS.mono,
-  color: COLORS.brand,
-  fontWeight: '900',
-  fontSize: 14,
-  letterSpacing: 1,
-},
+  searchModeRow: {
+    flexDirection: "row",
+    gap: 8,
+    paddingHorizontal: 18,
+    marginBottom: 8,
+  },
 
-filterApplyTxt: {
-  fontFamily: FONTS.mono,
-  color: COLORS.surface,
-  fontWeight: '900',
-  fontSize: 14,
-  letterSpacing: 1,
-},
-  brandSearchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surfaceSecondary, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 6 },
-  brandSearchInput: { flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: COLORS.onSurface, padding: 0 },
+  modeChip: {
+    backgroundColor: COLORS.chip,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
 
-cardNote: {
-  fontFamily: FONTS.mono,
-  fontSize: 11,
-  lineHeight: 16,
-  color: COLORS.onSurfaceSecondary,
-  marginTop: 6,
-},
+  modeChipActive: {
+    backgroundColor: COLORS.green,
+    borderColor: COLORS.green,
+  },
 
-text: {
-  fontFamily: FONTS.mono,
-  fontSize: 14,
-  color: COLORS.onSurface,
-},
+  modeChipText: {
+    color: COLORS.text,
+    fontWeight: "800",
+    fontSize: 11,
+  },
 
-textMuted: {
-  fontFamily: FONTS.mono,
-  fontSize: 12,
-  color: COLORS.onSurfaceSecondary,
-},
-priceFilterBox: {
-  marginTop: 14,
-},
+  modeChipTextActive: {
+    color: COLORS.white,
+  },
 
-priceCompactRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 10,
-},
+  chipsWrap: {
+    marginBottom: 8,
+  },
 
-priceMiniToggle: {
-  width: 120,
-  minHeight: 44,
-  borderWidth: 1.5,
-  borderColor: COLORS.borderStrong,
-  backgroundColor: COLORS.surface,
-  borderRadius: 14,
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 6,
-},
+  chipsContent: {
+    paddingHorizontal: 18,
+    gap: 8,
+  },
 
-priceMiniToggleActive: {
-  backgroundColor: COLORS.brand,
-  borderColor: COLORS.brand,
-},
+  chip: {
+    backgroundColor: COLORS.chip,
+    borderRadius: 999,
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
 
-priceMiniToggleText: {
-  fontFamily: FONTS.mono,
-  fontSize: 12,
-  color: COLORS.onSurface,
-  fontWeight: '900',
-  letterSpacing: 1.4,
-},
+  chipActive: {
+    backgroundColor: COLORS.green,
+    borderColor: COLORS.green,
+  },
 
-priceMiniToggleTextActive: {
-  color: COLORS.onSurfaceInverse,
-},
+  chipTxt: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: COLORS.text,
+    letterSpacing: 0.5,
+  },
 
-priceCompactInputs: {
-  flex: 1,
-  flexDirection: 'row',
-  gap: 8,
-},
+  chipTxtActive: {
+    color: COLORS.white,
+  },
 
-priceCompactInput: {
-  flex: 1,
-  minHeight: 44,
-  borderWidth: 1,
-  borderColor: COLORS.borderStrong,
-  backgroundColor: COLORS.surfaceSecondary,
-  color: COLORS.onSurface,
-  paddingHorizontal: 10,
-  fontSize: 16,
-  fontFamily: FONTS.mono,
-  textAlign: 'center',
-  borderRadius: 12,
-},
+  loadingCenter: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-priceCompactActions: {
-  flexDirection: 'row',
-  justifyContent: 'flex-end',
-  gap: 8,
-  marginTop: 8,
-},
+  loadingText: {
+    marginTop: 10,
+    color: COLORS.muted,
+    fontWeight: "700",
+  },
 
-priceSmallApplyBtn: {
-  minHeight: 38,
-  paddingHorizontal: 18,
-  borderRadius: 12,
-  backgroundColor: COLORS.brand,
-  alignItems: 'center',
-  justifyContent: 'center',
-},
+  listContent: {
+    paddingHorizontal: 12,
+    paddingBottom: 24,
+  },
 
-priceSmallResetBtn: {
-  minHeight: 38,
-  paddingHorizontal: 18,
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: COLORS.borderStrong,
-  backgroundColor: COLORS.surface,
-  alignItems: 'center',
-  justifyContent: 'center',
-},
+  columnWrapper: {
+    gap: 10,
+  },
 
-priceSmallApplyTxt: {
-  fontFamily: FONTS.mono,
-  fontSize: 12,
-  fontWeight: '900',
-  color: COLORS.surface,
-  letterSpacing: 1,
-},
+  card: {
+    flex: 1,
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 18,
+    marginBottom: 10,
+    overflow: "hidden",
+  },
 
-priceSmallResetTxt: {
-  fontFamily: FONTS.mono,
-  fontSize: 12,
-  fontWeight: '900',
-  color: COLORS.brand,
-  letterSpacing: 1,
-},
-priceFilterToggle: {
-  borderWidth: 1.5,
-  borderColor: COLORS.borderStrong,
-  backgroundColor: COLORS.surface,
-  paddingVertical: 12,
-  paddingHorizontal: 14,
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center', 
-  gap: 8,
-  minHeight: 38, 
-  borderRadius: 12,
-},
+  cardImgWrap: {
+    height: 110,
+    backgroundColor: COLORS.white,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 8,
+  },
 
-priceFilterToggleActive: {
-  backgroundColor: COLORS.brand,
-},
+  cardImg: {
+    width: "100%",
+    height: "100%",
+  },
 
-priceFilterToggleText: {
-  fontFamily: FONTS.mono,
-  fontSize: 13,
-  color: COLORS.onSurface,
-  fontWeight: '900',
-  letterSpacing: 2,
-},
+  placeholderImg: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EFEAE0",
+  },
 
-priceFilterToggleTextActive: {
-  color: COLORS.surface,
-},
+  placeholderText: {
+    color: COLORS.muted,
+    fontWeight: "900",
+    fontSize: 11,
+  },
 
-priceFilterTitle: {
-  fontFamily: FONTS.mono,
-  fontSize: 15,
-  color: COLORS.onSurface,
-  fontWeight: '900',
-  marginBottom: 14,
-},
+  cardBody: {
+    padding: 10,
+  },
 
-priceFilterLabel: {
-  fontFamily: FONTS.mono,
-  fontSize: 12,
-  color: COLORS.onSurfaceSecondary,
-  fontWeight: '900',
-  marginTop: 10,
-  marginBottom: 4,
-  letterSpacing: 1,
-},
+  cardBrand: {
+    fontSize: 10,
+    color: COLORS.orange,
+    fontWeight: "900",
+    marginBottom: 4,
+    textTransform: "uppercase",
+  },
 
-priceInput: {
-  borderWidth: 1,
-  borderColor: COLORS.borderStrong,
-  backgroundColor: COLORS.surfaceSecondary,
-  color: COLORS.onSurface,
-  paddingVertical: 7,
-  paddingHorizontal: 12,
-  fontSize: 18,
-  fontFamily: FONTS.mono,
-  minHeight: 48,
-  marginTop: 6,
-},
+  cardTitle: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: COLORS.text,
+    minHeight: 48,
+    lineHeight: 16,
+  },
 
-priceFilterReset: {
-  marginTop: 14,
-  borderWidth: 2,
-  borderColor: COLORS.borderStrong,
-  backgroundColor: COLORS.surfaceSecondary,
-  paddingVertical: 10,
-  alignItems: 'center',
-},
+  cardCode: {
+    marginTop: 5,
+    fontSize: 10,
+    color: COLORS.muted,
+    fontWeight: "700",
+  },
 
-priceFilterResetText: {
-  fontFamily: FONTS.mono,
-  fontSize: 12,
-  color: COLORS.onSurface,
-  fontWeight: '900',
-  letterSpacing: 1,
-},
+  cardCategory: {
+    marginTop: 3,
+    fontSize: 10,
+    color: COLORS.muted,
+    fontWeight: "700",
+  },
+
+  cardBottom: {
+    marginTop: 8,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+  },
+
+  price: {
+    color: COLORS.greenDark,
+    fontSize: 17,
+    fontWeight: "900",
+  },
+
+  pricePromo: {
+    color: COLORS.red,
+  },
+
+  promoBadge: {
+    marginTop: 2,
+    fontSize: 9,
+    color: COLORS.red,
+    fontWeight: "900",
+  },
+
+  qtyBox: {
+    backgroundColor: "#EFE5D6",
+    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 5,
+  },
+
+  qty: {
+    color: COLORS.greenDark,
+    fontSize: 10,
+    fontWeight: "900",
+  },
+
+  qtyLow: {
+    color: COLORS.red,
+  },
+
+  addButton: {
+    marginTop: 9,
+    backgroundColor: COLORS.green,
+    borderRadius: 12,
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+
+  addButtonText: {
+    color: COLORS.white,
+    fontSize: 11,
+    fontWeight: "900",
+  },
+
+  emptyBox: {
+    alignItems: "center",
+    paddingTop: 60,
+    paddingHorizontal: 24,
+  },
+
+  emptyTitle: {
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: "900",
+  },
+
+  emptyText: {
+    color: COLORS.muted,
+    textAlign: "center",
+    marginTop: 8,
+    fontWeight: "700",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "flex-end",
+  },
+
+  filtersPanel: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 18,
+    maxHeight: "82%",
+  },
+
+  filtersHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+
+  filtersTitle: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: COLORS.text,
+  },
+
+  closeText: {
+    color: COLORS.red,
+    fontWeight: "900",
+  },
+
+  filterLabel: {
+    color: COLORS.text,
+    fontWeight: "900",
+    marginBottom: 8,
+    marginTop: 8,
+  },
+
+  brandSearch: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    height: 44,
+    color: COLORS.text,
+    fontWeight: "700",
+  },
+
+  brandList: {
+    marginTop: 10,
+    maxHeight: 220,
+  },
+
+  brandRow: {
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+
+  brandRowActive: {
+    backgroundColor: COLORS.green,
+  },
+
+  brandText: {
+    fontWeight: "800",
+    color: COLORS.text,
+  },
+
+  brandTextActive: {
+    color: COLORS.white,
+  },
+  
+  completeToggle: {
+    marginTop: 14,
+    backgroundColor: COLORS.chip,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+
+  completeToggleActive: {
+    backgroundColor: COLORS.red,
+    borderColor: COLORS.red,
+  },
+
+  completeToggleText: {
+    color: COLORS.text,
+    fontWeight: "900",
+  },
+
+  completeToggleTextActive: {
+    color: COLORS.white,
+  },
+
+  priceToggle: {
+    marginTop: 14,
+    backgroundColor: COLORS.chip,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+
+  priceToggleText: {
+    color: COLORS.text,
+    fontWeight: "900",
+  },
+
+  priceBox: {
+    marginTop: 10,
+  },
+
+  priceInput: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    height: 42,
+    paddingHorizontal: 12,
+    color: COLORS.text,
+    fontWeight: "700",
+  },
+
+  applyPrice: {
+    marginTop: 12,
+    backgroundColor: COLORS.chip,
+    borderRadius: 12,
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+
+  applyPriceActive: {
+    backgroundColor: COLORS.green,
+  },
+
+  applyPriceText: {
+    color: COLORS.text,
+    fontWeight: "900",
+  },
+
+  applyPriceTextActive: {
+    color: COLORS.white,
+  },
+
+  resetButton: {
+    marginTop: 16,
+    backgroundColor: COLORS.red,
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: "center",
+  },
+
+  resetButtonText: {
+    color: COLORS.white,
+    fontWeight: "900",
+  },
 });
-

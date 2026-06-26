@@ -227,18 +227,18 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
         quantita_arrivata = numero_intero(testo_figlio(dettaglio, "Quantita"))
         barcode = trova_ean(dettaglio)
 
-        if not descrizione_fattura:
+        if quantita_arrivata <= 0:
             saltati.append({
             "linea": numero_linea,
             "barcode": barcode,
             "quantita": quantita_arrivata,
             "descrizione": descrizione_fattura,
             })
-            continue
+        continue
 
         if barcode == "":
             codice_fornitore = trova_codice_fornitore(dettaglio)
-    
+
             non_trovati.append({
             "linea": numero_linea,
             "barcode": "",
@@ -247,16 +247,7 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
             "prezzo_unitario": testo_figlio(dettaglio, "PrezzoUnitario"),
             "descrizione": descrizione_fattura,
             })
-            continue
-
-        if quantita_arrivata <= 0:
-            saltati.append({
-            "linea": numero_linea,
-            "barcode": barcode,
-            "quantita": quantita_arrivata,
-            "descrizione": descrizione_fattura,
-            })
-            continue
+        continue
 
         condizioni = [
             {"barcode": barcode},
@@ -337,35 +328,35 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
 
         await db.pending_invoice_products.insert_many(pending_items)
 
-    await db.invoice_imports.insert_one({
-        "chiave_import": info_fattura["chiave_import"],
-        "numero": info_fattura["numero"],
-        "data": info_fattura["data"],
-        "partita_iva": info_fattura["partita_iva"],
-        "denominazione": info_fattura["denominazione"],
-        "file": str(file_xml),
-        "report": percorso_report,
-        "file_non_trovati": percorso_non_trovati,
-        "data_import": datetime.now().isoformat(),
-        "righe_fattura": len(linee),
-        "prodotti_aggiornati": aggiornati,
-        "barcode_non_trovati": len(non_trovati),
-        "righe_saltate": len(saltati),
-    })
+        await db.invoice_imports.insert_one({
+            "chiave_import": info_fattura["chiave_import"],
+            "numero": info_fattura["numero"],
+            "data": info_fattura["data"],
+            "partita_iva": info_fattura["partita_iva"],
+            "denominazione": info_fattura["denominazione"],
+            "file": str(file_xml),
+            "report": percorso_report,
+            "file_non_trovati": percorso_non_trovati,
+            "data_import": datetime.now().isoformat(),
+            "righe_fattura": len(linee),
+            "prodotti_aggiornati": aggiornati,
+            "barcode_non_trovati": len(non_trovati),
+            "righe_saltate": len(saltati),
+        })
 
-    return {
-        "ok": True,
-        "fornitore": info_fattura["denominazione"],
-        "partita_iva": info_fattura["partita_iva"],
-        "numero": info_fattura["numero"],
-        "data": info_fattura["data"],
-        "righe_fattura": len(linee),
-        "prodotti_aggiornati": aggiornati,
-        "barcode_non_trovati": len(non_trovati),
-        "righe_saltate": len(saltati),
-        "report": percorso_report,
-        "file_non_trovati": percorso_non_trovati,
-        "non_trovati": non_trovati[:20],
-        "saltati": saltati[:20],
-    }
+        return {
+            "ok": True,
+            "fornitore": info_fattura["denominazione"],
+            "partita_iva": info_fattura["partita_iva"],
+            "numero": info_fattura["numero"],
+            "data": info_fattura["data"],
+            "righe_fattura": len(linee),
+            "prodotti_aggiornati": aggiornati,
+            "barcode_non_trovati": len(non_trovati),
+            "righe_saltate": len(saltati),
+            "report": percorso_report,
+            "file_non_trovati": percorso_non_trovati,
+            "non_trovati": non_trovati[:20],
+            "saltati": saltati[:20],
+        }
 

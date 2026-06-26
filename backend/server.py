@@ -889,6 +889,7 @@ async def get_products_page(
     search_mode: str | None = "descrizione",
     categoria: str | None = None,
     marca_standard: str | None = None,
+    da_completare: bool = False,
     disponibile: bool | None = None,
     prezzo_min: Optional[float] = None,
     prezzo_max: Optional[float] = None,
@@ -899,12 +900,45 @@ async def get_products_page(
     Catalogo paginato usato dal frontend.
     """
     query = {}
+    and_filters = []
 
     if categoria:
         query["categoria_standard"] = categoria
 
     if marca_standard:
-        query["marca_standard"] = marca_standard
+        marca_pulita = marca_standard.strip()
+
+        if marca_pulita.lower() in ["black & decker", "black+decker", "black decker"]:
+            marca_regex = re.compile(r"black\s*(?:&|\+)?\s*decker", re.IGNORECASE)
+        else:
+            marca_regex = re.compile("^" + re.escape(marca_pulita) + "$", re.IGNORECASE)
+
+        and_filters.append({
+            "$or": [
+                {"marca_standard": marca_regex},
+                {"marca": marca_regex},
+            ]
+        })
+
+        if da_completare:
+            and_filters.append({
+                "$or": [
+                    {"prezzo_vendita": {"$in": [0, None, ""]}},
+                    {"prezzo_vendita": {"$exists": False}},
+                    {"barcode": {"$in": ["", None]}},
+                    {"barcode": {"$exists": False}},
+                    {"categoria": "Da classificare"},
+                    {"categoria_standard": "Da classificare"},
+                    {
+                        "$and": [
+                            {"$or": [{"foto": {"$in": ["", None]}}, {"foto": {"$exists": False}}]},
+                            {"$or": [{"image_url": {"$in": ["", None]}}, {"image_url": {"$exists": False}}]},
+                            {"$or": [{"immagine": {"$in": ["", None]}}, {"immagine": {"$exists": False}}]},
+                            {"$or": [{"immagine_url": {"$in": ["", None]}}, {"immagine_url": {"$exists": False}}]},
+                        ]
+                    },
+                ]
+            })
 
     if disponibile is True:
         query["quantita"] = {"$gt": 0}
@@ -929,11 +963,26 @@ async def get_products_page(
                 ]
             }
         else:
-            query = {"prezzo_vendita": condizione_prezzo}
+            query["prezzo_vendita"] = condizione_prezzo
 
 
     limit = max(1, min(int(limit or 30), 100))
     skip = max(0, int(skip or 0))
+
+    if and_filters:
+        if "$and" in query:
+            query["$and"].extend(and_filters)
+        elif query:
+            query = {
+                "$and": [
+                    query,
+                    *and_filters,
+                ]
+            }
+        else:
+            query = {
+                "$and": and_filters
+            }
 
     total = await db.products.count_documents(query)
 
@@ -1093,11 +1142,59 @@ async def import_invoice_xml(file: UploadFile = File(...)):
 
     risultato = await importa_fattura_xml_da_file(db, destination)
 
+    if risultato is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Import fattura non ha restituito nessun risultato. Controlla import_fatture_service.py: manca o è rientrato male il return finale."
+        )
+
     return {
         "ok": risultato.get("ok", False),
         "filename": safe_name,
         "path": str(destination),
         **risultato,
+    }
+
+@api_router.get("/invoices/missing-products")
+async def get_missing_products(file_path: str):
+    path = Path(file_path)
+
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="File prodotti non trovati non esistente")
+
+    if not str(path).endswith(".csv"):
+        raise HTTPException(status_code=400, detail="File non valido")
+
+    import csv
+
+    items = []
+
+    with open(path, newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+
+        for index, row in enumerate(reader):
+            barcode = str(row.get("barcode", "")).strip()
+            codice_fornitore = str(row.get("codice_fornitore", "")).strip()
+            descrizione = str(row.get("descrizione", "")).strip()
+            quantita = str(row.get("quantita", "")).strip()
+            prezzo_unitario = str(row.get("prezzo_unitario", "")).strip()
+
+            if not barcode and not descrizione:
+                continue
+
+            items.append({
+                "id": f"{barcode}_{index}",
+                "barcode": barcode,
+                "codice_fornitore": codice_fornitore,
+                "descrizione": descrizione,
+                "quantita": quantita,
+                "prezzo_unitario": prezzo_unitario,
+                "selected": True,
+            })
+
+    return {
+        "items": items,
+        "total": len(items)
     }
 
 
@@ -1130,6 +1227,302 @@ async def list_invoice_imports():
     return {
         "items": items,
         "total": len(items)
+    }
+
+
+@api_router.get("/invoices/pending-products")
+async def list_pending_invoice_products():
+    items = []
+
+    cursor = db.pending_invoice_products.find(
+        {"stato": "da_salvare"},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(200)
+
+    async for item in cursor:
+        items.append({
+            "chiave_import": item.get("chiave_import", ""),
+            "numero_fattura": item.get("numero_fattura", ""),
+            "data_fattura": item.get("data_fattura", ""),
+            "fornitore": item.get("fornitore", ""),
+            "partita_iva": item.get("partita_iva", ""),
+            "linea": item.get("linea", ""),
+            "barcode": item.get("barcode", ""),
+            "codice_fornitore": item.get("codice_fornitore", ""),
+            "descrizione": item.get("descrizione", ""),
+            "quantita": item.get("quantita", 0),
+            "prezzo_unitario": item.get("prezzo_unitario", ""),
+            "stato": item.get("stato", "da_salvare"),
+            "selected": True,
+        })
+
+    return {
+        "items": items,
+        "total": len(items)
+    }
+
+def normalizza_testo(testo):
+    return str(testo or "").strip().lower()
+
+
+def ricava_marca_da_descrizione(descrizione):
+    testo = normalizza_testo(descrizione)
+
+    marche = {
+        "ambrovit": "Ambrovit",
+        "stanley": "Stanley",
+        "black decker": "Black & Decker",
+        "black+decker": "Black & Decker",
+        "black & decker": "Black & Decker",
+        "dewalt": "DeWalt",
+        "usag": "USAG",
+        "beta": "Beta",
+        "bosch": "Bosch",
+        "makita": "Makita",
+        "einhell": "Einhell",
+        "fischer": "Fischer",
+        "arexons": "Arexons",
+        "saratoga": "Saratoga",
+        "vileda": "Vileda",
+        "mapei": "Mapei",
+        "cisa": "Cisa",
+        "mottura": "Mottura",
+        "yale": "Yale",
+        "tesa": "Tesa",
+        "wolfcraft": "Wolfcraft",
+        "kapriol": "Kapriol",
+        "sika": "Sika",
+        "maurer": "Maurer",
+        "papillon": "Papillon",
+        "mustad": "Mustad",
+        "pattex": "Pattex",
+        "henkel": "Henkel",
+        "bostik": "Bostik",
+        "wd-40": "WD-40",
+        "svitol": "Svitol",
+    }
+
+    for chiave, marca in marche.items():
+        if chiave in testo:
+            return marca
+
+    return ""
+
+
+def ricava_categoria_da_descrizione(descrizione):
+    testo = normalizza_testo(descrizione)
+
+    regole = [
+        (
+            "Fissaggio",
+            [
+                "vite", "viti", "bullone", "bulloni", "dado", "dadi",
+                "rondella", "rondelle", "tassello", "tasselli",
+                "ancorante", "barra filettata", "filettata",
+                "chiodo", "chiodi", "rivetto", "rivetti", "autoperforanti",
+            ],
+        ),
+        (
+            "Utensili manuali",
+            [
+                "chiave", "chiavi", "cacciavite", "cacciaviti",
+                "pinza", "pinze", "martello", "sega", "lime",
+                "brugola", "cricchetto", "bussole", "lama",
+            ],
+        ),
+        (
+            "Utensili a batteria",
+            [
+                "batteria", "avvitatore", "trapano batteria",
+                "smerigliatrice batteria", "v20", "18v", "12v", "Volt",
+            ],
+        ),
+        (
+            "Utensili a filo",
+            [
+                "trapano", "smerigliatrice", "levigatrice",
+                "seghetto", "tassellatore", "demolitore", "W",
+                "mola", "roto orbitale", "a filo", "roto-orbitale", "Watt",
+            ],
+        ),
+        (
+            "Accessori",
+            [
+                "disco", "dischi", "punta", "punte", "lama",
+                "lame", "bit", "inserti", "abrasivo", "abrasivi",
+                "carta abrasiva", "platorello",
+            ],
+        ),
+        (
+            "Portautensili",
+            [
+                "borsa", "valigia", "cassettiera", "cassetta",
+                "porta attrezzi", "portautensili", "fodero",
+            ],
+        ),
+        (
+            "Vernici",
+            [
+                "vernice", "smalto", "pittura", "pennello",
+                "rullo", "stucco", "diluente", "impregnante",
+            ],
+        ),
+        (
+            "Idraulica",
+            [
+                "raccordo", "tubo", "rubinetto", "guarnizione",
+                "sifone", "flessibile", "valvola", "sturalavandino",
+            ],
+        ),
+        (
+            "Elettrico",
+            [
+                "presa", "interruttore", "cavo", "spina",
+                "lampada", "led", "prolunga", "multipresa",
+            ],
+        ),
+        (
+            "Giardinaggio",
+            [
+                "giardino", "irrigazione", "tubo acqua", "forbice potatura",
+                "tagliasiepi", "decespugliatore", "rastrello",
+            ],
+        ),
+        (
+            "Antinfortunistica",
+            [
+                "guanto", "guanti", "scarpa", "scarpe",
+                "occhiale", "occhiali", "mascherina", "casco",
+                "pantaloncini", "giacca antipioggia",
+            ],
+        ),
+        (
+            "Casa",
+            [
+                "cartone", "scatola", "sacchetto", "contenitore",
+                "secchio", "panno", "spugna",
+            ],
+        ),
+    ]
+
+    for categoria, parole in regole:
+        for parola in parole:
+            if parola in testo:
+                return categoria
+
+    return "Da classificare"
+
+class CreatePendingProductsRequest(BaseModel):
+    items: List[Dict[str, Any]]
+
+
+@api_router.post("/invoices/pending-products/create")
+async def create_pending_invoice_products(payload: CreatePendingProductsRequest):
+    creati = 0
+    saltati = 0
+    gia_presenti = 0
+
+    created_products = []
+
+    for item in payload.items:
+        descrizione = str(item.get("descrizione", "")).strip()
+        barcode = str(item.get("barcode", "")).strip()
+        codice_fornitore = str(item.get("codice_fornitore", "")).strip()
+        quantita = int(float(str(item.get("quantita", 0) or 0).replace(",", ".")))
+        prezzo_acquisto = float(str(item.get("prezzo_unitario", 0) or 0).replace(",", "."))
+        marca_ricavata = ricava_marca_da_descrizione(descrizione)
+        categoria_ricavata = ricava_categoria_da_descrizione(descrizione)
+        fornitore_ricavato = str(
+            item.get("fornitore")
+            or item.get("denominazione")
+            or item.get("ragione_sociale")
+            or ""
+        ).strip()
+
+        if not descrizione:
+            saltati += 1
+            continue
+
+        codice_prodotto = codice_fornitore or barcode or f"FATT-{uuid.uuid4().hex[:8].upper()}"
+
+        condizioni = [
+            {"codice_prodotto": codice_prodotto},
+        ]
+
+        if barcode:
+            condizioni.append({"barcode": barcode})
+
+        esistente = await db.products.find_one({"$or": condizioni})
+
+        if esistente:
+            gia_presenti += 1
+            await db.products.update_one(
+                {"_id": esistente["_id"]},
+                {
+                    "$set": {
+                        "quantita": int(esistente.get("quantita", 0)) + quantita,
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    }
+                }
+            )
+            continue
+
+        nuovo = {
+            "id": str(uuid.uuid4()),
+            "codice_prodotto": codice_prodotto,
+            "barcode": barcode,
+            "descrizione": descrizione,
+            "marca": marca_ricavata,
+            "marca_standard": marca_ricavata,
+            "categoria": categoria_ricavata,
+            "fornitore": fornitore_ricavato,
+            "quantita": quantita,
+            "prezzo_acquisto": prezzo_acquisto,
+            "prezzo_vendita": 0,
+            "prezzo_promo": None,
+            "promo_attiva": False,
+            "promo_nome": "",
+            "promo_inizio": "",
+            "promo_fine": "",
+            "ultimo_aggiornamento_promo": "",
+            "soglia_scorta": 0,
+            "note": "",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "foto": "",
+            "image_url": "",
+            "immagine": "",
+            "immagine_url": "",
+
+        }
+
+        await db.products.insert_one(nuovo)
+
+        await db.pending_invoice_products.update_many(
+            {
+                "descrizione": descrizione,
+                "numero_fattura": item.get("numero_fattura", ""),
+                "stato": "da_salvare",
+            },
+            {
+                "$set": {
+                    "stato": "creato",
+                    "created_product_id": nuovo["id"],
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                }
+            }
+        )
+
+        nuovo.pop("_id", None)
+        created_products.append(nuovo)
+        creati += 1
+
+    return {
+        "ok": True,
+        "creati": creati,
+        "saltati": saltati,
+        "gia_presenti": gia_presenti,
+        "prodotti": created_products,
     }
 
 
