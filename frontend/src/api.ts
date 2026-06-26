@@ -28,8 +28,19 @@ export const api = {
     return req<Product[]>('/products' + (s ? '?' + s : ''));
   },
   listStandardBrands: () => req<{ items: string[] }>('/brands/standard'),
-  listProductsPage: (params: { q?: string; search_mode?: string; categoria?: string; marca_standard?: string; sotto_scorta?: boolean; vendibile?: boolean;
-   prezzo_min?: number; prezzo_max?: number; limit?: number; skip?: number } = {}) => {
+  listProductsPage: (params: {
+    q?: string;
+    search_mode?: string;
+    categoria?: string;
+    marca_standard?: string;
+    sotto_scorta?: boolean;
+    vendibile?: boolean;
+    da_completare?: boolean;
+    prezzo_min?: number;
+    prezzo_max?: number;
+    limit?: number;
+    skip?: number;
+  } = {}) => {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
     if (params.search_mode) qs.set('search_mode', params.search_mode);
