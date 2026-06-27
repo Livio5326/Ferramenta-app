@@ -193,7 +193,7 @@ useEffect(() => {
 
         <View style={styles.invoiceStats}>
           <Text style={styles.invoiceStat}>
-            Aggiornati: {item.prodotti_aggiornati ?? 0}
+            Importati: {item.prodotti_importati ?? item.prodotti_aggiornati ?? item.aggiornati ?? 0}
           </Text>
           <Text style={styles.invoiceStat}>
             Non trovati: {item.barcode_non_trovati ?? 0}

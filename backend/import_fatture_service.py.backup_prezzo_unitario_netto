@@ -307,8 +307,7 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
             "barcode": "",
             "codice_fornitore": codice_fornitore,
             "quantita": quantita_arrivata,
-            "prezzo_unitario_lordo": testo_figlio(dettaglio, "PrezzoUnitario"),
-            "prezzo_unitario": calcola_prezzo_acquisto_netto_da_riga(dettaglio),
+            "prezzo_unitario": testo_figlio(dettaglio, "PrezzoUnitario"),
             "descrizione": descrizione_fattura,
             })
             continue
@@ -341,8 +340,7 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
                 "barcode": barcode,
                 "codice_fornitore": codice_fornitore,
                 "quantita": quantita_arrivata,
-                "prezzo_unitario_lordo": testo_figlio(dettaglio, "PrezzoUnitario"),
-            "prezzo_unitario": calcola_prezzo_acquisto_netto_da_riga(dettaglio),
+                "prezzo_unitario": testo_figlio(dettaglio, "PrezzoUnitario"),
                 "descrizione": descrizione_fattura,
             })
             continue

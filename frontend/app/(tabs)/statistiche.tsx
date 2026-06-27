@@ -1,14 +1,33 @@
-import { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from "react";
+import {
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useFocusEffect } from "expo-router";
 
-import { COLORS, FONTS, fmtEUR } from '@/src/theme';
-import { ScreenHeader } from '@/src/components/ScreenHeader';
-import { api } from '@/src/api';
+import { COLORS, FONTS, fmtEUR } from "@/src/theme";
+import { api } from "@/src/api";
+
+type StatsData = {
+  valore_magazzino?: number;
+  valore_vendita_potenziale?: number;
+  total_products?: number;
+  total_pieces?: number;
+  vendite_totali?: number;
+  numero_vendite?: number;
+  sotto_scorta_count?: number;
+  categorie?: {
+    nome: string;
+    count: number;
+  }[];
+};
 
 export default function Stats() {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<StatsData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
@@ -16,91 +35,433 @@ export default function Stats() {
     setStats(s);
   }, []);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(); } catch (e) { /* noop */ }
+    try {
+      await load();
+    } catch (e) {
+      // niente panico, già abbastanza caos nel mondo
+    }
     setRefreshing(false);
   };
 
+  const categorie = stats?.categorie || [];
+  const maxCategoria = categorie[0]?.count || 1;
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top']} testID="stats-screen">
-      <ScreenHeader title="STATISTICHE" subtitle="MAGAZZINO · VENDITE" />
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.brand} />}>
-        <View style={styles.bento}>
-          <View style={styles.cell}>
-            <Text style={styles.cellLabel}>VALORE A COSTO</Text>
-            <Text style={styles.cellValue}>{fmtEUR(stats?.valore_magazzino || 0)}</Text>
-          </View>
-          <View style={styles.cell}>
-            <Text style={styles.cellLabel}>VALORE VENDITA</Text>
-            <Text style={[styles.cellValue, { color: COLORS.success }]}>{fmtEUR(stats?.valore_vendita_potenziale || 0)}</Text>
-          </View>
+    <SafeAreaView style={styles.safe} testID="stats-screen">
+      <View style={styles.header}>
+        <Text style={styles.title}>Statistiche</Text>
+        <Text style={styles.subtitle}>Magazzino • Vendite</Text>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={COLORS.brand}
+          />
+        }
+      >
+        <View style={styles.heroCard}>
+          <Text style={styles.heroLabel}>VALORE VENDITA POTENZIALE</Text>
+          <Text style={styles.heroValue}>
+            {fmtEUR(stats?.valore_vendita_potenziale || 0)}
+          </Text>
+          <Text style={styles.heroSub}>
+            Valore stimato del magazzino ai prezzi di vendita.
+          </Text>
         </View>
-        <View style={styles.bento}>
-          <View style={styles.cell}>
-            <Text style={styles.cellLabel}>REFERENZE</Text>
-            <Text style={styles.cellValue}>{stats?.total_products || 0}</Text>
-          </View>
-          <View style={styles.cell}>
-            <Text style={styles.cellLabel}>PEZZI TOTALI</Text>
-            <Text style={styles.cellValue}>{stats?.total_pieces || 0}</Text>
-          </View>
+
+        <View style={styles.grid}>
+          <StatCard
+            label="Valore a costo"
+            value={fmtEUR(stats?.valore_magazzino || 0)}
+          />
+
+          <StatCard
+            label="Referenze"
+            value={String(stats?.total_products || 0)}
+            footer="prodotti"
+          />
+
+          <StatCard
+            label="Pezzi totali"
+            value={String(stats?.total_pieces || 0)}
+            footer="unità"
+          />
+
+          <StatCard
+            label="Vendite totali"
+            value={fmtEUR(stats?.vendite_totali || 0)}
+            footer={`${stats?.numero_vendite || 0} transazioni`}
+            highlight
+          />
         </View>
-        <View style={styles.bento}>
-          <View style={[styles.cell, { backgroundColor: COLORS.surfaceInverse }]}>
-            <Text style={[styles.cellLabel, { color: COLORS.brandTertiary }]}>VENDITE TOTALI</Text>
-            <Text style={[styles.cellValue, { color: COLORS.onSurfaceInverse }]}>{fmtEUR(stats?.vendite_totali || 0)}</Text>
-            <Text style={[styles.cellFoot, { color: COLORS.brandTertiary }]}>{stats?.numero_vendite || 0} TRANSAZIONI</Text>
-          </View>
-          <View style={[styles.cell, { backgroundColor: stats?.sotto_scorta_count ? COLORS.error : COLORS.surfaceSecondary }]}>
-            <Text style={[styles.cellLabel, stats?.sotto_scorta_count && { color: COLORS.onError }]}>SOTTO SCORTA</Text>
-            <Text style={[styles.cellValue, stats?.sotto_scorta_count && { color: COLORS.onError }]}>{stats?.sotto_scorta_count || 0}</Text>
-            <Text style={[styles.cellFoot, stats?.sotto_scorta_count && { color: COLORS.onError }]}>DA RIORDINARE</Text>
-          </View>
+
+        <View
+          style={[
+            styles.alertCard,
+            (stats?.sotto_scorta_count || 0) > 0 && styles.alertCardActive,
+          ]}
+        >
+          <Text
+            style={[
+              styles.alertLabel,
+              (stats?.sotto_scorta_count || 0) > 0 && styles.alertLabelActive,
+            ]}
+          >
+            SOTTO SCORTA
+          </Text>
+
+          <Text
+            style={[
+              styles.alertValue,
+              (stats?.sotto_scorta_count || 0) > 0 && styles.alertValueActive,
+            ]}
+          >
+            {stats?.sotto_scorta_count || 0}
+          </Text>
+
+          <Text
+            style={[
+              styles.alertFooter,
+              (stats?.sotto_scorta_count || 0) > 0 && styles.alertFooterActive,
+            ]}
+          >
+            prodotti da controllare
+          </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{"// DISTRIBUZIONE CATEGORIE"}</Text>
-          {(stats?.categorie || []).slice(0, 10).map((c: any) => {
-            const max = stats?.categorie?.[0]?.count || 1;
-            const pct = (c.count / max) * 100;
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>DISTRIBUZIONE CATEGORIE</Text>
+            <Text style={styles.sectionSubtitle}>
+              Prime {Math.min(categorie.length, 10)} categorie
+            </Text>
+          </View>
+
+          {categorie.slice(0, 10).map((c) => {
+            const pct = Math.max(4, Math.round((c.count / maxCategoria) * 100));
+
             return (
-              <View key={c.nome} style={styles.catRow} testID={`cat-${c.nome}`}>
-                <View style={styles.catHeader}>
-                  <Text style={styles.catName} numberOfLines={1}>{c.nome.toUpperCase()}</Text>
-                  <Text style={styles.catCount}>{c.count}</Text>
+              <View key={c.nome} style={styles.categoryCard}>
+                <View style={styles.categoryHeader}>
+                  <Text style={styles.categoryName} numberOfLines={1}>
+                    {c.nome}
+                  </Text>
+                  <Text style={styles.categoryCount}>{c.count}</Text>
                 </View>
+
                 <View style={styles.bar}>
                   <View style={[styles.barFill, { width: `${pct}%` }]} />
                 </View>
               </View>
             );
           })}
-          {(!stats?.categorie || stats.categorie.length === 0) && (
-            <Text style={styles.emptyHint}>Nessun dato. Aggiungi prodotti o carica il demo.</Text>
-          )}
+
+          {categorie.length === 0 ? (
+            <Text style={styles.emptyHint}>
+              Nessun dato. Aggiungi prodotti o aggiorna il catalogo.
+            </Text>
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+function StatCard({
+  label,
+  value,
+  footer,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  footer?: string;
+  highlight?: boolean;
+}) {
+  return (
+    <View style={[styles.statCard, highlight && styles.statCardHighlight]}>
+      <Text style={[styles.statLabel, highlight && styles.statLabelHighlight]}>
+        {label.toUpperCase()}
+      </Text>
+
+      <Text style={[styles.statValue, highlight && styles.statValueHighlight]}>
+        {value}
+      </Text>
+
+      {footer ? (
+        <Text
+          style={[styles.statFooter, highlight && styles.statFooterHighlight]}
+        >
+          {footer}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.surface },
-  bento: { flexDirection: 'row', borderBottomWidth: 2, borderColor: COLORS.borderStrong },
-  cell: { flex: 1, padding: 16, backgroundColor: COLORS.surfaceSecondary, borderRightWidth: 2, borderColor: COLORS.borderStrong, minHeight: 110 },
-  cellLabel: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceSecondary, letterSpacing: 1.5 },
-  cellValue: { fontFamily: FONTS.display, fontSize: 24, fontWeight: '900', color: COLORS.onSurface, marginTop: 8, letterSpacing: -0.5 },
-  cellFoot: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceSecondary, marginTop: 4, letterSpacing: 1 },
-  section: { padding: 16, gap: 12 },
-  sectionTitle: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceSecondary, letterSpacing: 1.5 },
-  catRow: { gap: 4 },
-  catHeader: { flexDirection: 'row', justifyContent: 'space-between' },
-  catName: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onSurface, letterSpacing: 1, flex: 1 },
-  catCount: { fontFamily: FONTS.mono, fontSize: 13, fontWeight: '900', color: COLORS.brand },
-  bar: { height: 10, backgroundColor: COLORS.surfaceSecondary, borderWidth: 1, borderColor: COLORS.borderStrong },
-  barFill: { height: '100%', backgroundColor: COLORS.brand },
-  emptyHint: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onSurfaceSecondary, padding: 12, borderWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surfaceSecondary },
+  safe: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+  },
+
+  header: {
+    paddingHorizontal: 18,
+    paddingTop: 45,
+    marginBottom: 16,
+  },
+
+  title: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#2F2A22",
+    letterSpacing: 0.5,
+  },
+
+  subtitle: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#6F6252",
+    lineHeight: 20,
+  },
+
+  content: {
+    padding: 16,
+    paddingBottom: 36,
+    gap: 14,
+  },
+
+  heroCard: {
+    backgroundColor: COLORS.surfaceSecondary,
+    borderWidth: 2,
+    borderColor: COLORS.borderStrong,
+    borderRadius: 22,
+    padding: 18,
+  },
+
+  heroLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: 11,
+    color: COLORS.onSurfaceSecondary,
+    letterSpacing: 1.4,
+    marginBottom: 8,
+  },
+
+  heroValue: {
+    fontFamily: FONTS.display,
+    fontSize: 30,
+    fontWeight: "900",
+    color: COLORS.success,
+  },
+
+  heroSub: {
+    fontFamily: FONTS.mono,
+    fontSize: 11,
+    fontWeight: "900",
+    color: COLORS.onSurfaceSecondary,
+    marginTop: 8,
+    lineHeight: 16,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+
+  statCard: {
+    width: "48%",
+    minHeight: 122,
+    backgroundColor: COLORS.surfaceSecondary,
+    borderWidth: 2,
+    borderColor: COLORS.borderStrong,
+    borderRadius: 18,
+    padding: 14,
+    justifyContent: "space-between",
+  },
+
+  statCardHighlight: {
+    backgroundColor: COLORS.surfaceInverse,
+    borderColor: COLORS.surfaceInverse,
+  },
+
+  statLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    color: COLORS.onSurfaceSecondary,
+    letterSpacing: 1.2,
+  },
+
+  statLabelHighlight: {
+    color: COLORS.brandTertiary,
+  },
+
+  statValue: {
+    fontFamily: FONTS.display,
+    fontSize: 23,
+    fontWeight: "900",
+    color: COLORS.onSurface,
+    marginTop: 10,
+  },
+
+  statValueHighlight: {
+    color: COLORS.onSurfaceInverse,
+  },
+
+  statFooter: {
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    color: COLORS.onSurfaceSecondary,
+    marginTop: 8,
+  },
+
+  statFooterHighlight: {
+    color: COLORS.brandTertiary,
+  },
+
+  alertCard: {
+    backgroundColor: COLORS.surfaceSecondary,
+    borderWidth: 2,
+    borderColor: COLORS.borderStrong,
+    borderRadius: 18,
+    padding: 16,
+  },
+
+  alertCardActive: {
+    backgroundColor: COLORS.error,
+    borderColor: COLORS.error,
+  },
+
+  alertLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: 11,
+    color: COLORS.onSurfaceSecondary,
+    letterSpacing: 1.4,
+  },
+
+  alertLabelActive: {
+    color: COLORS.onError,
+  },
+
+  alertValue: {
+    fontFamily: FONTS.display,
+    fontSize: 30,
+    fontWeight: "900",
+    color: COLORS.onSurface,
+    marginTop: 6,
+  },
+
+  alertValueActive: {
+    color: COLORS.onError,
+  },
+
+  alertFooter: {
+    fontFamily: FONTS.mono,
+    fontSize: 11,
+    color: COLORS.onSurfaceSecondary,
+    marginTop: 4,
+  },
+
+  alertFooterActive: {
+    color: COLORS.onError,
+  },
+
+  section: {
+    marginTop: 4,
+    gap: 10,
+  },
+
+  sectionHeader: {
+    marginTop: 6,
+    marginBottom: 2,
+  },
+
+  sectionTitle: {
+    fontFamily: FONTS.display,
+    fontSize: 18,
+    fontWeight: "900",
+    color: COLORS.onSurface,
+    letterSpacing: 0.8,
+  },
+
+  sectionSubtitle: {
+    fontFamily: FONTS.mono,
+    fontSize: 11,
+    fontWeight: "900",
+    color: COLORS.onSurfaceSecondary,
+    letterSpacing: 1.2,
+    marginTop: 4,
+    textTransform: "uppercase",
+  },
+
+  categoryCard: {
+    backgroundColor: COLORS.surfaceSecondary,
+    borderWidth: 2,
+    borderColor: COLORS.borderStrong,
+    borderRadius: 16,
+    padding: 13,
+  },
+
+  categoryHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 10,
+  },
+
+  categoryName: {
+    flex: 1,
+    fontFamily: FONTS.mono,
+    fontSize: 12,
+    color: COLORS.onSurface,
+    letterSpacing: 0.8,
+    fontWeight: "900",
+  },
+
+  categoryCount: {
+    fontFamily: FONTS.mono,
+    fontSize: 12,
+    color: COLORS.brand,
+    fontWeight: "900",
+  },
+
+  bar: {
+    height: 10,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.borderStrong,
+    borderRadius: 999,
+    overflow: "hidden",
+  },
+
+  barFill: {
+    height: "100%",
+    backgroundColor: COLORS.brand,
+  },
+
+  emptyHint: {
+    fontFamily: FONTS.mono,
+    fontSize: 12,
+    color: COLORS.onSurfaceSecondary,
+    padding: 14,
+    borderWidth: 2,
+    borderColor: COLORS.borderStrong,
+    borderRadius: 16,
+    backgroundColor: COLORS.surfaceSecondary,
+  },
 });

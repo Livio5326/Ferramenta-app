@@ -7,69 +7,6 @@ from pathlib import Path
 REPORTS_DIR = "import_fatture/report"
 
 
-
-def xml_float(value, default=0.0):
-    if value is None:
-        return default
-
-    try:
-        return float(str(value).replace(",", ".").strip())
-    except Exception:
-        return default
-
-
-def get_xml_text(parent, tag_name, default=""):
-    if parent is None:
-        return default
-
-    found = parent.find(f".//{{*}}{tag_name}")
-    if found is None or found.text is None:
-        return default
-
-    return found.text.strip()
-
-
-def calcola_prezzo_acquisto_netto_da_riga(dettaglio_linea):
-    """
-    Calcola il prezzo unitario netto da una riga XML fattura.
-
-    Priorità:
-    1. PrezzoTotale / Quantita, perché PrezzoTotale è già al netto degli sconti.
-    2. PrezzoUnitario applicando eventuali ScontoMaggiorazione.
-    """
-
-    quantita = xml_float(get_xml_text(dettaglio_linea, "Quantita"), 1.0)
-    prezzo_unitario = xml_float(get_xml_text(dettaglio_linea, "PrezzoUnitario"), 0.0)
-    prezzo_totale = xml_float(get_xml_text(dettaglio_linea, "PrezzoTotale"), 0.0)
-
-    if quantita > 0 and prezzo_totale > 0:
-        return round(prezzo_totale / quantita, 4)
-
-    prezzo = prezzo_unitario
-
-    for sconto in dettaglio_linea.findall(".//{*}ScontoMaggiorazione"):
-        tipo = get_xml_text(sconto, "Tipo").upper()
-        percentuale = xml_float(get_xml_text(sconto, "Percentuale"), 0.0)
-        importo = xml_float(get_xml_text(sconto, "Importo"), 0.0)
-
-        if tipo == "SC":
-            if percentuale:
-                prezzo = prezzo * (1 - percentuale / 100)
-            elif importo:
-                prezzo = prezzo - importo
-
-        elif tipo == "MG":
-            if percentuale:
-                prezzo = prezzo * (1 + percentuale / 100)
-            elif importo:
-                prezzo = prezzo + importo
-
-    if prezzo < 0:
-        prezzo = 0
-
-    return round(prezzo, 4)
-
-
 def pulisci(valore):
     if valore is None:
         return ""
@@ -307,8 +244,7 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
             "barcode": "",
             "codice_fornitore": codice_fornitore,
             "quantita": quantita_arrivata,
-            "prezzo_unitario_lordo": testo_figlio(dettaglio, "PrezzoUnitario"),
-            "prezzo_unitario": calcola_prezzo_acquisto_netto_da_riga(dettaglio),
+            "prezzo_unitario": testo_figlio(dettaglio, "PrezzoUnitario"),
             "descrizione": descrizione_fattura,
             })
             continue
@@ -341,8 +277,7 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
                 "barcode": barcode,
                 "codice_fornitore": codice_fornitore,
                 "quantita": quantita_arrivata,
-                "prezzo_unitario_lordo": testo_figlio(dettaglio, "PrezzoUnitario"),
-            "prezzo_unitario": calcola_prezzo_acquisto_netto_da_riga(dettaglio),
+                "prezzo_unitario": testo_figlio(dettaglio, "PrezzoUnitario"),
                 "descrizione": descrizione_fattura,
             })
             continue
