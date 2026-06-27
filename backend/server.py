@@ -1145,6 +1145,131 @@ async def upload_invoice_xml(file: UploadFile = File(...)):
     }
 
 
+
+def normalizza_nome_fornitore(value: str | None) -> str:
+    import re
+
+    value = str(value or "").upper().strip()
+
+    # Toglie forme societarie e parole inutili.
+    parole_da_togliere = [
+        "S.R.L.", "SRL", "S.R.L", "S.R.L.S.", "SRLS",
+        "S.P.A.", "SPA", "SNC", "S.N.C.", "SAS", "S.A.S.",
+        "ITALIA", "NICOLA", "DI", "DEL", "DELLA", "D'", "F.LLI",
+        "FRATELLI", "AZIENDA", "COMMERCIALE",
+    ]
+
+    for parola in parole_da_togliere:
+        value = value.replace(parola, " ")
+
+    value = re.sub(r"[^A-Z0-9]+", " ", value)
+    value = re.sub(r"\s+", " ", value).strip()
+
+    return value
+
+
+async def riconduci_fornitore_standard(fornitore_xml: str | None) -> str:
+    """
+    Riconduce il fornitore letto dalla fattura XML a uno dei fornitori standard
+    usando parole chiave precise.
+
+    Esempi:
+    - DE SANTIS NICOLA S.R.L. -> De Santis
+    - SAIT ABRASIVI S.P.A. -> Sait abrasivi
+    - STANLEY BLACK + DECKER ITALIA S.R.L. -> Stanley Black+Decker
+    """
+    fornitore_xml = str(fornitore_xml or "").strip()
+    if not fornitore_xml:
+        return ""
+
+    xml_norm = normalizza_nome_fornitore(fornitore_xml)
+
+    # Mappa precisa: se nel nome importato compare una parola/frase chiave,
+    # assegna direttamente il fornitore standard scelto da noi.
+    keyword_map = [
+        ("DE SANTIS", "De Santis"),
+        ("SANTIS", "De Santis"),
+
+        ("SAIT", "Sait abrasivi"),
+        ("SITE", "Sait abrasivi"),  # tolleranza se viene scritto/letto male
+
+        ("STANLEY", "Stanley Black+Decker"),
+        ("BLACK DECKER", "Stanley Black+Decker"),
+        ("BLACK AND DECKER", "Stanley Black+Decker"),
+
+        ("CAPALDO", "Capaldo"),
+        ("DEODATO", "Deodato"),
+        ("DFL", "DFL"),
+        ("DUEMME", "Duemme"),
+        ("Garsport".upper(), "Garsport"),
+        ("ITALIANCOLOR", "Italiancolor"),
+        ("LIANTONIO", "Liantonio Vernici"),
+        ("MADRAs".upper(), "Madras"),
+        ("PASQUALE ROMITO", "Pasquale Romito Cataldo"),
+        ("ROMITO", "Pasquale Romito Cataldo"),
+        ("PROCHIMICA", "Prochimica"),
+        ("SARATOGA", "Saratoga"),
+        ("TASSANI", "Tassani"),
+        ("TECFI", "Tecfi"),
+        ("VIGLIETTA", "Viglietta"),
+        ("VIRIDEX", "Viridex"),
+
+        ("C C", "C&C"),
+        ("C&C", "C&C"),
+
+        ("FRATELLI VITALE", "Fratelli Vitale"),
+        ("VITALE", "Fratelli Vitale"),
+    ]
+
+    for keyword, standard in keyword_map:
+        keyword_norm = normalizza_nome_fornitore(keyword)
+
+        if keyword_norm and keyword_norm in xml_norm:
+            return standard
+
+    # Fallback più prudente:
+    # controlla se uno dei fornitori standard è contenuto nel nome importato.
+    # Lo facciamo dopo le parole chiave, non prima.
+    doc = await db.standard_lists.find_one({"tipo": "fornitori"})
+    standard_items = doc.get("items") if doc else []
+    standard_items = standard_items or []
+
+    for standard in standard_items:
+        standard = str(standard or "").strip()
+        if not standard:
+            continue
+
+        standard_norm = normalizza_nome_fornitore(standard)
+        if standard_norm and standard_norm in xml_norm:
+            return standard
+
+    # Se non riconosce nulla, usa il nome originale.
+    # Così un fornitore nuovo non viene perso.
+    return fornitore_xml
+
+async def add_fornitore_standard_if_missing(fornitore: str | None):
+    """
+    Aggiunge il fornitore alla lista standard solo dopo averlo ricondotto.
+    Così DE SANTIS NICOLA S.R.L. non crea un doppione se esiste già De Santis.
+    """
+    fornitore = str(fornitore or "").strip()
+    if not fornitore:
+        return ""
+
+    fornitore_standard = await riconduci_fornitore_standard(fornitore)
+
+    if not fornitore_standard:
+        return ""
+
+    await db.standard_lists.update_one(
+        {"tipo": "fornitori"},
+        {"$addToSet": {"items": fornitore_standard}},
+        upsert=True
+    )
+
+    return fornitore_standard
+
+
 @api_router.post("/invoices/import-xml")
 async def import_invoice_xml(file: UploadFile = File(...)):
     if not file.filename:
@@ -1799,12 +1924,16 @@ async def create_pending_invoice_products(payload: CreatePendingProductsRequest)
         prezzo_acquisto = float(str(item.get("prezzo_unitario", 0) or 0).replace(",", "."))
         marca_ricavata = ricava_marca_da_descrizione(descrizione)
         categoria_ricavata = ricava_categoria_da_descrizione(descrizione)
-        fornitore_ricavato = str(
+        fornitore_originale = str(
             item.get("fornitore")
             or item.get("denominazione")
             or item.get("ragione_sociale")
+            or item.get("cedente")
+            or item.get("supplier")
             or ""
         ).strip()
+
+        fornitore_ricavato = await riconduci_fornitore_standard(fornitore_originale)
 
         if not descrizione:
             saltati += 1
@@ -1843,6 +1972,7 @@ async def create_pending_invoice_products(payload: CreatePendingProductsRequest)
             "marca_standard": marca_ricavata,
             "categoria": categoria_ricavata,
             "fornitore": fornitore_ricavato,
+            "fornitore_originale": fornitore_originale,
             "quantita": quantita,
             "prezzo_acquisto": prezzo_acquisto,
             "prezzo_vendita": 0,
