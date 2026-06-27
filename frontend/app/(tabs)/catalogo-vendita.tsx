@@ -14,7 +14,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import { api } from "../../src/api";
 import { useAppStore } from "../../src/store";
@@ -205,10 +205,13 @@ export default function CatalogoVenditaScreen() {
   const [hasMore, setHasMore] = useState(true);
 
   const skipRef = useRef(0);
+  const loadedCountRef = useRef(PAGE_SIZE);
+  const lastOpenedProductIdRef = useRef<string | null>(null);
   const loadingRef = useRef(false);
   const hasMoreRef = useRef(true);
   const requestRef = useRef(0);
   const listaRef = useRef<FlatList<Product>>(null);
+  const scrollOffsetRef = useRef(0);
 
   const cats = catalogoFiltratoDaPagina ? [categoriaDaPagina] : (categorieStandardBackend.length > 0 ? categorieStandardBackend : CATEGORIE_STANDARD);
 
@@ -255,7 +258,7 @@ export default function CatalogoVenditaScreen() {
     setQ("");
   }, [catalogoFiltratoDaPagina, categoriaDaPagina]);
 
-  const loadInitial = useCallback(async () => {
+  const loadInitial = useCallback(async (options?: { scrollToTop?: boolean; keepLoaded?: boolean }) => {
     const requestId = ++requestRef.current;
 
     loadingRef.current = true;
@@ -281,7 +284,7 @@ export default function CatalogoVenditaScreen() {
           filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000)
             ? prezzoMax
             : undefined,
-        limit: PAGE_SIZE,
+        limit: options?.keepLoaded ? Math.max(loadedCountRef.current, PAGE_SIZE) : PAGE_SIZE,
         skip: 0,
       });
 
@@ -294,14 +297,17 @@ export default function CatalogoVenditaScreen() {
         : data;
 
       setItems(prodottiVisibili);
-
+      loadedCountRef.current = prodottiVisibili.length;
       const more = data.length === PAGE_SIZE;
       setHasMore(more);
       hasMoreRef.current = more;
-      skipRef.current = PAGE_SIZE;
+      skipRef.current = prodottiVisibili.length;
+      loadedCountRef.current = prodottiVisibili.length;
 
       setTimeout(() => {
-        listaRef.current?.scrollToOffset({ offset: 0, animated: false });
+        if (options?.scrollToTop !== false) {
+      listaRef.current?.scrollToOffset({ offset: 0, animated: false });
+    }
       }, 50);
     } catch (e: any) {
       console.warn("Errore caricamento catalogo", e);
@@ -326,7 +332,58 @@ export default function CatalogoVenditaScreen() {
     filtroDaCompletare,
   ]);
 
-  const loadMore = useCallback(async () => {
+  
+  useFocusEffect(
+    useCallback(() => {
+      const returningFromProduct = !!lastOpenedProductIdRef.current;
+
+      if (returningFromProduct) {
+        loadInitial({ scrollToTop: false, keepLoaded: true });
+      } else {
+        loadedCountRef.current = PAGE_SIZE;
+        scrollOffsetRef.current = 0;
+        loadInitial({ scrollToTop: true, keepLoaded: false });
+      }
+    }, [loadInitial])
+  );
+
+
+  const scrollToLastOpenedProduct = useCallback(() => {
+    const productId = lastOpenedProductIdRef.current;
+    if (!productId || items.length === 0) {
+      return;
+    }
+
+    const targetIndex = items.findIndex((p) => getProductId(p) === productId);
+
+    if (targetIndex < 0 || targetIndex >= items.length) {
+      return;
+    }
+
+    setTimeout(() => {
+      try {
+        listaRef.current?.scrollToIndex({
+          index: targetIndex,
+          animated: false,
+          viewPosition: 0.12,
+        });
+        lastOpenedProductIdRef.current = null;
+      } catch (e) {
+        const fallbackOffset = Math.max(0, targetIndex * 220 - 80);
+        listaRef.current?.scrollToOffset({
+          offset: fallbackOffset,
+          animated: false,
+        });
+        lastOpenedProductIdRef.current = null;
+      }
+    }, 500);
+  }, [items]);
+
+  useEffect(() => {
+    scrollToLastOpenedProduct();
+  }, [scrollToLastOpenedProduct]);
+
+const loadMore = useCallback(async () => {
     if (loadingRef.current || loadingMore || refreshing || !hasMoreRef.current) return;
 
     loadingRef.current = true;
@@ -450,7 +507,8 @@ export default function CatalogoVenditaScreen() {
           style={styles.card}
           onPress={() => {
             if (!productId) return;
-            router.push(`/product/${encodeURIComponent(productId)}`);
+            lastOpenedProductIdRef.current = productId;
+        router.push(`/product/${encodeURIComponent(productId)}`);
           }}
           testID={`product-card-${productId}`}
         >
@@ -642,6 +700,19 @@ export default function CatalogoVenditaScreen() {
         <FlatList
           key={`catalogo-${categoria ?? "tutti"}-${marcaStandard ?? "tutte-marche"}-${soloSottoScorta}-${soloVendita}`}
           ref={listaRef}
+          onScroll={(event) => {
+            scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+          }}
+          scrollEventThrottle={16}
+          onScrollToIndexFailed={(info) => {
+            setTimeout(() => {
+              const safeIndex = Math.max(0, Math.min(info.index, items.length - 1));
+              listaRef.current?.scrollToOffset({
+                offset: Math.max(0, info.averageItemLength * safeIndex - 80),
+                animated: false,
+              });
+            }, 500);
+          }}
           data={items}
           numColumns={2}
           keyExtractor={(it, index) => `${getProductId(it)}-${index}`}
