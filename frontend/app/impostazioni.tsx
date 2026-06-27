@@ -56,6 +56,23 @@ export default function ImpostazioniScreen() {
 
           <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
         </Pressable>
+       <Pressable
+         style={styles.optionCard}
+         onPress={() => router.push('/liste-standard' as any)}
+       >
+         <View style={styles.optionIcon}>
+           <Feather name="list" size={22} color="#FFFFFF" />
+         </View>
+
+         <View style={{ flex: 1 }}>
+           <Text style={styles.optionTitle}>Liste standard</Text>
+           <Text style={styles.optionText}>
+             Modifica categorie, fornitori e marche usate nell'app.
+           </Text>
+         </View>
+
+         <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
+       </Pressable>
       </ScrollView>
     </SafeAreaView>
   );

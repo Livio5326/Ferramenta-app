@@ -188,6 +188,7 @@ export default function CatalogoScreen() {
   const [marcaStandard, setMarcaStandard] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [brandSearch, setBrandSearch] = useState("");
+  const [brandFilterOpen, setBrandFilterOpen] = useState(false);
   const [brandsReali, setBrandsReali] = useState<string[]>([]);
 
   const [filtroPrezzoAttivo, setFiltroPrezzoAttivo] = useState(false);
@@ -195,6 +196,7 @@ export default function CatalogoScreen() {
   const [prezzoMax, setPrezzoMax] = useState(1000);
   const [priceFilterOpen, setPriceFilterOpen] = useState(false);
   const [filtroDaCompletare, setFiltroDaCompletare] = useState(false);
+  const [categorieStandardBackend, setCategorieStandardBackend] = useState<string[]>([]);
 
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -208,12 +210,23 @@ export default function CatalogoScreen() {
   const requestRef = useRef(0);
   const listaRef = useRef<FlatList<Product>>(null);
 
-  const cats = catalogoFiltratoDaPagina ? [categoriaDaPagina] : CATEGORIE_STANDARD;
+  const cats = catalogoFiltratoDaPagina ? [categoriaDaPagina] : (categorieStandardBackend.length > 0 ? categorieStandardBackend : CATEGORIE_STANDARD);
 
   const brands = brandsReali.length > 0 ? brandsReali : MARCHE_STANDARD;
   const filteredBrands = brands.filter((m) =>
     m.toLowerCase().includes(brandSearch.toLowerCase())
   );
+
+  useEffect(() => {
+    api.getStandardList("categorie")
+      .then((res: any) => {
+        const items = Array.isArray(res?.items) ? res.items : [];
+        setCategorieStandardBackend(items.filter((v: string) => v && v !== "Tutte"));
+      })
+      .catch((err: any) => {
+        console.warn("Errore caricamento categorie standard", err);
+      });
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -679,33 +692,73 @@ export default function CatalogoScreen() {
               </Pressable>
             </View>
 
-            <Text style={styles.filterLabel}>Marca</Text>
+            <ScrollView
+              style={styles.filtersScroll}
+              contentContainerStyle={styles.filtersScrollContent}
+              showsVerticalScrollIndicator
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+            >
 
-            <TextInput
-              value={brandSearch}
-              onChangeText={setBrandSearch}
-              placeholder="Cerca marca..."
-              placeholderTextColor={COLORS.muted}
-              style={styles.brandSearch}
-            />
+            <Pressable
+              style={[
+                styles.priceToggle,
+                (brandFilterOpen || marcaStandard) && styles.completeToggleActive,
+              ]}
+              onPress={() => setBrandFilterOpen((prev) => !prev)}
+            >
+              <Text
+                style={[
+                  styles.priceToggleText,
+                  (brandFilterOpen || marcaStandard) && styles.completeToggleTextActive,
+                ]}
+              >
+                Marca: {marcaStandard || "Tutte"} {brandFilterOpen ? "▲" : "▼"}
+              </Text>
+            </Pressable>
 
-            <ScrollView style={styles.brandList}>
-              {filteredBrands.map((m) => {
-                const active = !marcaStandard && m === "Tutte" || marcaStandard === m;
+            {brandFilterOpen ? (
+              <>
+                <Text style={styles.filterLabel}>Cerca marca</Text>
 
-                return (
-                  <Pressable
-                    key={m}
-                    style={[styles.brandRow, active && styles.brandRowActive]}
-                    onPress={() => cambiaMarca(m)}
-                  >
-                    <Text style={[styles.brandText, active && styles.brandTextActive]}>
-                      {m}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
+                <TextInput
+                  value={brandSearch}
+                  onChangeText={setBrandSearch}
+                  placeholder="Scrivi marca..."
+                  placeholderTextColor={COLORS.muted}
+                  style={styles.brandSearch}
+                />
+
+                <Text style={styles.filterLabel}>Seleziona marca</Text>
+
+                <ScrollView
+                  style={[styles.brandList, styles.brandListExpanded]}
+                  nestedScrollEnabled
+                >
+                  {filteredBrands.map((m) => {
+                    const active =
+                      (!marcaStandard && m === "Tutte") || marcaStandard === m;
+
+                    return (
+                      <Pressable
+                        key={m}
+                        style={[styles.brandRow, active && styles.brandRowActive]}
+                        onPress={() => cambiaMarca(m)}
+                      >
+                        <Text
+                          style={[
+                            styles.brandText,
+                            active && styles.brandTextActive,
+                          ]}
+                        >
+                          {m}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              </>
+            ) : null}
 
             <Pressable
               style={[
@@ -720,16 +773,24 @@ export default function CatalogoScreen() {
                   filtroDaCompletare && styles.completeToggleTextActive,
                 ]}
               >
-                DA COMPLETARE {filtroDaCompletare ? "ATTIVO" : "DISATTIVO"}
+                "Da completare"
               </Text>
             </Pressable>
 
             <Pressable
-              style={styles.priceToggle}
+              style={[
+                styles.priceToggle,
+                (priceFilterOpen || filtroPrezzoAttivo) && styles.completeToggleActive,
+              ]}
               onPress={() => setPriceFilterOpen((prev) => !prev)}
             >
-              <Text style={styles.priceToggleText}>
-                Filtro prezzo {filtroPrezzoAttivo ? "attivo" : "disattivo"}
+              <Text
+                style={[
+                  styles.priceToggleText,
+                  (priceFilterOpen || filtroPrezzoAttivo) && styles.completeToggleTextActive,
+                ]}
+              >
+                Filtro prezzo {priceFilterOpen ? "▲" : "▼"}
               </Text>
             </Pressable>
 
@@ -775,6 +836,7 @@ export default function CatalogoScreen() {
               onPress={() => {
                 setMarcaStandard(null);
                 setBrandSearch("");
+                setBrandFilterOpen(false);
                 setFiltroPrezzoAttivo(false);
                 setPrezzoMin(0);
                 setPrezzoMax(1000);
@@ -784,6 +846,7 @@ export default function CatalogoScreen() {
             >
               <Text style={styles.resetButtonText}>RESET FILTRI</Text>
             </Pressable>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -1089,11 +1152,11 @@ const styles = StyleSheet.create({
   },
 
   filtersPanel: {
+    maxHeight: "90%",
     backgroundColor: COLORS.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 18,
-    maxHeight: "82%",
   },
 
   filtersHeader: {
@@ -1241,4 +1304,18 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: "900",
   },
+  brandListExpanded: {
+    maxHeight: 260,
+    marginTop: 6,
+    marginBottom: 14,
+  },
+
+  filtersScroll: {
+    width: "100%",
+  },
+
+  filtersScrollContent: {
+    paddingBottom: 34,
+  },
+
 });

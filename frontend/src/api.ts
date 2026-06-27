@@ -58,6 +58,56 @@ export const api = {
   listProductBrands: async () => {
     return req<{ brands: string[]; total: number }>("/products/brands");
   },
+
+  getStandardLists: () =>
+    req<{
+      categorie: string[];
+      fornitori: string[];
+      marche: string[];
+    }>("/standard-lists"),
+
+  getStandardList: (tipo: "categorie" | "fornitori" | "marche") =>
+    req<{ tipo: string; items: string[]; total: number }>(
+      `/standard-lists/${tipo}`
+    ),
+
+  addStandardListItem: (
+    tipo: "categorie" | "fornitori" | "marche",
+    value: string
+  ) =>
+    req<{ tipo: string; items: string[]; total: number }>(
+      `/standard-lists/${tipo}/items`,
+      {
+        method: "POST",
+        body: JSON.stringify({ value }),
+      }
+    ),
+
+  updateStandardListItem: (
+    tipo: "categorie" | "fornitori" | "marche",
+    old_value: string,
+    new_value: string
+  ) =>
+    req<{ tipo: string; items: string[]; total: number }>(
+      `/standard-lists/${tipo}/items`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ old_value, new_value }),
+      }
+    ),
+
+  deleteStandardListItem: (
+    tipo: "categorie" | "fornitori" | "marche",
+    value: string
+  ) =>
+    req<{ tipo: string; items: string[]; total: number }>(
+      `/standard-lists/${tipo}/items`,
+      {
+        method: "DELETE",
+        body: JSON.stringify({ value }),
+      }
+    ),
+
   getProduct: (id: string) => req<Product>(`/products/${id}`),
   getByBarcode: (b: string) => req<Product>(`/products/barcode/${encodeURIComponent(b)}`),
   createProduct: (p: Partial<Product>) =>

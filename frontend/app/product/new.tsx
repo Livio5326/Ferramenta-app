@@ -37,20 +37,25 @@ export default function ProductForm() {
   const [form, setForm] = useState<Form>(empty);
   const [saving, setSaving] = useState(false);
   const [brands, setBrands] = useState<string[]>([]);
+  const [categorieStandard, setCategorieStandard] = useState<string[]>(CATEGORIE_STANDARD);
+  const [fornitoriStandard, setFornitoriStandard] = useState<string[]>(FORNITORI_STANDARD);
   const [brandPickerOpen, setBrandPickerOpen] = useState(false);
   const [supplierPickerOpen, setSupplierPickerOpen] = useState(false);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
 
   useEffect(() => {
-    api.listProductBrands()
+    api.getStandardLists()
       .then((res: any) => {
-        const received = res?.brands || [];
-        if (Array.isArray(received)) {
-          setBrands(received.filter((m: string) => m && m !== "Tutte"));
-        }
+        const categorie = Array.isArray(res?.categorie) ? res.categorie : CATEGORIE_STANDARD;
+        const fornitori = Array.isArray(res?.fornitori) ? res.fornitori : FORNITORI_STANDARD;
+        const marche = Array.isArray(res?.marche) ? res.marche : [];
+
+        setCategorieStandard(categorie.filter((v: string) => v && v !== "Tutte"));
+        setFornitoriStandard(fornitori.filter((v: string) => v && v !== "Tutte"));
+        setBrands(marche.filter((v: string) => v && v !== "Tutte"));
       })
       .catch((err: any) => {
-        console.warn("Errore caricamento marche prodotto", err);
+        console.warn("Errore caricamento liste standard prodotto", err);
       });
   }, []);
 
@@ -278,7 +283,7 @@ export default function ProductForm() {
               </View>
 
               <ScrollView style={styles.selectList}>
-                {FORNITORI_STANDARD.map((supplier) => (
+                {fornitoriStandard.map((supplier: string) => (
                   <Pressable
                     key={supplier}
                     style={[
@@ -314,7 +319,7 @@ export default function ProductForm() {
               </View>
 
               <ScrollView style={styles.selectList}>
-                {CATEGORIE_STANDARD.map((cat) => (
+                {categorieStandard.map((cat: string) => (
                   <Pressable
                     key={cat}
                     style={[

@@ -2342,6 +2342,291 @@ async def list_sales(limit: int = 50):
     return [Sale(**d) for d in docs]
 
 
+
+
+# ============================================================
+# LISTE STANDARD MODIFICABILI: categorie, fornitori, marche
+# ============================================================
+
+STANDARD_LIST_TYPES = ["categorie", "fornitori", "marche"]
+
+STANDARD_LIST_DEFAULTS = {
+    "categorie": [
+        "Utensili manuali",
+        "Strumenti di misura",
+        "Utensili a filo",
+        "Utensili a batteria",
+        "Accessori",
+        "Portautensili",
+        "Ferramenta",
+        "Fissaggio",
+        "Giardinaggio",
+        "Vernici",
+        "Idraulica",
+        "Elettrico",
+        "Antinfortunistica",
+        "Auto",
+        "Casa",
+        "Chiavi",
+        "Altro",
+    ],
+    "fornitori": [
+        "De Santis",
+        "C&C",
+        "DFL",
+        "Viridex",
+        "Liantonio Vernici",
+        "Sait abrasivi",
+        "Stanley Black+Decker",
+        "Capaldo",
+        "Deodato",
+        "Tassani",
+        "Italiancolor",
+        "Saratoga",
+        "Duemme",
+        "Garsport",
+        "Pasquale Romito Cataldo",
+        "Tecfi",
+        "Viglietta",
+        "Prochimica",
+        "Fratelli Vitale",
+        "Madras",
+    ],
+    "marche": [],
+}
+
+
+def _clean_standard_items(items):
+    puliti = []
+    visti = set()
+
+    for item in items or []:
+        valore = str(item or "").strip()
+        if not valore:
+            continue
+
+        chiave = valore.lower()
+        if chiave in visti:
+            continue
+
+        visti.add(chiave)
+        puliti.append(valore)
+
+    return sorted(puliti, key=lambda x: x.lower())
+
+
+async def _collect_brand_defaults():
+    marche = set()
+
+    cursor = db.products.find(
+        {},
+        {
+            "marca": 1,
+            "marca_standard": 1,
+        }
+    )
+
+    async for p in cursor:
+        marca = str(p.get("marca") or "").strip()
+        marca_standard = str(p.get("marca_standard") or "").strip()
+
+        for valore in [marca_standard, marca]:
+            if valore and valore.lower() not in ["tutte", "nessuna", "null", "undefined", "da classificare"]:
+                marche.add(valore)
+
+    return sorted(marche, key=lambda x: x.lower())
+
+
+async def ensure_standard_list(tipo: str):
+    if tipo not in STANDARD_LIST_TYPES:
+        raise HTTPException(status_code=400, detail="Tipo lista non valido")
+
+    doc = await db.standard_lists.find_one({"tipo": tipo})
+
+    defaults = list(STANDARD_LIST_DEFAULTS.get(tipo, []))
+
+    if tipo == "marche":
+        marche_db = await _collect_brand_defaults()
+        defaults = _clean_standard_items(defaults + marche_db)
+
+    if not doc:
+        doc = {
+            "tipo": tipo,
+            "items": _clean_standard_items(defaults),
+        }
+        await db.standard_lists.insert_one(doc)
+        return doc
+
+    items_attuali = _clean_standard_items(doc.get("items") or [])
+
+    # IMPORTANTE:
+    # I default servono solo alla creazione iniziale della lista.
+    # Se l'utente modifica "Chiavi" in "Serrature", non dobbiamo reinserire "Chiavi".
+    # Per le marche invece possiamo continuare ad aggiungere quelle trovate nei prodotti,
+    # perché le marche reali già presenti nel catalogo devono restare selezionabili.
+    if tipo == "marche":
+        items_finali = _clean_standard_items(items_attuali + defaults)
+
+        if items_finali != items_attuali:
+            await db.standard_lists.update_one(
+                {"tipo": tipo},
+                {"$set": {"items": items_finali}}
+            )
+            doc["items"] = items_finali
+
+    return doc
+
+
+@api_router.get("/standard-lists")
+async def get_all_standard_lists():
+    result = {}
+
+    for tipo in STANDARD_LIST_TYPES:
+        doc = await ensure_standard_list(tipo)
+        result[tipo] = doc.get("items") or []
+
+    return result
+
+
+@api_router.get("/standard-lists/{tipo}")
+async def get_standard_list(tipo: str):
+    doc = await ensure_standard_list(tipo)
+
+    return {
+        "tipo": tipo,
+        "items": doc.get("items") or [],
+        "total": len(doc.get("items") or []),
+    }
+
+
+@api_router.post("/standard-lists/{tipo}/items")
+async def add_standard_list_item(tipo: str, payload: dict):
+    doc = await ensure_standard_list(tipo)
+
+    value = str(payload.get("value") or "").strip()
+    if not value:
+        raise HTTPException(status_code=400, detail="Valore mancante")
+
+    items = _clean_standard_items((doc.get("items") or []) + [value])
+
+    await db.standard_lists.update_one(
+        {"tipo": tipo},
+        {"$set": {"items": items}}
+    )
+
+    return {
+        "tipo": tipo,
+        "items": items,
+        "total": len(items),
+    }
+
+
+@api_router.put("/standard-lists/{tipo}/items")
+async def update_standard_list_item(tipo: str, payload: dict):
+    doc = await ensure_standard_list(tipo)
+
+    old_value = str(payload.get("old_value") or "").strip()
+    new_value = str(payload.get("new_value") or "").strip()
+
+    if not old_value or not new_value:
+        raise HTTPException(status_code=400, detail="Valori mancanti")
+
+    items = doc.get("items") or []
+    updated = []
+
+    found = False
+    for item in items:
+        if str(item).strip().lower() == old_value.lower():
+            updated.append(new_value)
+            found = True
+        else:
+            updated.append(item)
+
+    if not found:
+        raise HTTPException(status_code=404, detail="Voce non trovata")
+
+    updated = _clean_standard_items(updated)
+
+    await db.standard_lists.update_one(
+        {"tipo": tipo},
+        {"$set": {"items": updated}}
+    )
+
+    # Se rinominiamo una voce standard, aggiorniamo anche i prodotti già esistenti.
+    # Altrimenti nelle impostazioni cambia il nome, ma nel catalogo restano le vecchie categorie.
+    if tipo == "categorie":
+        await db.products.update_many(
+            {
+                "$or": [
+                    {"categoria": {"$regex": f"^{old_value}$", "$options": "i"}},
+                    {"categoria_standard": {"$regex": f"^{old_value}$", "$options": "i"}},
+                ]
+            },
+            {
+                "$set": {
+                    "categoria": new_value,
+                    "categoria_standard": new_value,
+                }
+            }
+        )
+
+    elif tipo == "fornitori":
+        await db.products.update_many(
+            {"fornitore": {"$regex": f"^{old_value}$", "$options": "i"}},
+            {"$set": {"fornitore": new_value}}
+        )
+
+    elif tipo == "marche":
+        await db.products.update_many(
+            {
+                "$or": [
+                    {"marca": {"$regex": f"^{old_value}$", "$options": "i"}},
+                    {"marca_standard": {"$regex": f"^{old_value}$", "$options": "i"}},
+                ]
+            },
+            {
+                "$set": {
+                    "marca": new_value,
+                    "marca_standard": new_value,
+                }
+            }
+        )
+
+    return {
+        "tipo": tipo,
+        "items": updated,
+        "total": len(updated),
+    }
+
+
+@api_router.delete("/standard-lists/{tipo}/items")
+async def delete_standard_list_item(tipo: str, payload: dict):
+    doc = await ensure_standard_list(tipo)
+
+    value = str(payload.get("value") or "").strip()
+    if not value:
+        raise HTTPException(status_code=400, detail="Valore mancante")
+
+    items = [
+        item for item in (doc.get("items") or [])
+        if str(item).strip().lower() != value.lower()
+    ]
+
+    items = _clean_standard_items(items)
+
+    await db.standard_lists.update_one(
+        {"tipo": tipo},
+        {"$set": {"items": items}}
+    )
+
+    return {
+        "tipo": tipo,
+        "items": items,
+        "total": len(items),
+    }
+
+
+
 app.include_router(api_router)
 
 app.add_middleware(
