@@ -1713,119 +1713,457 @@ async def adjust_stock(pid: str, body: StockAdjust):
 
 
 def calcola_categoria_standard_import(data: dict) -> str:
-    """Assegna categoria_standard in modo stabile durante l'import Excel."""
+    """
+    Assegna categoria_standard durante import Excel/cataloghi usando l'ordine delle parole.
 
-    def up(v):
-        return str(v or "").strip().upper()
+    Regola:
+    - legge categoria + descrizione + codice + marca da sinistra verso destra;
+    - la prima parola/frase utile che indica una categoria vince;
+    - parole generiche tipo GIFT SET non decidono nulla;
+    - evita falsi positivi tipo VITI dentro GIRAVITI.
+    """
+    import re
 
-    categoria = up(data.get("categoria"))
-    descrizione = up(data.get("descrizione"))
-    codice = up(data.get("codice_prodotto") or data.get("codice") or "")
-    marca = up(data.get("marca") or data.get("fornitore") or "")
-    testo = f"{categoria} {descrizione} {codice} {marca}"
+    categoria = str(data.get("categoria") or "").upper()
+    categoria_standard_attuale = str(data.get("categoria_standard") or "").upper()
+    descrizione = str(data.get("descrizione") or data.get("nome") or "").upper()
+    codice = str(data.get("codice_prodotto") or data.get("barcode") or "").upper()
+    marca = str(data.get("marca") or data.get("marca_standard") or "").upper()
 
-    # Auto
-    if (
-        re.search(r"^(ASI|BDCINF)", codice)
-        or "PNEUMATIC" in testo
-        or "POMPA A PEDALE" in testo
-        or "SOLLEVATORE" in testo
-        or "COLONNETTE" in testo
-    ):
-        return "Auto"
+    categorie_standard_nomi = {
+        "UTENSILI MANUALI",
+        "STRUMENTI DI MISURA",
+        "UTENSILI A FILO",
+        "UTENSILI A BATTERIA",
+        "ACCESSORI",
+        "PORTAUTENSILI",
+        "FERRAMENTA",
+        "FISSAGGIO",
+        "GIARDINAGGIO",
+        "VERNICI",
+        "IDRAULICA",
+        "ELETTRICO",
+        "ANTINFORTUNISTICA",
+        "AUTO",
+        "CASA",
+        "CHIAVI",
+        "ALTRO",
+    }
 
-    # Portautensili
-    if (
-        "PORTAUTENSILI" in categoria
-        or re.search(r"^(WM|BEZ|BDCWBK|FME790)", codice)
-        or "BANCO DA LAVORO" in testo
-        or "CAVALLETTO" in testo
-        or "SUPPORTO" in testo
-        or "CARRELLO" in testo
-    ):
-        return "Portautensili"
+    # Se categoria è già una categoria standard, probabilmente è una vecchia classificazione.
+    # Non deve vincere sulla descrizione. La useremo solo come fallback più sotto.
+    categoria_per_testo = "" if categoria in categorie_standard_nomi else categoria
 
-    # Accessori
-    if "BATTERIE E CARICABATTERIE" in categoria:
-        return "Accessori"
+    testo = f"{categoria_per_testo} {descrizione} {codice} {marca}"
+    testo = re.sub(r"\\s+", " ", testo).strip()
 
-    if "ACCESSORI" in categoria:
-        return "Accessori"
+    # PRIORITÀ 1:
+    # Prodotti chiaramente da giardino vincono su Volt e Watt.
+    # Un tagliasiepi 500W resta Giardinaggio, non Utensili a filo.
+    parole_giardino_prioritarie = [
+        "GAMMA GIARDINO",
+        "GIARDINAGGIO",
+        "GIARDINO",
+        "TAGLIASIEPI",
+        "TAGLIA SIEPI",
+        "DECESPUGLIATORE",
+        "RASAERBA",
+        "TAGLIAERBA",
+        "TOSAERBA",
+        "MOTOSEGA",
+        "SOFFIATORE",
+        "POTATORE",
+        "POTATURA",
+        "FORBICI POTATURA",
+        "IRRIGAZIONE",
+        "TUBO GIARDINO",
+    ]
 
-    # Giardinaggio
-    if "GIARDINO" in categoria or "GAMMA GIARDINO" in categoria:
+    if any(k in testo for k in parole_giardino_prioritarie):
         return "Giardinaggio"
 
-    # Casa
-    if "CURA DELLA CASA" in categoria:
-        return "Casa"
+    # PRIORITÀ 2:
+    # Volt = utensile a batteria.
+    # Watt = utensile a filo.
+    # Queste regole valgono solo se prima non è stato riconosciuto Giardinaggio.
+    volt_match = re.search(r"(?<![A-Z0-9])\d+(?:[.,]\d+)?\s*(?:V|VOLT|VOLTS)(?![A-Z0-9])", testo)
+    watt_match = re.search(r"(?<![A-Z0-9])\d+(?:[.,]\d+)?\s*(?:W|WATT|WATTS)(?![A-Z0-9])", testo)
 
-    # Gesso/cartongesso Stanley: per ora li trattiamo come utensili manuali
-    if "GESSO RIVESTITO" in categoria:
-        return "Utensili manuali"
-
-    # Utensileria
-    if "UTENSILERIA MANUALE" in categoria or "UTENSILERIA MECCANICA" in categoria:
-        return "Utensili manuali"
-
-    # Misura
-    if "STRUMENTI DI MISURA" in categoria or "STRUMENTAZIONE ELETTRONICA" in categoria:
-        if any(x in testo for x in ["SEGHETTO", "SEGACCIO", "LAMA", "SPATOLA", "TRUSCHINO", "POMPA"]):
-            return "Utensili manuali"
-        return "Strumenti di misura"
-
-    # Elettroutensili Stanley già separati
-    if "ELETTROUTENSILI A BATTERIA" in categoria:
+    if volt_match:
         return "Utensili a batteria"
 
-    if "ELETTROUTENSILI A FILO" in categoria:
+    if watt_match:
         return "Utensili a filo"
 
-    # Black+Decker e futuri cataloghi generici con categoria "ELETTROUTENSILI"
-    if "ELETTROUTENSILI" in categoria:
-        if (
-            "AVVITATORE" in testo
-            or "SVITAVVITA" in testo
-            or "IMPULSI" in testo
-            or "SOLO CORPO" in testo
-            or "BATTERIA" in testo
-            or "18V" in testo
-            or "20V" in testo
-            or "12V" in testo
-            or "V20" in testo
-            or "CORDLESS" in testo
-            or "RICARICA" in testo
-            or "RICARICABILE" in testo
-            or "LITIO" in testo
-            or "LI-ION" in testo
-            or re.search(r"^(BDC|BCD|BDCD|BDCH|BCRT|BCS|BCN|SFMC|FMC)", codice)
-        ):
-            return "Utensili a batteria"
+    categorie_standard = {
+        "UTENSILI MANUALI": "Utensili manuali",
+        "STRUMENTI DI MISURA": "Strumenti di misura",
+        "UTENSILI A FILO": "Utensili a filo",
+        "UTENSILI A BATTERIA": "Utensili a batteria",
+        "ACCESSORI": "Accessori",
+        "PORTAUTENSILI": "Portautensili",
+        "FERRAMENTA": "Ferramenta",
+        "FISSAGGIO": "Fissaggio",
+        "GIARDINAGGIO": "Giardinaggio",
+        "VERNICI": "Vernici",
+        "IDRAULICA": "Idraulica",
+        "ELETTRICO": "Elettrico",
+        "ANTINFORTUNISTICA": "Antinfortunistica",
+        "AUTO": "Auto",
+        "CASA": "Casa",
+        "CHIAVI": "Chiavi",
+        "ALTRO": "Altro",
+    }
 
-        if (
-            "GIFTSET" in testo
-            or "KIT ACCESSORI" in testo
-            or "SET ACCESSORI" in testo
-            or "ACCESSORI" in testo
-            or re.search(r"^A", codice)
-        ):
-            return "Accessori"
+    # Se la categoria_standard attuale è già una categoria valida e la categoria importata non dice altro,
+    # la manteniamo come fallback finale, non come priorità assoluta.
+    fallback_standard = categorie_standard.get(categoria_standard_attuale) or categorie_standard.get(categoria)
 
-        return "Utensili a filo"
+    regole = [
+        # Giardinaggio
+        ("Giardinaggio", [
+            "GAMMA GIARDINO",
+            "GIARDINAGGIO",
+            "GIARDINO",
+            "IRRIGAZIONE",
+            "RASAERBA",
+            "TAGLIAERBA",
+            "TAGLIASIEPI",
+            "DECESPUGLIATORE",
+            "SOFFIATORE",
+            "MOTOSEGA",
+            "POTATORE",
+            "POTATURA",
+            "FORBICI POTATURA",
+            "RASTRELLO",
+            "ZAPPA",
+            "VANGA",
+            "TUBO GIARDINO",
+        ]),
 
-    # Categorie future semplici
-    if "VERNIC" in categoria:
-        return "Vernici"
-    if "IDRAUL" in categoria:
-        return "Idraulica"
-    if "ELETTRIC" in categoria:
-        return "Elettrico"
-    if "ANTINFORTUNISTICA" in categoria or "SICUREZZA" in categoria:
-        return "Antinfortunistica"
-    if "FISSAGGIO" in categoria:
-        return "Fissaggio"
+        # Utensili a batteria
+        ("Utensili a batteria", [
+            "UTENSILI A BATTERIA",
+            "ELETTROUTENSILI A BATTERIA",
+            "GIRAVITA A BATTERIA",
+            "GIRAVITI A BATTERIA",
+            "CACCIAVITE A BATTERIA",
+            "CACCIAVITI A BATTERIA",
+            "TRAPANO A BATTERIA",
+            "TRAPANO BATTERIA",
+            "AVVITATORE",
+            "AVVITATORI",
+            "BATTERIA",
+            "BATTERIE",
+            "CARICABATTERIE",
+            "SMERIGLIATRICE A BATTERIA",
+            "SMERIGLIATRICE BATTERIA",
+            "SEGHETTO A BATTERIA",
+            "SEGHETTO BATTERIA",
+            "FLESSIBILE BATTERIA",
+        ]),
 
-    return "Altro"
+        # Utensili a filo
+        ("Utensili a filo", [
+            "UTENSILI A FILO",
+            "ELETTROUTENSILI A FILO",
+            "TRAPANO A FILO",
+            "SMERIGLIATRICE A FILO",
+            "SEGHETTO A FILO",
+            "LEVIGATRICE A FILO",
+            "MISCELATORE A FILO",
+            "DEMOLITORE A FILO",
+            "220V",
+            "220 V",
+            "230V",
+            "230 V",
+        ]),
+
+        # Accessori
+        ("Accessori", [
+            "GAMMA ACCESSORI",
+            "SET ACCESSORI",
+            "KIT ACCESSORI",
+            "SET DI ACCESSORI",
+            "ASSORTIMENTO ACCESSORI",
+            "ACCESSORI",
+            "PUNTA",
+            "PUNTE",
+            "DISCO",
+            "DISCHI",
+            "LAMA",
+            "LAME",
+            "INSERTO",
+            "INSERTI",
+            "BIT",
+            "BITS",
+            "BUSSOLE",
+            "SET BUSSOLE",
+            "ABRASIVO",
+            "ABRASIVI",
+            "CARTA ABRASIVA",
+            "SPAZZOLA",
+            "SPAZZOLE",
+            "SAIT",
+        ]),
+
+        # Utensili manuali
+        ("Utensili manuali", [
+            "UTENSILI MANUALI",
+            "UTENSILERIA MANUALE",
+            "GIRAVITE",
+            "GIRAVITI",
+            "CACCIAVITE",
+            "CACCIAVITI",
+            "MARTELLO",
+            "MARTELLI",
+            "PINZA",
+            "PINZE",
+            "CHIAVE INGLESE",
+            "CHIAVI INGLESI",
+            "CHIAVE COMBINATA",
+            "CHIAVI COMBINATE",
+            "CHIAVE A BUSSOLA",
+            "BUSSOLA",
+            "CRICCHETTO",
+            "LIMA",
+            "LIME",
+            "SEGHETTO",
+            "CUTTER",
+            "SPATOLA",
+        ]),
+
+        # Strumenti di misura
+        ("Strumenti di misura", [
+            "STRUMENTI DI MISURA",
+            "STRUMENTAZIONE",
+            "METRO",
+            "FLESSOMETRO",
+            "LIVELLA",
+            "CALIBRO",
+            "SQUADRA",
+            "MISURATORE",
+            "LASER",
+            "DISTANZIOMETRO",
+            "TRACCIATORE",
+        ]),
+
+        # Portautensili
+        ("Portautensili", [
+            "PORTAUTENSILI",
+            "BORSA UTENSILI",
+            "BORSE UTENSILI",
+            "CASSETTA UTENSILI",
+            "CASSETTE UTENSILI",
+            "VALIGIA",
+            "VALIGETTA",
+            "BAULE",
+            "ORGANIZER",
+            "PORTA UTENSILI",
+        ]),
+
+        # Vernici
+        ("Vernici", [
+            "VERNICI",
+            "VERNICE",
+            "SMALTO",
+            "SMALTI",
+            "PITTURA",
+            "PITTURE",
+            "IDROPITTURA",
+            "IMPREGNANTE",
+            "DILUENTE",
+            "SOLVENTE",
+            "ANTIRUGGINE",
+            "FONDO",
+            "STUCCO",
+            "PENNELLO",
+            "RULLO",
+            "NASTRO CARTA",
+            "TASSANI",
+            "ITALIANCOLOR",
+        ]),
+
+        # Idraulica
+        ("Idraulica", [
+            "IDRAULICA",
+            "RUBINETTO",
+            "RUBINETTI",
+            "TUBO IDRAULICO",
+            "TUBI IDRAULICI",
+            "RACCORDO",
+            "RACCORDI",
+            "SIFONE",
+            "VALVOLA",
+            "VALVOLE",
+            "GUARNIZIONE IDRAULICA",
+            "FLESSIBILE ACQUA",
+            "SCARICO",
+            "MISCELATORE",
+        ]),
+
+        # Elettrico
+        ("Elettrico", [
+            "ELETTRICO",
+            "ELETTRICA",
+            "MATERIALE ELETTRICO",
+            "CAVO ELETTRICO",
+            "CAVI ELETTRICI",
+            "PRESA",
+            "PRESE",
+            "SPINA",
+            "SPINE",
+            "INTERRUTTORE",
+            "INTERRUTTORI",
+            "PROLUNGA",
+            "MULTIPRESA",
+            "LAMPADINA",
+            "LAMPADA",
+            "LED",
+            "PORTALAMPADA",
+            "NASTRO ISOLANTE",
+        ]),
+
+        # Antinfortunistica
+        ("Antinfortunistica", [
+            "ANTINFORTUNISTICA",
+            "SICUREZZA",
+            "DPI",
+            "GUANTO",
+            "GUANTI",
+            "SCARPA ANTINFORTUNISTICA",
+            "SCARPE ANTINFORTUNISTICHE",
+            "OCCHIALI",
+            "MASCHERA",
+            "MASCHERINA",
+            "CASCO",
+            "ELMETTO",
+            "GILET",
+            "CUFFIE",
+            "TAPPI",
+            "GARSPORT",
+        ]),
+
+        # Fissaggio
+        ("Fissaggio", [
+            "FISSAGGIO",
+            "TASSELLO",
+            "TASSELLI",
+            "VITE",
+            "VITI",
+            "BULLONE",
+            "BULLONI",
+            "DADO",
+            "DADI",
+            "RONDELLA",
+            "RONDELLE",
+            "ANCORANTE",
+            "ANCORANTI",
+            "CHIODI",
+            "CHIODINO",
+            "RIVETTO",
+            "RIVETTI",
+            "BARRA FILETTATA",
+            "BARRE FILETTATE",
+            "FISCHER",
+            "TECFI",
+        ]),
+
+        # Ferramenta
+        ("Ferramenta", [
+            "FERRAMENTA",
+            "CATENA",
+            "CATENE",
+            "LUCCHETTO",
+            "LUCCHETTI",
+            "CERNIERA",
+            "CERNIERE",
+            "STAFFA",
+            "STAFFE",
+            "MOSCHETTONE",
+            "MOSCHETTONI",
+            "GANCIO",
+            "GANCI",
+            "FILO FERRO",
+            "CAVETTO",
+            "MOLLA",
+            "MOLLE",
+        ]),
+
+        # Auto
+        ("Auto", [
+            "AUTO",
+            "AUTOMOTIVE",
+            "LAVAVETRI",
+            "TERGICRISTALLO",
+            "TERGICRISTALLI",
+            "BATTERIA AUTO",
+            "OLIO MOTORE",
+            "ADBLUE",
+            "LUBRIFICANTE AUTO",
+            "CURA AUTO",
+        ]),
+
+        # Casa
+        ("Casa", [
+            "CASA",
+            "CURA DELLA CASA",
+            "PULIZIA",
+            "DETERGENTE",
+            "DETERGENTI",
+            "SCOPE",
+            "SCOPA",
+            "SECCHIO",
+            "SPUGNA",
+            "PANNO",
+            "PANNI",
+            "COLLA CASA",
+            "SILICONE",
+            "SARATOGA",
+        ]),
+
+        # Chiavi
+        ("Chiavi", [
+            "CHIAVI",
+            "CHIAVE GREZZA",
+            "CHIAVI GREZZE",
+            "DUPLICAZIONE CHIAVI",
+            "CILINDRO",
+            "CILINDRI",
+            "SERRATURA",
+            "SERRATURE",
+        ]),
+    ]
+
+    risultati = []
+
+    for categoria_nome, parole in regole:
+        for parola in parole:
+            parola_upper = parola.upper()
+
+            # Per parole brevi/generiche usiamo confini parola,
+            # così VITI non viene trovata dentro GIRAVITI.
+            if " " not in parola_upper and len(parola_upper) <= 6:
+                pattern = r"(?<![A-Z0-9])" + re.escape(parola_upper) + r"(?![A-Z0-9])"
+                match = re.search(pattern, testo)
+                if match:
+                    risultati.append((match.start(), -len(parola_upper), categoria_nome, parola_upper))
+            else:
+                index = testo.find(parola_upper)
+                if index >= 0:
+                    risultati.append((index, -len(parola_upper), categoria_nome, parola_upper))
+
+    # Regex per voltaggi tipo 12V, 18V, 20V, 54V.
+    # La posizione del voltaggio parte dove appare nel testo.
+    for match in re.finditer(r"(?<![A-Z0-9])\d{2}\s*V(?![A-Z0-9])", testo):
+        risultati.append((match.start(), -len(match.group(0)), "Utensili a batteria", match.group(0)))
+
+    if risultati:
+        risultati.sort()
+        return risultati[0][2]
+
+    return fallback_standard or "Altro"
+
 
 @api_router.post("/products/bulk")
 async def bulk_import(products: List[ProductCreate]):

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, Pressable, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, Pressable, Modal, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -8,6 +8,8 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { COLORS, FONTS } from '@/src/theme';
 import { api } from '@/src/api';
+import { FORNITORI_STANDARD } from '@/src/fornitoriStandard';
+import { CATEGORIE_STANDARD } from '@/src/categorieStandard';
 
 type Form = {
   barcode: string;
@@ -34,6 +36,23 @@ export default function ProductForm() {
   const editing = !!params.id;
   const [form, setForm] = useState<Form>(empty);
   const [saving, setSaving] = useState(false);
+  const [brands, setBrands] = useState<string[]>([]);
+  const [brandPickerOpen, setBrandPickerOpen] = useState(false);
+  const [supplierPickerOpen, setSupplierPickerOpen] = useState(false);
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
+
+  useEffect(() => {
+    api.listProductBrands()
+      .then((res: any) => {
+        const received = res?.brands || [];
+        if (Array.isArray(received)) {
+          setBrands(received.filter((m: string) => m && m !== "Tutte"));
+        }
+      })
+      .catch((err: any) => {
+        console.warn("Errore caricamento marche prodotto", err);
+      });
+  }, []);
 
   useEffect(() => {
     if (params.id) {
@@ -79,7 +98,9 @@ export default function ProductForm() {
       codice_prodotto: form.codice_prodotto.trim(),
       descrizione: form.descrizione.trim(),
       marca: form.marca.trim(),
+      marca_standard: form.marca.trim(),
       categoria: form.categoria.trim(),
+      categoria_standard: form.categoria.trim(),
       prezzo_acquisto: parseFloat(form.prezzo_acquisto.replace(',', '.')) || 0,
       prezzo_vendita: parseFloat(form.prezzo_vendita.replace(',', '.')) || 0,
       quantita: parseInt(form.quantita) || 0,
@@ -150,8 +171,36 @@ export default function ProductForm() {
           
           <Field label="CODICE PRODOTTO" value={form.codice_prodotto} onChange={(v) => set('codice_prodotto', v)} testID="f-codice-prodotto" />
           <Field label="URL FOTO (opz.)" value={form.foto.startsWith('data:') ? '' : form.foto} onChange={(v) => set('foto', v)} testID="f-foto" placeholder="https://..." />
-          <Field label="MARCA" value={form.marca} onChange={(v) => set('marca', v)} testID="f-marca" />
-          <Field label="CATEGORIA" value={form.categoria} onChange={(v) => set('categoria', v)} testID="f-categoria" />
+          <View style={styles.field}>
+          <Text style={styles.fieldSelectLabel}>MARCA</Text>
+          <Pressable
+            style={[styles.input, styles.selectInput]}
+            onPress={() => setBrandPickerOpen(true)}
+            testID="f-marca"
+          >
+            <View style={styles.selectInputInner}>
+              <Text style={styles.selectInputText}>
+                {form.marca || "Seleziona marca"}
+              </Text>
+              <Feather name="chevron-down" size={18} color={COLORS.onSurface} />
+            </View>
+          </Pressable>
+        </View>
+          <View style={styles.field}>
+          <Text style={styles.fieldSelectLabel}>CATEGORIA</Text>
+          <Pressable
+            style={[styles.input, styles.selectInput]}
+            onPress={() => setCategoryPickerOpen(true)}
+            testID="f-categoria"
+          >
+            <View style={styles.selectInputInner}>
+              <Text style={styles.selectInputText}>
+                {form.categoria || "Seleziona categoria"}
+              </Text>
+              <Feather name="chevron-down" size={18} color={COLORS.onSurface} />
+            </View>
+          </Pressable>
+        </View>
           <View style={styles.row2}>
             <Field label="P. ACQUISTO €" value={form.prezzo_acquisto} onChange={(v) => set('prezzo_acquisto', v)} testID="f-acq" keyboard="decimal-pad" half />
             <Field label="P. VENDITA €" value={form.prezzo_vendita} onChange={(v) => set('prezzo_vendita', v)} testID="f-vend" keyboard="decimal-pad" half />
@@ -160,10 +209,132 @@ export default function ProductForm() {
             <Field label="QUANTITÀ" value={form.quantita} onChange={(v) => set('quantita', v)} testID="f-qty" keyboard="numeric" half />
             <Field label="SOGLIA SCORTA" value={form.soglia_scorta} onChange={(v) => set('soglia_scorta', v)} testID="f-soglia" keyboard="numeric" half />
           </View>
-          <Field label="FORNITORE" value={form.fornitore} onChange={(v) => set('fornitore', v)} testID="f-forn" />
+          <View style={styles.field}>
+          <Text style={styles.fieldSelectLabel}>FORNITORE</Text>
+          <Pressable
+            style={[styles.input, styles.selectInput]}
+            onPress={() => setSupplierPickerOpen(true)}
+            testID="f-forn"
+          >
+            <View style={styles.selectInputInner}>
+              <Text style={styles.selectInputText}>
+                {form.fornitore || "Seleziona fornitore"}
+              </Text>
+              <Feather name="chevron-down" size={18} color={COLORS.onSurface} />
+            </View>
+          </Pressable>
+        </View>
           <Field label="NOTE" value={form.note} onChange={(v) => set('note', v)} testID="f-note" multiline />
         </ScrollView>
-        <View style={styles.footer}>
+          <Modal
+          visible={brandPickerOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setBrandPickerOpen(false)}
+        >
+          <View style={styles.selectOverlay}>
+            <View style={styles.selectBox}>
+              <View style={styles.selectHeader}>
+                <Text style={styles.selectTitle}>Marca</Text>
+                <Pressable onPress={() => setBrandPickerOpen(false)}>
+                  <Text style={styles.selectClose}>×</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView style={styles.selectList}>
+                {brands.map((brand) => (
+                  <Pressable
+                    key={brand}
+                    style={[
+                      styles.selectOption,
+                      form.marca === brand && styles.selectOptionActive,
+                    ]}
+                    onPress={() => {
+                      set('marca', brand);
+                      setBrandPickerOpen(false);
+                    }}
+                  >
+                    <Text style={styles.selectOptionText}>{brand}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={supplierPickerOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setSupplierPickerOpen(false)}
+        >
+          <View style={styles.selectOverlay}>
+            <View style={styles.selectBox}>
+              <View style={styles.selectHeader}>
+                <Text style={styles.selectTitle}>Fornitore</Text>
+                <Pressable onPress={() => setSupplierPickerOpen(false)}>
+                  <Text style={styles.selectClose}>×</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView style={styles.selectList}>
+                {FORNITORI_STANDARD.map((supplier) => (
+                  <Pressable
+                    key={supplier}
+                    style={[
+                      styles.selectOption,
+                      form.fornitore === supplier && styles.selectOptionActive,
+                    ]}
+                    onPress={() => {
+                      set('fornitore', supplier);
+                      setSupplierPickerOpen(false);
+                    }}
+                  >
+                    <Text style={styles.selectOptionText}>{supplier}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={categoryPickerOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setCategoryPickerOpen(false)}
+        >
+          <View style={styles.selectOverlay}>
+            <View style={styles.selectBox}>
+              <View style={styles.selectHeader}>
+                <Text style={styles.selectTitle}>Categoria</Text>
+                <Pressable onPress={() => setCategoryPickerOpen(false)}>
+                  <Text style={styles.selectClose}>×</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView style={styles.selectList}>
+                {CATEGORIE_STANDARD.map((cat) => (
+                  <Pressable
+                    key={cat}
+                    style={[
+                      styles.selectOption,
+                      form.categoria === cat && styles.selectOptionActive,
+                    ]}
+                    onPress={() => {
+                      set('categoria', cat);
+                      setCategoryPickerOpen(false);
+                    }}
+                  >
+                    <Text style={styles.selectOptionText}>{cat}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+      <View style={styles.footer}>
           <Pressable style={[styles.saveBtn, saving && { opacity: 0.5 }]} onPress={submit} disabled={saving} testID="save-btn">
             <Feather name="check" size={20} color={COLORS.onBrandPrimary} />
             <Text style={styles.saveTxt}>{saving ? 'SALVATAGGIO...' : (editing ? 'AGGIORNA' : 'SALVA PRODOTTO')}</Text>
@@ -207,4 +378,90 @@ const styles = StyleSheet.create({
   footer: { padding: 12, borderTopWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surface },
   saveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: COLORS.brand, paddingVertical: 16 },
   saveTxt: { fontFamily: FONTS.mono, fontSize: 14, fontWeight: '900', color: COLORS.onBrandPrimary, letterSpacing: 1.5 },
+  selectInput: {
+    justifyContent: "center",
+  },
+
+  selectInputText: {
+    color: COLORS.onSurface,
+    fontSize: 14,
+    fontFamily: FONTS.mono,
+  },
+
+  selectOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    padding: 20,
+  },
+
+  selectBox: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 18,
+    padding: 16,
+    maxHeight: "80%",
+    borderWidth: 1,
+    borderColor: COLORS.divider,
+  },
+
+  selectHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  selectTitle: {
+    color: COLORS.onSurface,
+    fontSize: 16,
+    fontFamily: FONTS.mono,
+    fontWeight: "900",
+  },
+
+  selectClose: {
+    color: COLORS.onSurface,
+    fontSize: 26,
+    fontWeight: "900",
+  },
+
+  selectList: {
+    maxHeight: 420,
+  },
+
+  selectOption: {
+    paddingVertical: 13,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.divider,
+    marginBottom: 8,
+    backgroundColor: COLORS.surface,
+  },
+
+  selectOptionActive: {
+    backgroundColor: COLORS.surfaceInverse,
+  },
+
+  selectOptionText: {
+    color: COLORS.onSurface,
+    fontSize: 14,
+    fontWeight: "800",
+  },
+
+  fieldSelectLabel: {
+    color: COLORS.onSurface,
+    fontSize: 11,
+    fontFamily: FONTS.mono,
+    fontWeight: "900",
+    marginBottom: 8,
+    letterSpacing: 0.6,
+  },
+
+  selectInputInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+
 });
