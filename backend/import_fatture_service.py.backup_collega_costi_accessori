@@ -30,91 +30,7 @@ def get_xml_text(parent, tag_name, default=""):
 
 
 
-
-def is_riga_informativa_fattura(descrizione: str | None):
-    testo = str(descrizione or "").upper().strip()
-
-    parole = [
-        "RIF. ORDINE",
-        "RIF ORDINE",
-        "RIFERIMENTO ORDINE",
-        "ORDINE CL",
-        "ORDINE CLIENTE",
-        "VS ORDINE",
-        "VOSTRO ORDINE",
-        "NS ORDINE",
-        "NOSTRO ORDINE",
-        "DDT",
-        "DOCUMENTO DI TRASPORTO",
-    ]
-
-    return any(p in testo for p in parole)
-
-
-def is_riga_da_escludere_dai_prodotti_non_trovati(riga: dict):
-    descrizione = str(riga.get("descrizione") or "").strip()
-    codice = str(riga.get("codice_prodotto") or riga.get("codice") or "").strip()
-    codice_fornitore = str(riga.get("codice_fornitore") or "").strip()
-    barcode = str(riga.get("barcode") or "").strip()
-
-    try:
-        quantita = float(str(riga.get("quantita") or 0).replace(",", "."))
-    except Exception:
-        quantita = 0
-
-    try:
-        prezzo_unitario = float(str(
-            riga.get("prezzo_unitario")
-            or riga.get("prezzo_acquisto")
-            or 0
-        ).replace(",", "."))
-    except Exception:
-        prezzo_unitario = 0
-
-    try:
-        prezzo_totale = float(str(
-            riga.get("prezzo_totale")
-            or riga.get("totale")
-            or 0
-        ).replace(",", "."))
-    except Exception:
-        prezzo_totale = 0
-
-    # Se non c'è totale ma c'è unitario, usa quello.
-    if prezzo_totale <= 0 and prezzo_unitario > 0:
-        prezzo_totale = prezzo_unitario * (quantita or 1)
-
-    if is_riga_informativa_fattura(descrizione):
-        return {
-            "escludi": True,
-            "tipo": "Riga informativa",
-            "descrizione": descrizione,
-            "importo": 0,
-        }
-
-    tipo_costo = classifica_costo_secondario_fornitore_intelligente(
-        descrizione=descrizione,
-        codice=codice,
-        codice_fornitore=codice_fornitore,
-        barcode=barcode,
-        quantita=quantita,
-        prezzo_totale=prezzo_totale,
-    )
-
-    if tipo_costo:
-        return {
-            "escludi": True,
-            "tipo": tipo_costo,
-            "descrizione": descrizione,
-            "importo": round(prezzo_totale, 2),
-        }
-
-    return {
-        "escludi": False,
-    }
-
-
-def classifica_costo_secondario_fornitore_intelligente(
+def classifica_costo_accessorio_intelligente(
     descrizione: str | None,
     codice: str | None = "",
     codice_fornitore: str | None = "",
@@ -169,7 +85,7 @@ def classifica_costo_secondario_fornitore_intelligente(
             "BOLLO",
             "IMPOSTA DI BOLLO",
         ],
-        "Altro costo secondario": [
+        "Altro costo accessorio": [
             "SPESE",
             "ADDEBITO",
             "CONTRIBUTO",
@@ -239,10 +155,10 @@ def classifica_costo_secondario_fornitore_intelligente(
     return None
 
 
-def classifica_costo_secondario_fornitore(descrizione: str | None):
+def classifica_costo_accessorio(descrizione: str | None):
     # Compatibilità con eventuale codice vecchio.
-    # La versione vera da usare è classifica_costo_secondario_fornitore_intelligente.
-    return classifica_costo_secondario_fornitore_intelligente(descrizione)
+    # La versione vera da usare è classifica_costo_accessorio_intelligente.
+    return classifica_costo_accessorio_intelligente(descrizione)
 
 
 def calcola_prezzo_acquisto_netto_da_riga(dettaglio_linea):
@@ -618,99 +534,6 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
 
         await db.pending_invoice_products.insert_many(pending_items)
 
-    
-    # Separa le righe prodotto dai costi accessori.
-    # Esempio: spedizione, imballaggio, bollo, spese incasso.
-    righe_fattura_originali = len(linee)
-    costi_secondari_fornitori = []
-    linee_prodotti = []
-
-    for riga in linee:
-        descrizione_riga = str(riga.get("descrizione") or "").strip()
-        codice_riga = str(
-            riga.get("codice_prodotto")
-            or riga.get("codice")
-            or ""
-        ).strip()
-        codice_fornitore_riga = str(riga.get("codice_fornitore") or "").strip()
-        barcode_riga = str(riga.get("barcode") or "").strip()
-
-        try:
-            quantita_riga = float(str(riga.get("quantita") or 0).replace(",", "."))
-        except Exception:
-            quantita_riga = 0
-
-        try:
-            prezzo_unitario_riga = float(str(riga.get("prezzo_unitario") or 0).replace(",", "."))
-        except Exception:
-            prezzo_unitario_riga = 0
-
-        importo_riga = round(prezzo_unitario_riga * (quantita_riga or 1), 2)
-
-        tipo_costo = classifica_costo_secondario_fornitore_intelligente(
-            descrizione=descrizione_riga,
-            codice=codice_riga,
-            codice_fornitore=codice_fornitore_riga,
-            barcode=barcode_riga,
-            quantita=quantita_riga,
-            prezzo_totale=importo_riga,
-        )
-
-        if tipo_costo:
-            costi_secondari_fornitori.append({
-                "tipo": tipo_costo,
-                "descrizione": descrizione_riga,
-                "importo": importo_riga,
-                "quantita": quantita_riga,
-                "prezzo_unitario": prezzo_unitario_riga,
-                "codice": codice_riga,
-                "codice_fornitore": codice_fornitore_riga,
-                "barcode": barcode_riga,
-            })
-            continue
-
-        linee_prodotti.append(riga)
-
-    linee = linee_prodotti
-    totale_costi_secondari_fornitori = round(sum(float(c.get("importo") or 0) for c in costi_secondari_fornitori), 2)
-
-    
-
-    # Filtra dai prodotti non trovati le righe che NON sono prodotti:
-    # riferimenti ordine, spese trasporto, imballo, bollo, incasso, ecc.
-    non_trovati_filtrati = []
-
-    for riga in non_trovati:
-        controllo = is_riga_da_escludere_dai_prodotti_non_trovati(riga)
-
-        if controllo.get("escludi"):
-            tipo = controllo.get("tipo")
-            descrizione = controllo.get("descrizione")
-            importo = float(controllo.get("importo") or 0)
-
-            if tipo and tipo != "Riga informativa" and importo > 0:
-                costi_secondari_fornitori.append({
-                    "tipo": tipo,
-                    "descrizione": descrizione,
-                    "importo": round(importo, 2),
-                    "origine": "riga_non_trovata_filtrata",
-                })
-
-            saltati.append({
-                "descrizione": descrizione,
-                "motivo": tipo or "Riga non prodotto",
-            })
-
-            continue
-
-        non_trovati_filtrati.append(riga)
-
-    non_trovati = non_trovati_filtrati
-    totale_costi_secondari_fornitori = round(
-        sum(float(c.get("importo") or 0) for c in costi_secondari_fornitori),
-        2
-    )
-
     await db.invoice_imports.insert_one({
         "chiave_import": info_fattura["chiave_import"],
         "numero": info_fattura["numero"],
@@ -722,9 +545,6 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
         "file_non_trovati": percorso_non_trovati,
         "data_import": datetime.now().isoformat(),
         "righe_fattura": len(linee),
-        "righe_fattura_originali": righe_fattura_originali,
-        "costi_secondari_fornitori": costi_secondari_fornitori,
-        "totale_costi_secondari_fornitori": totale_costi_secondari_fornitori,
         "prodotti_aggiornati": aggiornati,
         "barcode_non_trovati": len(non_trovati),
         "righe_saltate": len(saltati),
@@ -737,9 +557,6 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
         "numero": info_fattura["numero"],
         "data": info_fattura["data"],
         "righe_fattura": len(linee),
-        "righe_fattura_originali": righe_fattura_originali,
-        "costi_secondari_fornitori": costi_secondari_fornitori,
-        "totale_costi_secondari_fornitori": totale_costi_secondari_fornitori,
         "prodotti_aggiornati": aggiornati,
         "barcode_non_trovati": len(non_trovati),
         "righe_saltate": len(saltati),
@@ -748,10 +565,4 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
         "non_trovati": non_trovati[:20],
         "saltati": saltati[:20],
     }
-
-
-
-# Compatibilità con vecchio nome usato durante lo sviluppo.
-classifica_costo_accessorio_intelligente = classifica_costo_secondario_fornitore_intelligente
-classifica_costo_accessorio = classifica_costo_secondario_fornitore
 

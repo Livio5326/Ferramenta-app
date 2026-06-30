@@ -1383,42 +1383,368 @@ async def list_invoice_imports():
 
 
 @api_router.get("/invoices/pending-products")
-async def list_pending_invoice_products(numero_fattura: str | None = None):
-    query_parts = []
+async def list_pending_invoice_products():
+    items = []
 
-    if numero_fattura:
-        numero_fattura = str(numero_fattura).strip()
-        query_parts.append({
+    cursor = db.pending_invoice_products.find(
+        {"stato": "da_salvare"},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(200)
+
+    async for item in cursor:
+        items.append({
+            "chiave_import": item.get("chiave_import", ""),
+            "numero_fattura": item.get("numero_fattura", ""),
+            "data_fattura": item.get("data_fattura", ""),
+            "fornitore": item.get("fornitore", ""),
+            "partita_iva": item.get("partita_iva", ""),
+            "linea": item.get("linea", ""),
+            "barcode": item.get("barcode", ""),
+            "codice_fornitore": item.get("codice_fornitore", ""),
+            "descrizione": item.get("descrizione", ""),
+            "quantita": item.get("quantita", 0),
+            "prezzo_unitario": item.get("prezzo_unitario", ""),
+            "stato": item.get("stato", "da_salvare"),
+            "selected": True,
+        })
+
+    return {
+        "items": items,
+        "total": len(items)
+    }
+
+def normalizza_testo(testo):
+    return str(testo or "").strip().lower()
+
+
+def ricava_marca_da_descrizione(descrizione):
+    testo = normalizza_testo(descrizione)
+
+    marche = {
+        "ambrovit": "Ambrovit",
+        "stanley": "Stanley",
+        "black decker": "Black & Decker",
+        "black+decker": "Black & Decker",
+        "black & decker": "Black & Decker",
+        "dewalt": "DeWalt",
+        "usag": "USAG",
+        "beta": "Beta",
+        "bosch": "Bosch",
+        "makita": "Makita",
+        "einhell": "Einhell",
+        "fischer": "Fischer",
+        "arexons": "Arexons",
+        "saratoga": "Saratoga",
+        "vileda": "Vileda",
+        "mapei": "Mapei",
+        "cisa": "Cisa",
+        "mottura": "Mottura",
+        "yale": "Yale",
+        "tesa": "Tesa",
+        "wolfcraft": "Wolfcraft",
+        "kapriol": "Kapriol",
+        "sika": "Sika",
+        "maurer": "Maurer",
+        "papillon": "Papillon",
+        "mustad": "Mustad",
+        "pattex": "Pattex",
+        "henkel": "Henkel",
+        "bostik": "Bostik",
+        "wd-40": "WD-40",
+        "svitol": "Svitol",
+    }
+
+    for chiave, marca in marche.items():
+        if chiave in testo:
+            return marca
+
+    return ""
+
+
+def ricava_categoria_da_descrizione(descrizione):
+    testo = normalizza_testo(descrizione)
+
+    regole = [
+        (
+            "Fissaggio",
+            [
+                "vite", "viti", "bullone", "bulloni", "dado", "dadi",
+                "rondella", "rondelle", "tassello", "tasselli",
+                "ancorante", "barra filettata", "filettata",
+                "chiodo", "chiodi", "rivetto", "rivetti", "autoperforanti",
+            ],
+        ),
+        (
+            "Utensili manuali",
+            [
+                "chiave", "chiavi", "cacciavite", "cacciaviti",
+                "pinza", "pinze", "martello", "sega", "lime",
+                "brugola", "cricchetto", "bussole", "lama",
+            ],
+        ),
+        (
+            "Utensili a batteria",
+            [
+                "batteria", "avvitatore", "trapano batteria",
+                "smerigliatrice batteria", "v20", "18v", "12v", "Volt",
+            ],
+        ),
+        (
+            "Utensili a filo",
+            [
+                "trapano", "smerigliatrice", "levigatrice",
+                "seghetto", "tassellatore", "demolitore", "W",
+                "mola", "roto orbitale", "a filo", "roto-orbitale", "Watt",
+            ],
+        ),
+        (
+            "Accessori",
+            [
+                "disco", "dischi", "punta", "punte", "lama",
+                "lame", "bit", "inserti", "abrasivo", "abrasivi",
+                "carta abrasiva", "platorello",
+            ],
+        ),
+        (
+            "Portautensili",
+            [
+                "borsa", "valigia", "cassettiera", "cassetta",
+                "porta attrezzi", "portautensili", "fodero",
+            ],
+        ),
+        (
+            "Vernici",
+            [
+                "vernice", "smalto", "pittura", "pennello",
+                "rullo", "stucco", "diluente", "impregnante",
+            ],
+        ),
+        (
+            "Idraulica",
+            [
+                "raccordo", "tubo", "rubinetto", "guarnizione",
+                "sifone", "flessibile", "valvola", "sturalavandino",
+            ],
+        ),
+        (
+            "Elettrico",
+            [
+                "presa", "interruttore", "cavo", "spina",
+                "lampada", "led", "prolunga", "multipresa",
+            ],
+        ),
+        (
+            "Giardinaggio",
+            [
+                "giardino", "irrigazione", "tubo acqua", "forbice potatura",
+                "tagliasiepi", "decespugliatore", "rastrello",
+            ],
+        ),
+        (
+            "Antinfortunistica",
+            [
+                "guanto", "guanti", "scarpa", "scarpe",
+                "occhiale", "occhiali", "mascherina", "casco",
+                "pantaloncini", "giacca antipioggia",
+            ],
+        ),
+        (
+            "Casa",
+            [
+                "cartone", "scatola", "sacchetto", "contenitore",
+                "secchio", "panno", "spugna",
+            ],
+        ),
+    ]
+
+    for categoria, parole in regole:
+        for parola in parole:
+            if parola in testo:
+                return categoria
+
+    return "Da classificare"
+
+class CreatePendingProductsRequest(BaseModel):
+    items: List[Dict[str, Any]]
+
+
+
+async def mark_pending_invoice_product_imported(pending_id: str | None = None, codice_prodotto: str | None = None, barcode: str | None = None):
+    filtro = {"$or": []}
+
+    if pending_id:
+        filtro["$or"].append({"id": pending_id})
+        filtro["$or"].append({"_id": pending_id})
+
+    if codice_prodotto:
+        filtro["$or"].append({"codice_prodotto": codice_prodotto})
+        filtro["$or"].append({"codice": codice_prodotto})
+
+    if barcode:
+        filtro["$or"].append({"barcode": barcode})
+
+    if not filtro["$or"]:
+        return
+
+    await db.pending_invoice_products.update_many(
+        filtro,
+        {
+            "$set": {
+                "status": "importato",
+                "importato": True,
+                "risolto": True,
+                "da_importare": False,
+            }
+        }
+    )
+
+
+
+def _norm_match_text(value: str | None) -> str:
+    import re
+    value = str(value or "").strip().upper()
+    value = re.sub(r"[^A-Z0-9]+", " ", value)
+    value = re.sub(r"\s+", " ", value).strip()
+    return value
+
+
+async def reconcile_invoice_import(numero_fattura: str):
+    """
+    Ricalcola lo stato reale di una fattura:
+    - un pending è importato se trova un prodotto nel catalogo
+      per barcode, codice prodotto/codice, oppure descrizione normalizzata.
+    - aggiorna pending_invoice_products
+    - aggiorna invoice_imports con conteggi coerenti.
+    """
+    numero_fattura = str(numero_fattura or "").strip()
+    if not numero_fattura:
+        return {
+            "numero_fattura": numero_fattura,
+            "importati": 0,
+            "non_trovati": 0,
+        }
+
+    pendenti = await db.pending_invoice_products.find({
+        "numero_fattura": numero_fattura
+    }).to_list(5000)
+
+    importati = 0
+    non_trovati = 0
+
+    for p in pendenti:
+        barcode = str(p.get("barcode") or "").strip()
+        codice = str(
+            p.get("codice_prodotto")
+            or p.get("codice")
+            or p.get("codice_fornitore")
+            or ""
+        ).strip()
+        descrizione = str(p.get("descrizione") or "").strip()
+
+        prodotto = None
+
+        # 1. Match forte: barcode
+        if barcode:
+            prodotto = await db.products.find_one({"barcode": barcode})
+
+        # 2. Match forte: codice prodotto / codice
+        if not prodotto and codice:
+            prodotto = await db.products.find_one({
+                "$or": [
+                    {"codice_prodotto": codice},
+                    {"codice": codice},
+                    {"codice_fornitore": codice},
+                ]
+            })
+
+        # 3. Match descrizione esatta normalizzata
+        if not prodotto and descrizione:
+            descr_norm = _norm_match_text(descrizione)
+
+            # Prima prova con campo descrizione normale
+            candidates = await db.products.find({
+                "descrizione": {"$exists": True, "$ne": ""}
+            }).to_list(10000)
+
+            for c in candidates:
+                if _norm_match_text(c.get("descrizione")) == descr_norm:
+                    prodotto = c
+                    break
+
+        if prodotto:
+            importati += 1
+
+            await db.pending_invoice_products.update_one(
+                {"_id": p["_id"]},
+                {
+                    "$set": {
+                        "stato": "importato",
+                        "status": "importato",
+                        "importato": True,
+                        "risolto": True,
+                        "da_importare": False,
+                        "matched_product_id": str(prodotto.get("id") or prodotto.get("_id")),
+                        "matched_by": (
+                            "barcode" if barcode and str(prodotto.get("barcode") or "") == barcode
+                            else "codice" if codice
+                            else "descrizione"
+                        ),
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    }
+                }
+            )
+        else:
+            non_trovati += 1
+
+            await db.pending_invoice_products.update_one(
+                {"_id": p["_id"]},
+                {
+                    "$set": {
+                        "stato": "da_salvare",
+                        "status": "da_salvare",
+                        "importato": False,
+                        "risolto": False,
+                        "da_importare": True,
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    },
+                    "$unset": {
+                        "matched_product_id": "",
+                        "matched_by": "",
+                    }
+                }
+            )
+
+    await db.invoice_imports.update_many(
+        {
             "$or": [
                 {"numero_fattura": numero_fattura},
                 {"fattura": numero_fattura},
                 {"numero": numero_fattura},
             ]
-        })
+        },
+        {
+            "$set": {
+                "prodotti_aggiornati": importati,
+                "aggiornati": importati,
+                "updated_count": importati,
 
-    # Mostra solo i prodotti ancora davvero non trovati/aperti.
-    query_parts.append({
-        "$and": [
-            {"importato": {"$ne": True}},
-            {"risolto": {"$ne": True}},
-            {"registrato_manualmente": {"$ne": True}},
-            {"da_importare": {"$ne": False}},
-            {"stato": {"$nin": ["importato", "risolto", "creato"]}},
-            {"status": {"$nin": ["importato", "risolto", "creato"]}},
-        ]
-    })
+                "barcode_non_trovati": non_trovati,
+                "non_trovati": non_trovati,
+                "prodotti_non_trovati": non_trovati,
+                "not_found": non_trovati,
 
-    query = {"$and": query_parts} if query_parts else {}
+                "registrata_manualmente": importati > 0,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+        }
+    )
 
-    docs = await db.pending_invoice_products.find(query).to_list(5000)
+    return {
+        "numero_fattura": numero_fattura,
+        "importati": importati,
+        "non_trovati": non_trovati,
+    }
 
-    results = []
-    for d in docs:
-        d["id"] = str(d.get("id") or d.get("_id"))
-        d["_id"] = str(d.get("_id"))
-        results.append(d)
-
-    return results
 
 
 @api_router.post("/invoices/reconcile-all")
@@ -1438,18 +1764,13 @@ async def reconcile_all_invoice_imports():
         if not numero:
             continue
 
-        results.append(await aggiorna_conteggi_fattura_import(numero))
+        results.append(await reconcile_invoice_import(numero))
 
     return {
         "ok": True,
         "fatture_ricontrollate": len(results),
         "results": results,
     }
-
-
-class CreatePendingProductsRequest(BaseModel):
-    items: list[dict] = []
-
 
 @api_router.post("/invoices/pending-products/create")
 
@@ -2425,47 +2746,10 @@ async def stats():
     # sales
     sales_docs = await db.sales.find({}, {"_id": 0}).to_list(10000)
     totale_vendite = sum(float(s.get("totale", 0)) for s in sales_docs)
-    # Costi secondari fornitori letti dalle fatture: spedizione, imballaggio, bollo, incasso, ecc.
-    fatture_importate = await db.invoice_imports.find({}).to_list(5000)
-
-    totale_costi_secondari_fornitori = 0.0
-    costi_secondari_fornitori_per_tipo = {}
-
-    for fattura in fatture_importate:
-        costi = fattura.get("costi_accessori") or []
-
-        for costo in costi:
-            tipo = str(costo.get("tipo") or "Altro costo secondario").strip()
-            try:
-                importo = float(costo.get("importo") or 0)
-            except Exception:
-                importo = 0.0
-
-            if importo <= 0:
-                continue
-
-            totale_costi_secondari_fornitori += importo
-            costi_secondari_fornitori_per_tipo[tipo] = costi_secondari_fornitori_per_tipo.get(tipo, 0.0) + importo
-
-    costi_secondari_fornitori_per_tipo_list = [
-        {
-            "tipo": tipo,
-            "totale": round(totale, 2),
-        }
-        for tipo, totale in sorted(
-            costi_secondari_fornitori_per_tipo.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )
-    ]
-
-
     return {
         "total_products": total_products,
         "total_pieces": total_pieces,
         "valore_magazzino": round(valore_magazzino, 2),
-        "totale_costi_secondari_fornitori": round(totale_costi_secondari_fornitori, 2),
-        "costi_secondari_fornitori_per_tipo": costi_secondari_fornitori_per_tipo_list,
         "valore_vendita_potenziale": round(valore_vendita, 2),
         "sotto_scorta_count": len(sotto_scorta),
         "sotto_scorta": [Product(**d).dict() for d in sotto_scorta[:20]],

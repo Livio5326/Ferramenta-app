@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { importInvoiceXml, listInvoiceImports, getMissingInvoiceProducts, createPendingInvoiceProducts } from "../../src/api";
-import { api } from "@/src/api";
 
 export default function FornitoriScreen() {
   const [importingInvoice, setImportingInvoice] = useState(false);
@@ -56,60 +55,90 @@ const loadInvoiceImports = async () => {
   }
 };
 
-const loadMissingProducts = async (invoice: any) => {
-    const numeroFattura = String(
-      invoice?.numero || invoice?.numero_fattura || invoice?.fattura || ""
-    ).trim();
-
-    if (!numeroFattura) {
-      Alert.alert("Fattura", "Numero fattura non trovato.");
-      return;
-    }
-
+const loadMissingProducts = async (filePath: string) => {
+  try {
     setLoadingMissing(true);
 
-    try {
-      const prodotti = await api.getPendingInvoiceProducts(numeroFattura);
-      setMissingProducts(prodotti || []);
-    } catch (e) {
-      console.warn("Errore caricamento prodotti non trovati", e);
-      Alert.alert("Errore", "Impossibile caricare i prodotti non trovati.");
-    } finally {
-      setLoadingMissing(false);
-    }
-  };
+    const data = await getMissingInvoiceProducts(filePath);
 
-  
+    setMissingProducts(
+      (data.items || []).map((item: any) => ({
+        ...item,
+        selected: true,
+      }))
+    );
+  } catch (err: any) {
+    Alert.alert(
+      "Errore",
+      err?.message || "Errore caricamento prodotti non trovati"
+    );
+  } finally {
+    setLoadingMissing(false);
+  }
+};
+
+useEffect(() => {
+  loadInvoiceImports();
+}, []);
+
   const handleImportInvoiceXml = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ["text/xml", "application/xml", "*/*"],
+      const picked = await DocumentPicker.getDocumentAsync({
+        type: ["text/xml", "application/xml", "text/*"],
         copyToCacheDirectory: true,
       });
 
-      if (result.canceled) {
+      if (picked.canceled) {
         return;
       }
 
-      const file = result.assets?.[0];
+      const file = picked.assets?.[0];
 
       if (!file) {
-        Alert.alert("Errore", "File non selezionato.");
+        Alert.alert("Errore", "Nessun file selezionato");
         return;
       }
 
-      await importInvoiceXml({
+      if (!file.name?.toLowerCase().endsWith(".xml")) {
+        Alert.alert("File non valido", "Seleziona una fattura in formato XML");
+        return;
+      }
+
+      setImportingInvoice(true);
+      setInvoiceResult(null);
+
+      const result = await importInvoiceXml({
         uri: file.uri,
-        name: file.name,
-        mimeType: file.mimeType,
+        name: file.name || "fattura.xml",
+        mimeType: file.mimeType || "text/xml",
       });
-    } catch (e) {
-      console.warn("Errore import fattura XML", e);
-      Alert.alert("Errore", "Impossibile importare la fattura XML.");
+
+      setInvoiceResult(result);
+      await loadInvoiceImports();
+      
+      if (result.ok) {
+        Alert.alert(
+          "Import completato",
+          `Fornitore: ${result.fornitore || "N/D"}\n` +
+            `Numero fattura: ${result.numero || "N/D"}\n\n` +
+            `Prodotti aggiornati: ${result.prodotti_aggiornati}\n` +
+            `Barcode non trovati: ${result.barcode_non_trovati}\n` +
+            `Righe saltate: ${result.righe_saltate}`
+        );
+      } else {
+        Alert.alert(
+          "Import non eseguito",
+          result.errore || "Errore sconosciuto"
+        );
+      }
+    } catch (err: any) {
+      Alert.alert("Errore import", err?.message || "Errore durante import XML");
+    } finally {
+      setImportingInvoice(false);
     }
   };
 
-return (
+  return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.title}>Fornitori</Text>
@@ -174,10 +203,10 @@ return (
           </Text>
         </View>
 
-       {Number(item.barcode_non_trovati ?? item.non_trovati ?? item.prodotti_non_trovati ?? item.not_found ?? 0) > 0 ? (
+       {item.file_non_trovati ? (
   <Pressable
     style={styles.missingButton}
-    onPress={() => loadMissingProducts(item)}
+    onPress={() => loadMissingProducts(item.file_non_trovati)}
     disabled={loadingMissing}
   >
     <Text style={styles.missingButtonText}>

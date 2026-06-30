@@ -1438,7 +1438,7 @@ async def reconcile_all_invoice_imports():
         if not numero:
             continue
 
-        results.append(await aggiorna_conteggi_fattura_import(numero))
+        results.append(await reconcile_invoice_import(numero))
 
     return {
         "ok": True,
@@ -2425,47 +2425,10 @@ async def stats():
     # sales
     sales_docs = await db.sales.find({}, {"_id": 0}).to_list(10000)
     totale_vendite = sum(float(s.get("totale", 0)) for s in sales_docs)
-    # Costi secondari fornitori letti dalle fatture: spedizione, imballaggio, bollo, incasso, ecc.
-    fatture_importate = await db.invoice_imports.find({}).to_list(5000)
-
-    totale_costi_secondari_fornitori = 0.0
-    costi_secondari_fornitori_per_tipo = {}
-
-    for fattura in fatture_importate:
-        costi = fattura.get("costi_accessori") or []
-
-        for costo in costi:
-            tipo = str(costo.get("tipo") or "Altro costo secondario").strip()
-            try:
-                importo = float(costo.get("importo") or 0)
-            except Exception:
-                importo = 0.0
-
-            if importo <= 0:
-                continue
-
-            totale_costi_secondari_fornitori += importo
-            costi_secondari_fornitori_per_tipo[tipo] = costi_secondari_fornitori_per_tipo.get(tipo, 0.0) + importo
-
-    costi_secondari_fornitori_per_tipo_list = [
-        {
-            "tipo": tipo,
-            "totale": round(totale, 2),
-        }
-        for tipo, totale in sorted(
-            costi_secondari_fornitori_per_tipo.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )
-    ]
-
-
     return {
         "total_products": total_products,
         "total_pieces": total_pieces,
         "valore_magazzino": round(valore_magazzino, 2),
-        "totale_costi_secondari_fornitori": round(totale_costi_secondari_fornitori, 2),
-        "costi_secondari_fornitori_per_tipo": costi_secondari_fornitori_per_tipo_list,
         "valore_vendita_potenziale": round(valore_vendita, 2),
         "sotto_scorta_count": len(sotto_scorta),
         "sotto_scorta": [Product(**d).dict() for d in sotto_scorta[:20]],

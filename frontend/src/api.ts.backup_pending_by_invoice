@@ -59,13 +59,6 @@ export const api = {
     return req<{ brands: string[]; total: number }>("/products/brands");
   },
 
-  getPendingInvoiceProducts: (numeroFattura?: string) =>
-  req<any[]>(
-    `/invoices/pending-products${
-      numeroFattura ? `?numero_fattura=${encodeURIComponent(numeroFattura)}` : ""
-    }`
-  ),
-
   getStandardLists: () =>
     req<{
       categorie: string[];

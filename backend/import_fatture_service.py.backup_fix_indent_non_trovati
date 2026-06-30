@@ -675,7 +675,6 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
     totale_costi_secondari_fornitori = round(sum(float(c.get("importo") or 0) for c in costi_secondari_fornitori), 2)
 
     
-
     # Filtra dai prodotti non trovati le righe che NON sono prodotti:
     # riferimenti ordine, spese trasporto, imballo, bollo, incasso, ecc.
     non_trovati_filtrati = []
@@ -711,7 +710,7 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
         2
     )
 
-    await db.invoice_imports.insert_one({
+await db.invoice_imports.insert_one({
         "chiave_import": info_fattura["chiave_import"],
         "numero": info_fattura["numero"],
         "data": info_fattura["data"],

@@ -675,43 +675,42 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
     totale_costi_secondari_fornitori = round(sum(float(c.get("importo") or 0) for c in costi_secondari_fornitori), 2)
 
     
+# Filtra dai prodotti non trovati le righe che NON sono prodotti:
+# riferimenti ordine, spese trasporto, imballo, bollo, incasso, ecc.
+non_trovati_filtrati = []
 
-    # Filtra dai prodotti non trovati le righe che NON sono prodotti:
-    # riferimenti ordine, spese trasporto, imballo, bollo, incasso, ecc.
-    non_trovati_filtrati = []
+for riga in non_trovati:
+    controllo = is_riga_da_escludere_dai_prodotti_non_trovati(riga)
 
-    for riga in non_trovati:
-        controllo = is_riga_da_escludere_dai_prodotti_non_trovati(riga)
+    if controllo.get("escludi"):
+        tipo = controllo.get("tipo")
+        descrizione = controllo.get("descrizione")
+        importo = float(controllo.get("importo") or 0)
 
-        if controllo.get("escludi"):
-            tipo = controllo.get("tipo")
-            descrizione = controllo.get("descrizione")
-            importo = float(controllo.get("importo") or 0)
-
-            if tipo and tipo != "Riga informativa" and importo > 0:
-                costi_secondari_fornitori.append({
-                    "tipo": tipo,
-                    "descrizione": descrizione,
-                    "importo": round(importo, 2),
-                    "origine": "riga_non_trovata_filtrata",
-                })
-
-            saltati.append({
+        if tipo and tipo != "Riga informativa" and importo > 0:
+            costi_secondari_fornitori.append({
+                "tipo": tipo,
                 "descrizione": descrizione,
-                "motivo": tipo or "Riga non prodotto",
+                "importo": round(importo, 2),
+                "origine": "riga_non_trovata_filtrata",
             })
 
-            continue
+        saltati.append({
+            "descrizione": descrizione,
+            "motivo": tipo or "Riga non prodotto",
+        })
 
-        non_trovati_filtrati.append(riga)
+        continue
 
-    non_trovati = non_trovati_filtrati
-    totale_costi_secondari_fornitori = round(
-        sum(float(c.get("importo") or 0) for c in costi_secondari_fornitori),
-        2
-    )
+    non_trovati_filtrati.append(riga)
 
-    await db.invoice_imports.insert_one({
+non_trovati = non_trovati_filtrati
+totale_costi_secondari_fornitori = round(
+    sum(float(c.get("importo") or 0) for c in costi_secondari_fornitori),
+    2
+)
+
+await db.invoice_imports.insert_one({
         "chiave_import": info_fattura["chiave_import"],
         "numero": info_fattura["numero"],
         "data": info_fattura["data"],

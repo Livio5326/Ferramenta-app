@@ -30,90 +30,6 @@ def get_xml_text(parent, tag_name, default=""):
 
 
 
-
-def is_riga_informativa_fattura(descrizione: str | None):
-    testo = str(descrizione or "").upper().strip()
-
-    parole = [
-        "RIF. ORDINE",
-        "RIF ORDINE",
-        "RIFERIMENTO ORDINE",
-        "ORDINE CL",
-        "ORDINE CLIENTE",
-        "VS ORDINE",
-        "VOSTRO ORDINE",
-        "NS ORDINE",
-        "NOSTRO ORDINE",
-        "DDT",
-        "DOCUMENTO DI TRASPORTO",
-    ]
-
-    return any(p in testo for p in parole)
-
-
-def is_riga_da_escludere_dai_prodotti_non_trovati(riga: dict):
-    descrizione = str(riga.get("descrizione") or "").strip()
-    codice = str(riga.get("codice_prodotto") or riga.get("codice") or "").strip()
-    codice_fornitore = str(riga.get("codice_fornitore") or "").strip()
-    barcode = str(riga.get("barcode") or "").strip()
-
-    try:
-        quantita = float(str(riga.get("quantita") or 0).replace(",", "."))
-    except Exception:
-        quantita = 0
-
-    try:
-        prezzo_unitario = float(str(
-            riga.get("prezzo_unitario")
-            or riga.get("prezzo_acquisto")
-            or 0
-        ).replace(",", "."))
-    except Exception:
-        prezzo_unitario = 0
-
-    try:
-        prezzo_totale = float(str(
-            riga.get("prezzo_totale")
-            or riga.get("totale")
-            or 0
-        ).replace(",", "."))
-    except Exception:
-        prezzo_totale = 0
-
-    # Se non c'è totale ma c'è unitario, usa quello.
-    if prezzo_totale <= 0 and prezzo_unitario > 0:
-        prezzo_totale = prezzo_unitario * (quantita or 1)
-
-    if is_riga_informativa_fattura(descrizione):
-        return {
-            "escludi": True,
-            "tipo": "Riga informativa",
-            "descrizione": descrizione,
-            "importo": 0,
-        }
-
-    tipo_costo = classifica_costo_secondario_fornitore_intelligente(
-        descrizione=descrizione,
-        codice=codice,
-        codice_fornitore=codice_fornitore,
-        barcode=barcode,
-        quantita=quantita,
-        prezzo_totale=prezzo_totale,
-    )
-
-    if tipo_costo:
-        return {
-            "escludi": True,
-            "tipo": tipo_costo,
-            "descrizione": descrizione,
-            "importo": round(prezzo_totale, 2),
-        }
-
-    return {
-        "escludi": False,
-    }
-
-
 def classifica_costo_secondario_fornitore_intelligente(
     descrizione: str | None,
     codice: str | None = "",
@@ -673,43 +589,6 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
 
     linee = linee_prodotti
     totale_costi_secondari_fornitori = round(sum(float(c.get("importo") or 0) for c in costi_secondari_fornitori), 2)
-
-    
-
-    # Filtra dai prodotti non trovati le righe che NON sono prodotti:
-    # riferimenti ordine, spese trasporto, imballo, bollo, incasso, ecc.
-    non_trovati_filtrati = []
-
-    for riga in non_trovati:
-        controllo = is_riga_da_escludere_dai_prodotti_non_trovati(riga)
-
-        if controllo.get("escludi"):
-            tipo = controllo.get("tipo")
-            descrizione = controllo.get("descrizione")
-            importo = float(controllo.get("importo") or 0)
-
-            if tipo and tipo != "Riga informativa" and importo > 0:
-                costi_secondari_fornitori.append({
-                    "tipo": tipo,
-                    "descrizione": descrizione,
-                    "importo": round(importo, 2),
-                    "origine": "riga_non_trovata_filtrata",
-                })
-
-            saltati.append({
-                "descrizione": descrizione,
-                "motivo": tipo or "Riga non prodotto",
-            })
-
-            continue
-
-        non_trovati_filtrati.append(riga)
-
-    non_trovati = non_trovati_filtrati
-    totale_costi_secondari_fornitori = round(
-        sum(float(c.get("importo") or 0) for c in costi_secondari_fornitori),
-        2
-    )
 
     await db.invoice_imports.insert_one({
         "chiave_import": info_fattura["chiave_import"],
