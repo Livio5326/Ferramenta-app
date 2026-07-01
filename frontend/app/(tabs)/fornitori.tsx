@@ -20,10 +20,20 @@ export default function FornitoriScreen() {
   const [loadingMissing, setLoadingMissing] = useState(false);
   const handleCreateSelectedProducts = async () => {
   try {
-    const selectedItems = missingProducts.filter((item) => item.selected);
+    const selectedItems = missingProducts
+      .filter((item) => item.selected)
+      .filter((item) => {
+        const descrizione = String(item?.descrizione || "").trim();
+
+        return (
+          descrizione &&
+          descrizione !== "-" &&
+          descrizione.toLowerCase() !== "n/d"
+        );
+      });
 
     if (selectedItems.length === 0) {
-      Alert.alert("Nessun prodotto", "Seleziona almeno un prodotto da creare.");
+      Alert.alert("Nessun prodotto", "Seleziona almeno un prodotto valido da creare.");
       return;
     }
 
@@ -36,13 +46,29 @@ export default function FornitoriScreen() {
 
     setMissingProducts([]);
     await loadInvoiceImports();
-  } catch (err: any) {
-    Alert.alert(
-      "Errore creazione prodotti",
-      err?.message || "Errore durante la creazione dei prodotti"
-    );
-  }
+
+} catch (err: any) {
+  console.log("ERRORE RAW:", err);
+  console.log("ERRORE MESSAGE:", err?.message);
+  console.log("ERRORE DETAIL:", err?.detail);
+  console.log("ERRORE RESPONSE:", err?.response);
+  console.log("ERRORE DATA:", err?.response?.data);
+
+  const messaggioErrore =
+    err?.response?.data?.detail
+      ? JSON.stringify(err.response.data.detail, null, 2)
+      : err?.response?.data
+      ? JSON.stringify(err.response.data, null, 2)
+      : err?.detail
+      ? JSON.stringify(err.detail, null, 2)
+      : err?.message
+      ? err.message
+      : String(err);
+
+  Alert.alert("Errore creazione prodotti", messaggioErrore);
+}
 };
+
 
 const loadInvoiceImports = async () => {
   try {

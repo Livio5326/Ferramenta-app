@@ -2432,7 +2432,7 @@ async def stats():
     costi_secondari_fornitori_per_tipo = {}
 
     for fattura in fatture_importate:
-        costi = fattura.get("costi_accessori") or []
+        costi = fattura.get("costi_secondari_fornitori") or []
 
         for costo in costi:
             tipo = str(costo.get("tipo") or "Altro costo secondario").strip()

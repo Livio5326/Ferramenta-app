@@ -337,26 +337,43 @@ export async function getMissingInvoiceProducts(filePath: string) {
 }
 
 export async function createPendingInvoiceProducts(items: any[]) {
-  const res = await fetch(`${BASE}/invoices/pending-products/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ items }),
-  });
+  let created = 0;
+  let gia_presenti = 0;
+  const errors: any[] = [];
 
-  const text = await res.text();
+  for (const item of items) {
+    const res = await fetch(`${BASE}/invoices/pending-products/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ item }),
+    });
 
-  let data: any = null;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = { ok: false, errore: text };
+    const text = await res.text();
+
+    let data: any = null;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { ok: false, error: text };
+    }
+
+    if (!res.ok) {
+      errors.push(data);
+      continue;
+    }
+
+    created += data?.created || 0;
+    gia_presenti += data?.gia_presenti || 0;
   }
 
-  if (!res.ok) {
-    throw new Error(data?.errore || data?.detail || text);
+  if (errors.length > 0) {
+    throw new Error(JSON.stringify(errors, null, 2));
   }
 
-  return data;
+  return {
+    created,
+    gia_presenti,
+  };
 }
