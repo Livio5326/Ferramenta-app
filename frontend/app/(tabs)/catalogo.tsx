@@ -714,6 +714,12 @@ const loadMore = useCallback(async () => {
             }, 500);
           }}
           data={items}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
+          updateCellsBatchingPeriod={80}
+          onEndReachedThreshold={0.7}
           numColumns={2}
           keyExtractor={(it, index) => `${getProductId(it)}-${index}`}
           renderItem={renderCard}
