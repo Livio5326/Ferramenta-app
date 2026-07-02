@@ -7,6 +7,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { COLORS, FONTS } from '@/src/theme';
 import { api } from '@/src/api';
+import { getLocalProductById } from '@/src/local/db';
 import { useAppStore } from '@/src/store';
 
 export default function Scanner() {
@@ -48,7 +49,8 @@ export default function Scanner() {
       return;
     }
     try {
-      const p = await api.getByBarcode(data);
+      const p = getLocalProductById(data);
+      if (!p) throw new Error("Prodotto non trovato");
       Alert.alert(
         'Prodotto trovato',
         `${p.descrizione}\nQTA: ${p.quantita} · ${p.prezzo_vendita.toFixed(2)} €`,

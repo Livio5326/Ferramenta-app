@@ -8,6 +8,7 @@ import { COLORS, FONTS, fmtEUR } from '@/src/theme';
 import { ScreenHeader } from '@/src/components/ScreenHeader';
 import { useAppStore, cartTotal } from '@/src/store';
 import { api } from '@/src/api';
+import { createLocalSale } from "../../src/local/db";
 
 function prezzoFinaleProdotto(p: any): number {
   const prezzoPromo = Number(p?.prezzo_promo || 0);
@@ -33,15 +34,17 @@ export default function Vendita() {
   const completa = async () => {
     if (cartVendibile.length === 0) return;
     setCompleting(true);
+
     try {
-      await api.createSale(
+      createLocalSale(
         cartVendibile.map((c) => ({
-          product_id: c.product.id,
+          product_id: c.product.id || c.product.codice_prodotto || c.product.barcode,
           descrizione: c.product.descrizione,
           prezzo_vendita: prezzoFinaleProdotto(c.product),
           quantita: c.quantita,
         }))
       );
+
       clearCart();
       Alert.alert('Vendita completata', `Totale ${fmtEUR(total)}`);
     } catch (e: any) {
@@ -50,6 +53,7 @@ export default function Vendita() {
       setCompleting(false);
     }
   };
+
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']} testID="vendita-screen">

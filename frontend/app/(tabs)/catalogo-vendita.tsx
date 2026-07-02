@@ -17,6 +17,7 @@ import {
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import { api } from "../../src/api";
+import { listLocalProductsPage, listLocalCategories, listLocalBrands } from "../../src/local/db";
 import { useAppStore } from "../../src/store";
 
 const PAGE_SIZE = 30;
@@ -221,35 +222,13 @@ export default function CatalogoVenditaScreen() {
   );
 
   useEffect(() => {
-    api.getStandardList("categorie")
-      .then((res: any) => {
-        const items = Array.isArray(res?.items) ? res.items : [];
-        setCategorieStandardBackend(items.filter((v: string) => v && v !== "Tutte"));
-      })
-      .catch((err: any) => {
-        console.warn("Errore caricamento categorie standard", err);
-      });
+    const categorieLocali = listLocalCategories();
+    setCategorieStandardBackend(categorieLocali.filter((v: string) => v && v !== "Tutte")); 
   }, []);
 
   useEffect(() => {
-    let alive = true;
-
-    api
-      .listProductBrands()
-      .then((res: any) => {
-        if (!alive) return;
-        const received = res?.brands || [];
-        if (Array.isArray(received) && received.length > 0) {
-          setBrandsReali(["Tutte", ...received.filter((m: string) => m !== "Tutte")]);
-        }
-      })
-      .catch((err: any) => {
-        console.warn("Errore caricamento marche prodotti", err);
-      });
-
-    return () => {
-      alive = false;
-    };
+    const marcheLocali = listLocalBrands();
+    setBrandsReali(["Tutte", ...marcheLocali.filter((m: string) => m && m !== "Tutte")]);
   }, []);
 
   useEffect(() => {
@@ -268,7 +247,7 @@ export default function CatalogoVenditaScreen() {
     skipRef.current = 0;
 
     try {
-      const res = await api.listProductsPage({
+      const res = listLocalProductsPage({
         search_mode: searchMode,
         q: q || undefined,
         categoria: categoria || undefined,
@@ -392,7 +371,7 @@ const loadMore = useCallback(async () => {
     try {
       const currentSkip = skipRef.current;
 
-      const res = await api.listProductsPage({
+      const res = listLocalProductsPage({
         search_mode: searchMode,
         q: q || undefined,
         categoria: categoria || undefined,

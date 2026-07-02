@@ -10,6 +10,7 @@ import { ScreenHeader } from '@/src/components/ScreenHeader';
 import { ModeToggle } from '@/src/components/ModeToggle';
 import { useAppStore } from '@/src/store';
 import { api } from '@/src/api';
+import { getDb } from "../../src/local/db";
 
 const WOOD_BG = 'https://images.unsplash.com/photo-1583418007992-a8e33a92e7ad?w=800';
 
@@ -23,10 +24,30 @@ export default function Dashboard() {
 
   const load = useCallback(async () => {
     try {
-      const s = await api.statistiche();
-      setStats(s);
+      const db = getDb();
+
+      const prodotti = db.getFirstSync<{ total: number }>(
+        "SELECT COUNT(*) as total FROM products"
+      );
+
+      const pezzi = db.getFirstSync<{ total: number }>(
+        "SELECT SUM(quantita) as total FROM products"
+      );
+
+      const valoreMagazzino = db.getFirstSync<{ total: number }>(
+        "SELECT SUM(quantita * prezzo_acquisto) as total FROM products"
+      );
+
+      setStats({
+        total_products: prodotti?.total || 0,
+        total_pieces: pezzi?.total || 0,
+        valore_magazzino: valoreMagazzino?.total || 0,
+        sotto_scorta_count: 0,
+        vendite_totali: 0,
+        numero_vendite: 0,
+      });
     } catch (e) {
-      console.warn(e);
+      console.warn("Errore statistiche offline", e);
     }
   }, []);
 
@@ -39,17 +60,7 @@ export default function Dashboard() {
   };
 
   const handleSeed = async () => {
-    try {
-      const r = await api.seed();
-      if (r.seeded) {
-        Alert.alert('Dati demo caricati', `${r.count} prodotti aggiunti`);
-        load();
-      } else {
-        Alert.alert('Archivio non vuoto', `Ci sono già ${(r as any).existing ?? 0} prodotti`);
-      }
-    } catch (e: any) {
-      Alert.alert('Errore', String(e?.message || e));
-    }
+    Alert.alert("Offline", "I prodotti sono già caricati nel database locale.");
   };
 
 return (

@@ -1,3 +1,4 @@
+import { getLocalProductById } from "../../src/local/db";
 import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -54,7 +55,7 @@ const diminuisciQtaCliente = () => {
   const load = useCallback(async () => {
     if (!id) return;
     try {
-      const data = await api.getProduct(id);
+      const data = getLocalProductById(String(id));
       setP(data);
     } catch (e) {
       Alert.alert('Errore', 'Prodotto non trovato');

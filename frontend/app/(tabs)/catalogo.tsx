@@ -1,3 +1,4 @@
+import { listLocalProductsPage, listLocalCategories, listLocalBrands } from "../../src/local/db";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -221,35 +222,13 @@ export default function CatalogoScreen() {
   );
 
   useEffect(() => {
-    api.getStandardList("categorie")
-      .then((res: any) => {
-        const items = Array.isArray(res?.items) ? res.items : [];
-        setCategorieStandardBackend(items.filter((v: string) => v && v !== "Tutte"));
-      })
-      .catch((err: any) => {
-        console.warn("Errore caricamento categorie standard", err);
-      });
+    const categorieLocali = listLocalCategories();
+    setCategorieStandardBackend(categorieLocali.filter((v: string) => v && v !== "Tutte"));
   }, []);
 
   useEffect(() => {
-    let alive = true;
-
-    api
-      .listProductBrands()
-      .then((res: any) => {
-        if (!alive) return;
-        const received = res?.brands || [];
-        if (Array.isArray(received) && received.length > 0) {
-          setBrandsReali(["Tutte", ...received.filter((m: string) => m !== "Tutte")]);
-        }
-      })
-      .catch((err: any) => {
-        console.warn("Errore caricamento marche prodotti", err);
-      });
-
-    return () => {
-      alive = false;
-    };
+    const marcheLocali = listLocalBrands();
+    setBrandsReali(["Tutte", ...marcheLocali.filter((m: string) => m && m !== "Tutte")]);
   }, []);
 
   useEffect(() => {
@@ -268,26 +247,13 @@ export default function CatalogoScreen() {
     skipRef.current = 0;
 
     try {
-      const res = await api.listProductsPage({
-        search_mode: searchMode,
-        q: q || undefined,
-        categoria: categoria || undefined,
-        marca_standard: marcaStandard || undefined,
-        sotto_scorta: soloSottoScorta || undefined,
-        vendibile: soloVendita || undefined,
-        da_completare: filtroDaCompletare || undefined,
-        prezzo_min:
-          filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000)
-            ? prezzoMin
-            : undefined,
-        prezzo_max:
-          filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000)
-            ? prezzoMax
-            : undefined,
+      const res = listLocalProductsPage({
+        q: q || "",
+        categoria: categoria || "",
         limit: options?.keepLoaded ? Math.max(loadedCountRef.current, PAGE_SIZE) : PAGE_SIZE,
-        skip: 0,
+        page: 1,
       });
-
+     
       if (requestId !== requestRef.current) return;
 
       const data: Product[] = Array.isArray(res?.items) ? res.items : [];
@@ -391,26 +357,13 @@ const loadMore = useCallback(async () => {
 
     try {
       const currentSkip = skipRef.current;
-
-      const res = await api.listProductsPage({
-        search_mode: searchMode,
-        q: q || undefined,
-        categoria: categoria || undefined,
-        marca_standard: marcaStandard || undefined,
-        sotto_scorta: soloSottoScorta || undefined,
-        vendibile: soloVendita || undefined,
-        da_completare: filtroDaCompletare || undefined,
-        prezzo_min:
-          filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000)
-            ? prezzoMin
-            : undefined,
-        prezzo_max:
-          filtroPrezzoAttivo && (prezzoMin > 0 || prezzoMax < 1000)
-            ? prezzoMax
-            : undefined,
+      
+      const res = listLocalProductsPage({
+        q: q || "",
+        categoria: categoria || "",
         limit: PAGE_SIZE,
-        skip: currentSkip,
-      });
+        page: Math.floor(currentSkip / PAGE_SIZE) + 1,
+      });      
 
       const data: Product[] = Array.isArray(res?.items) ? res.items : [];
 

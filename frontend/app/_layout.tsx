@@ -1,3 +1,4 @@
+import { initLocalDb, seedProductsIfEmpty } from "../src/local/db";
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -9,7 +10,12 @@ import { COLORS } from '@/src/theme';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+export default function RootLayout() {  
+  useEffect(() => {
+    initLocalDb();
+    seedProductsIfEmpty();
+    console.log("DB OFFLINE inizializzato");
+  }, []);
   const [loaded, error] = useIconFonts();
 
   useEffect(() => {
