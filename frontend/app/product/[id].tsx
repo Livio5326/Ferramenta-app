@@ -1,4 +1,4 @@
-import { getLocalProductById } from "../../src/local/db";
+import { getLocalProductById, adjustLocalStock, deleteLocalProduct } from "../../src/local/db";
 import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -72,8 +72,8 @@ const diminuisciQtaCliente = () => {
   const adjust = async (delta: number) => {
     setBusy(true);
     try {
-      const updated = await api.adjustStock(p.id, delta);
-      setP(updated);
+      const updated = await api.adjustLocalStock(p.id, delta);
+      setP(updated as Product);
     } catch (e: any) {
       Alert.alert('Errore', String(e?.message || e));
     } finally {
@@ -86,7 +86,7 @@ const diminuisciQtaCliente = () => {
       { text: 'Annulla', style: 'cancel' },
       {
         text: 'Elimina', style: 'destructive', onPress: async () => {
-          await api.deleteProduct(p.id);
+          deleteLocalProduct(p.id);
           router.back();
         }
       }

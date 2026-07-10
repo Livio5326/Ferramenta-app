@@ -32,7 +32,7 @@ export function initLocalDb() {
       created_at TEXT,
       updated_at TEXT
     );
-
+    
     CREATE TABLE IF NOT EXISTS sales (
       id TEXT PRIMARY KEY NOT NULL,
       totale REAL DEFAULT 0,
@@ -100,6 +100,15 @@ export function initLocalDb() {
       sinonimi TEXT
     );
   `);
+  try {
+    const cols = db.getAllSync<any>("PRAGMA table_info(products)");
+    const hasSogliaScorta = cols.some((c: any) => c.name === "soglia_scorta");
+    if (!hasSogliaScorta) {
+      db.execSync("ALTER TABLE products ADD COLUMN soglia_scorta INTEGER DEFAULT 5");
+    }
+  } catch (e) {
+    console.warn("Migrazione soglia_scorta fallita", e);
+  }
 }
 
 export function seedProductsIfEmpty() {
@@ -403,4 +412,144 @@ export function createLocalSale(items: any[]) {
     total,
     items,
   };
+}
+
+
+export function adjustLocalStock(id: string, delta: number) {
+  const now = new Date().toISOString();
+
+  const current = getLocalProductById(id);
+  if (!current) {
+    throw new Error("Prodotto non trovato");
+  }
+
+  db.runSync(
+    `
+    UPDATE products
+    SET quantita = MAX(COALESCE(quantita, 0) + ?, 0),
+        updated_at = ?
+    WHERE id = ?
+       OR codice_prodotto = ?
+       OR barcode = ?
+    `,
+    [delta, now, id, id, id]
+  );
+
+  return getLocalProductById(id);
+}
+
+export function deleteLocalProduct(id: string) {
+  db.runSync(
+    `
+    DELETE FROM products
+    WHERE id = ?
+       OR codice_prodotto = ?
+       OR barcode = ?
+    `,
+    [id, id, id]
+  );
+
+  return { ok: true };
+}
+
+export function createLocalProduct(payload: any) {
+  const now = new Date().toISOString();
+  const id =
+    String(payload.id || payload.codice_prodotto || payload.barcode || `P-${Date.now()}`);
+
+  db.runSync(
+    `
+    INSERT INTO products (
+      id,
+      barcode,
+      codice_prodotto,
+      descrizione,
+      marca,
+      marca_standard,
+      categoria,
+      categoria_standard,
+      prezzo_acquisto,
+      prezzo_vendita,
+      quantita,
+      fornitore,
+      foto,
+      note,
+      soglia_scorta,
+      created_at,
+      updated_at
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    [
+      id,
+      String(payload.barcode || ""),
+      String(payload.codice_prodotto || ""),
+      String(payload.descrizione || ""),
+      String(payload.marca || ""),
+      String(payload.marca_standard || payload.marca || ""),
+      String(payload.categoria || ""),
+      String(payload.categoria_standard || payload.categoria || ""),
+      Number(payload.prezzo_acquisto || 0),
+      Number(payload.prezzo_vendita || 0),
+      Number(payload.quantita || 0),
+      String(payload.fornitore || ""),
+      String(payload.foto || ""),
+      String(payload.note || ""),
+      Number(payload.soglia_scorta || 5),
+      now,
+      now,
+    ]
+  );
+
+  return getLocalProductById(id);
+}
+
+export function updateLocalProduct(id: string, payload: any) {
+  const now = new Date().toISOString();
+
+  db.runSync(
+    `
+    UPDATE products
+    SET barcode = ?,
+        codice_prodotto = ?,
+        descrizione = ?,
+        marca = ?,
+        marca_standard = ?,
+        categoria = ?,
+        categoria_standard = ?,
+        prezzo_acquisto = ?,
+        prezzo_vendita = ?,
+        quantita = ?,
+        fornitore = ?,
+        foto = ?,
+        note = ?,
+        soglia_scorta = ?,
+        updated_at = ?
+    WHERE id = ?
+       OR codice_prodotto = ?
+       OR barcode = ?
+    `,
+    [
+      String(payload.barcode || ""),
+      String(payload.codice_prodotto || ""),
+      String(payload.descrizione || ""),
+      String(payload.marca || ""),
+      String(payload.marca_standard || payload.marca || ""),
+      String(payload.categoria || ""),
+      String(payload.categoria_standard || payload.categoria || ""),
+      Number(payload.prezzo_acquisto || 0),
+      Number(payload.prezzo_vendita || 0),
+      Number(payload.quantita || 0),
+      String(payload.fornitore || ""),
+      String(payload.foto || ""),
+      String(payload.note || ""),
+      Number(payload.soglia_scorta || 5),
+      now,
+      id,
+      id,
+      id,
+    ]
+  );
+
+  return getLocalProductById(id);
 }

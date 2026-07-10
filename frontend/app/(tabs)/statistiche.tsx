@@ -11,6 +11,7 @@ import { useFocusEffect } from "expo-router";
 
 import { COLORS, FONTS, fmtEUR } from "@/src/theme";
 import { api } from "@/src/api";
+import { getDb } from "@/src/local/db";
 
 type StatsData = {
   valore_magazzino?: number;
@@ -36,8 +37,46 @@ export default function Stats() {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const s = await api.statistiche();
-    setStats(s);
+    const db = getDb();
+
+    const prodotti = db.getFirstSync<any>(`
+      SELECT
+        COUNT(*) AS total_products,
+        COALESCE(SUM(quantita), 0) AS total_pieces,
+        COALESCE(SUM(quantita * prezzo_acquisto), 0) AS valore_magazzino,
+        COALESCE(SUM(quantita * prezzo_vendita), 0) AS valore_vendita_potenziale,
+        COALESCE(SUM(CASE WHEN quantita <= soglia_scorta THEN 1 ELSE 0 END), 0) AS sotto_scorta_count
+      FROM products
+    `);
+
+    const vendite = db.getFirstSync<any>(`
+      SELECT
+        COUNT(*) AS numero_vendite
+      FROM sales
+    `);
+
+    const categorie = db.getAllSync<any>(`
+      SELECT
+        COALESCE(categoria, 'Senza categoria') AS nome,
+        COUNT(*) AS count
+      FROM products
+      GROUP BY COALESCE(categoria, 'Senza categoria')
+      ORDER BY count DESC
+      LIMIT 8
+      `);
+
+    setStats({
+      valore_magazzino: Number(prodotti?.valore_magazzino || 0),
+      valore_vendita_potenziale: Number(prodotti?.valore_vendita_potenziale || 0),
+      total_products: Number(prodotti?.total_products || 0),
+      total_pieces: Number(prodotti?.total_pieces || 0),
+      vendite_totali: Number(vendite?.vendite_totali || 0),
+      numero_vendite: Number(vendite?.numero_vendite || 0),
+      sotto_scorta_count: Number(prodotti?.sotto_scorta_count || 0),
+      totale_costi_secondari_fornitori: 0,
+      costi_secondari_fornitori_per_tipo: [],
+      categorie: Array.isArray(categorie) ? categorie : [],
+    });
   }, []);
 
   useFocusEffect(

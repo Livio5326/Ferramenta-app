@@ -71,16 +71,8 @@ export default function FornitoriScreen() {
 
 
 const loadInvoiceImports = async () => {
-  try {
-    setLoadingImports(true);
-    const data = await listInvoiceImports();
-    setInvoiceImports(data.items || []);
-  } catch (err) {
-    console.warn("Errore caricamento storico fatture", err);
-  } finally {
-    setLoadingImports(false);
-  }
-};
+    setInvoiceImports([]);
+  };
 
 const loadMissingProducts = async (invoice: any) => {
     const numeroFattura = String(

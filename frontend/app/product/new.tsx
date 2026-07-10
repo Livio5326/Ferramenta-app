@@ -8,6 +8,13 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { COLORS, FONTS } from '@/src/theme';
 import { api } from '@/src/api';
+import {
+  getLocalProductById,
+  createLocalProduct,
+  updateLocalProduct,
+  listLocalCategories,
+  listLocalBrands,
+} from '@/src/local/db';
 import { FORNITORI_STANDARD } from '@/src/fornitoriStandard';
 import { CATEGORIE_STANDARD } from '@/src/categorieStandard';
 
@@ -44,31 +51,44 @@ export default function ProductForm() {
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
 
   useEffect(() => {
-    api.getStandardLists()
-      .then((res: any) => {
-        const categorie = Array.isArray(res?.categorie) ? res.categorie : CATEGORIE_STANDARD;
-        const fornitori = Array.isArray(res?.fornitori) ? res.fornitori : FORNITORI_STANDARD;
-        const marche = Array.isArray(res?.marche) ? res.marche : [];
+    const categorie = listLocalCategories();
+    const marche = listLocalBrands();
 
-        setCategorieStandard(categorie.filter((v: string) => v && v !== "Tutte"));
-        setFornitoriStandard(fornitori.filter((v: string) => v && v !== "Tutte"));
-        setBrands(marche.filter((v: string) => v && v !== "Tutte"));
-      })
-      .catch((err: any) => {
-        console.warn("Errore caricamento liste standard prodotto", err);
-      });
+    setCategorieStandard(
+      (categorie.length > 0 ? categorie : CATEGORIE_STANDARD).filter(
+        (v: string) => v && v !== "Tutte"
+      )
+    );
+
+    setFornitoriStandard(
+      FORNITORI_STANDARD.filter((v: string) => v && v !== "Tutte")
+    );
+
+    setBrands(
+      marche.filter((v: string) => v && v !== "Tutte")
+    );
   }, []);
 
   useEffect(() => {
     if (params.id) {
-      api.getProduct(params.id).then((p) => {
+      const p = getLocalProductById(String(params.id));
+
+      if (p) {
         setForm({
-          barcode: p.barcode, codice_prodotto: p.codice_prodotto || '',  descrizione: p.descrizione, marca: p.marca, categoria: p.categoria,
-          prezzo_acquisto: String(p.prezzo_acquisto), prezzo_vendita: String(p.prezzo_vendita),
-          quantita: String(p.quantita), fornitore: p.fornitore, foto: p.foto, note: p.note,
-          soglia_scorta: String(p.soglia_scorta),
+          barcode: p.barcode || "",
+          codice_prodotto: p.codice_prodotto || "",
+          descrizione: p.descrizione || "",
+          marca: p.marca || "",
+          categoria: p.categoria || "",
+          prezzo_acquisto: String(p.prezzo_acquisto || 0),
+          prezzo_vendita: String(p.prezzo_vendita || 0),
+          quantita: String(p.quantita || 0),
+          fornitore: p.fornitore || "",
+          foto: p.foto || "",
+          note: p.note || "",
+          soglia_scorta: String(p.soglia_scorta || 5),
         });
-      }).catch(() => {});
+      }
     } else if (params.barcode) {
       setForm((f) => ({ ...f, barcode: String(params.barcode) }));
     }
@@ -115,9 +135,14 @@ export default function ProductForm() {
       soglia_scorta: form.soglia_scorta.trim() === '' ? 5 : Number(form.soglia_scorta),
     };
     try {
-      if (editing && params.id) await api.updateProduct(params.id, payload);
-      else await api.createProduct(payload);
-      router.back();
+    if (editing && params.id) {
+      updateLocalProduct(String(params.id), payload);
+    } else {
+      createLocalProduct(payload);
+    }
+
+    router.back();
+
     } catch (e: any) {
       Alert.alert('Errore', String(e?.message || e));
     } finally {
