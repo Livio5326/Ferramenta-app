@@ -13,7 +13,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { COLORS, FONTS } from '@/src/theme';
-import { api } from '@/src/api';
+import {
+  listLocalSearchSynonyms,
+  saveLocalSearchSynonym,
+  deleteLocalSearchSynonym,
+} from "@/src/local/db";
 
 type SearchSynonym = {
   termine: string;
@@ -32,7 +36,7 @@ export default function SinonimiRicercaScreen() {
   async function load() {
     try {
       setLoading(true);
-      const data = await api.listSearchSynonyms();
+      const data = listLocalSearchSynonyms();
       setItems(Array.isArray(data) ? data : []);
     } catch (e: any) {
       Alert.alert('Errore', e?.message || 'Errore caricamento sinonimi');
@@ -64,7 +68,7 @@ export default function SinonimiRicercaScreen() {
 
     try {
       setSaving(true);
-      await api.saveSearchSynonym({ termine: term, sinonimi: values });
+      saveLocalSearchSynonym(term, values);
       setTermine('');
       setSinonimi('');
       await load();
@@ -87,7 +91,7 @@ export default function SinonimiRicercaScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.deleteSearchSynonym(term);
+              deleteLocalSearchSynonym(term);
               await load();
             } catch (e: any) {
               Alert.alert('Errore', e?.message || 'Errore eliminazione sinonimo');
