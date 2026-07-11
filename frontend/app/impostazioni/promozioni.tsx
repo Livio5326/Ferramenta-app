@@ -12,9 +12,11 @@ import {
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Feather } from '@expo/vector-icons';
-
+import { listLocalActivePromos, setLocalPromoActive, deleteLocalPromoByName, deactivateAllLocalPromos, findLocalProductForPromo, confirmLocalPromoImport, createLocalProductFromPromo, } from "@/src/local/db";
 import { api } from '@/src/api';
 import { COLORS, FONTS } from '@/src/theme';
+import * as FileSystem from "expo-file-system/legacy";
+import * as XLSX from "xlsx";
 
 type PromoFile = {
   uri: string;
@@ -49,6 +51,129 @@ function fmtEUR(value: number | null | undefined) {
   return `${Number(value).toFixed(2).replace('.', ',')} €`;
 }
 
+function normalizzaChiave(v: any) {
+  return String(v || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[àá]/g, "a")
+    .replace(/[èé]/g, "e")
+    .replace(/[ìí]/g, "i")
+    .replace(/[òó]/g, "o")
+    .replace(/[ùú]/g, "u");
+}
+
+function valoreDaRiga(row: any, possibili: string[]) {
+  const keys = Object.keys(row || {});
+
+  for (const nome of possibili) {
+    const cercato = normalizzaChiave(nome);
+    const key = keys.find((k) => normalizzaChiave(k) === cercato);
+    if (key) return row[key];
+  }
+
+  return "";
+}
+
+function numeroPrezzo(v: any) {
+  const raw = String(v ?? "")
+    .replace("€", "")
+    .replace(/\s/g, "")
+    .replace(",", ".");
+
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : 0;
+}
+
+async function leggiRighePromoDaFile(file: PromoFile) {
+  const base64 = await FileSystem.readAsStringAsync(file.uri, {
+    encoding: "base64" as any,
+  });
+
+  const workbook = XLSX.read(base64, { type: "base64" });
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+
+  const rows = XLSX.utils.sheet_to_json<any>(sheet, {
+    defval: "",
+  });
+
+  return rows;
+}
+
+async function previewPromoImportLocale(
+  file: PromoFile,
+  codeOverrides: Record<string, string>
+): Promise<PreviewResult> {
+  const rows = await leggiRighePromoDaFile(file);
+
+  const righe = rows.map((row: any, index: number) => {
+    const codiceFile = String(
+      valoreDaRiga(row, [
+        "codice_prodotto",
+        "codice prodotto",
+        "codice",
+        "codice fornitore",
+        "articolo",
+        "cod_art",
+      ])
+    ).trim();
+
+    const barcode = String(
+      valoreDaRiga(row, ["barcode", "codice a barre", "ean", "ean13"])
+    ).trim();
+
+    const descrizioneFile = String(
+      valoreDaRiga(row, ["descrizione", "descrizione_file", "prodotto", "nome"])
+    ).trim();
+
+    const prezzoPromo = numeroPrezzo(
+      valoreDaRiga(row, [
+        "prezzo_promo",
+        "prezzo promo",
+        "promo",
+        "promo euro",
+        "promo €",
+        "prezzo",
+      ])
+    );
+
+    const codiceOverride = codeOverrides[codiceFile] || "";
+    const codiceUsato = codiceOverride || codiceFile;
+
+    const prodotto = findLocalProductForPromo(codiceUsato, barcode);
+
+    let status = "trovato";
+    if (!codiceUsato && !barcode) status = "codice_mancante";
+    else if (!prezzoPromo || prezzoPromo <= 0) status = "prezzo_mancante_o_non_valido";
+    else if (!prodotto) status = "non_trovato";
+
+    return {
+      riga: index + 2,
+      codice_prodotto: codiceFile,
+      codice_usato: codiceUsato,
+      codice_override: codiceOverride,
+      barcode,
+      descrizione_file: descrizioneFile,
+      prezzo_promo: prezzoPromo > 0 ? prezzoPromo : null,
+      status,
+      match_usato: prodotto ? (codiceUsato ? "codice_prodotto" : "barcode") : "",
+      product_id: prodotto?.id || null,
+      descrizione_db: prodotto?.descrizione || "",
+      prezzo_vendita_attuale: prodotto?.prezzo_vendita ?? null,
+    };
+  });
+
+  return {
+    prodotti_letti: righe.length,
+    prodotti_trovati: righe.filter((r) => r.status === "trovato").length,
+    prodotti_aggiornabili: righe.filter((r) => r.status === "trovato" && r.prezzo_promo).length,
+    prodotti_non_trovati: righe.filter((r) => r.status === "non_trovato").length,
+    prezzo_mancante_o_non_valido: righe.filter((r) => r.status === "prezzo_mancante_o_non_valido").length,
+    righe,
+  };
+}
+
 export default function PromozioniScreen() {
   const [file, setFile] = useState<PromoFile | null>(null);
   const [promoNome, setPromoNome] = useState('Promo Stanley 2026');
@@ -66,11 +191,12 @@ export default function PromozioniScreen() {
   async function caricaPromozioniAttive() {
     try {
       setLoadingActivePromos(true);
-      const res = await api.listActivePromos();
+
+      const res = listLocalActivePromos();
 
       const riepilogoOrdinato = Array.isArray(res?.riepilogo)
         ? [...res.riepilogo].sort((a, b) =>
-            String(a?.promo_nome || '').localeCompare(String(b?.promo_nome || ''))
+            String(a?.promo_nome || "").localeCompare(String(b?.promo_nome || ""))
           )
         : [];
 
@@ -78,9 +204,15 @@ export default function PromozioniScreen() {
         ...res,
         riepilogo: riepilogoOrdinato,
       });
+
       setSelectedPromoNome(null);
     } catch (err: any) {
-      Alert.alert('Errore promozioni attive', err?.message || 'Impossibile caricare le promozioni attive.');
+      console.warn("Errore promozioni attive offline", err);
+      setActivePromos({
+        totale_prodotti_promo: 0,
+        totale_promo: 0,
+        riepilogo: [],
+      });
     } finally {
       setLoadingActivePromos(false);
     }
@@ -124,7 +256,7 @@ export default function PromozioniScreen() {
 
     try {
       setLoading(true);
-      const res = await api.previewPromoImport(file, codeOverrides);
+      const res = await previewPromoImportLocale(file, codeOverrides);
       setPreview(res);
     } catch (err: any) {
       Alert.alert('Errore anteprima', err?.message || 'Import non riuscito.');
@@ -160,14 +292,17 @@ export default function PromozioniScreen() {
           onPress: async () => {
             try {
               setLoading(true);
-              const res = await api.confirmPromoImport(
-                file,
+              const res = confirmLocalPromoImport( 
                 promoNome.trim(),
                 promoInizio.trim(),
                 promoFine.trim(),
-                codeOverrides
+                preview.righe || []
               );
-              Alert.alert('Import completato', `Prodotti aggiornati: ${res.aggiornati}`);
+
+              const nuovePromo = listLocalActivePromos();
+              setActivePromos(nuovePromo);
+
+              Alert.alert("Import completato", `Prodotti aggiornati: ${res.aggiornati}`);
               setPreview(res.anteprima);
             } catch (err: any) {
               Alert.alert('Errore conferma', err?.message || 'Aggiornamento non riuscito.');
@@ -182,29 +317,32 @@ export default function PromozioniScreen() {
 
   async function eliminaPromo(promoNome: string) {
     Alert.alert(
-      'Sei sicuro di eliminare?',
-      `Vuoi davvero eliminare la promozione "${promoNome}"?\n\nLa promozione verrà rimossa dai prodotti collegati.\nI prodotti NON verranno cancellati.`,
+      "Sei sicuro di eliminare?",
+      `Vuoi davvero eliminare la promozione "${promoNome}"?\n\nLa promozione verrà rimossa dai prodotti collegati. I prodotti non verranno cancellati.`,
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: "Annulla", style: "cancel" },
         {
-          text: 'Sì, elimina',
-          style: 'destructive',
+          text: "Sì, elimina",
+          style: "destructive",
           onPress: async () => {
             try {
               setLoadingActivePromos(true);
 
-              const resDelete = await api.deletePromoByName(promoNome);
+              const resDelete = deleteLocalPromoByName(promoNome);
+              const nuovePromo = listLocalActivePromos();
 
-              const res = await api.listActivePromos();
-              setActivePromos(res);
+              setActivePromos(nuovePromo);
               setSelectedPromoNome(null);
 
               Alert.alert(
-                'Promo eliminata',
+                "Promo eliminata",
                 `Promozione rimossa da ${resDelete.eliminati} prodotti.`
               );
             } catch (err: any) {
-              Alert.alert('Errore eliminazione promo', err?.message || 'Impossibile eliminare la promozione.');
+              Alert.alert(
+                "Errore eliminazione promo",
+                err?.message || "Impossibile eliminare la promozione."
+              );
             } finally {
               setLoadingActivePromos(false);
             }
@@ -216,30 +354,34 @@ export default function PromozioniScreen() {
 
   async function cambiaStatoPromo(promoNome: string, attiva: boolean) {
     Alert.alert(
-      attiva ? 'Attivare promozione?' : 'Disattivare promozione?',
+      attiva ? "Attivare promozione?" : "Disattivare promozione?",
       attiva
-        ? `La promozione "${promoNome}" tornerà attiva sui prodotti collegati.`
-        : `La promozione "${promoNome}" verrà disattivata sui prodotti collegati.`,
+        ? `Vuoi attivare la promozione "${promoNome}"?`
+        : `Vuoi disattivare la promozione "${promoNome}"?`,
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: "Annulla", style: "cancel" },
         {
-          text: attiva ? 'Attiva' : 'Disattiva',
-          style: attiva ? 'default' : 'destructive',
+          text: attiva ? "Attiva" : "Disattiva",
+          style: attiva ? "default" : "destructive",
           onPress: async () => {
             try {
               setLoadingActivePromos(true);
 
-              if (attiva) {
-                await api.activatePromoByName(promoNome);
-              } else {
-                await api.deactivatePromoByName(promoNome);
-              }
+              const res = setLocalPromoActive(promoNome, attiva);
+              const nuovePromo = listLocalActivePromos();
 
-              const res = await api.listActivePromos();
-              setActivePromos(res);
-              setSelectedPromoNome(promoNome);
+              setActivePromos(nuovePromo);
+              setSelectedPromoNome(null);
+
+              Alert.alert(
+                attiva ? "Promo attivata" : "Promo disattivata",
+                `Prodotti modificati: ${res.modificati}`
+              );
             } catch (err: any) {
-              Alert.alert('Errore promozione', err?.message || 'Impossibile modificare la promozione.');
+              Alert.alert(
+                "Errore promozione",
+                err?.message || "Impossibile aggiornare la promozione."
+              );
             } finally {
               setLoadingActivePromos(false);
             }
@@ -251,20 +393,32 @@ export default function PromozioniScreen() {
 
   async function disattivaPromo() {
     Alert.alert(
-      'Disattivare promozioni?',
-      'Verranno disattivate tutte le promozioni attive. I prezzi standard non verranno modificati.',
+      "Disattivare promozioni?",
+      "Verranno disattivate tutte le promozioni attive. I prezzi standard non verranno modificati.",
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: "Annulla", style: "cancel" },
         {
-          text: 'Disattiva',
-          style: 'destructive',
+          text: "Disattiva",
+          style: "destructive",
           onPress: async () => {
             try {
               setLoading(true);
-              const res = await api.deactivatePromoPrices();
-              Alert.alert('Promozioni disattivate', `Prodotti aggiornati: ${res.disattivati}`);
+
+              const res = deactivateAllLocalPromos();
+              const nuovePromo = listLocalActivePromos();
+
+              setActivePromos(nuovePromo);
+              setSelectedPromoNome(null);
+
+              Alert.alert(
+                "Promozioni disattivate",
+                `Prodotti aggiornati: ${res.disattivati}`
+              );
             } catch (err: any) {
-              Alert.alert('Errore', err?.message || 'Disattivazione non riuscita.');
+              Alert.alert(
+                "Errore",
+                err?.message || "Disattivazione non riuscita."
+              );
             } finally {
               setLoading(false);
             }
@@ -293,7 +447,7 @@ export default function PromozioniScreen() {
 
     try {
       setLoading(true);
-      const res = await api.previewPromoImport(file, nuovaMappa);
+      const res = await previewPromoImportLocale(file, nuovaMappa);
       setPreview(res);
     } catch (err: any) {
       Alert.alert('Errore anteprima', err?.message || 'Impossibile ricalcolare l’anteprima.');
@@ -320,22 +474,29 @@ export default function PromozioniScreen() {
             try {
               setLoading(true);
 
-              await api.createProduct({
+              createLocalProductFromPromo({
                 codice_prodotto: r.codice_prodotto,
-                barcode: '',
-                descrizione: r.descrizione_file,
-                marca: 'STANLEY',
-                categoria: 'Altro',
+                barcode: "",
+                descrizione: r.descrizione_file || r.codice_prodotto || "Prodotto promo",
+                marca: "STANLEY",
+                marca_standard: "Stanley",
+                categoria: "Altro",
+                categoria_standard: "Altro",
                 prezzo_acquisto: 0,
                 prezzo_vendita: Number(r.prezzo_promo || 0),
                 quantita: 0,
-                fornitore: 'Stanley Black & Decker',
-                foto: '',
-                note: 'Creato da import promozione Fornitori',
+                fornitore: "Stanley Black & Decker",
+                foto: "",
+                note: "Creato da import promozione fornitori",
+                prezzo_promo: Number(r.prezzo_promo || 0),
+                promo_attiva: true,
+                promo_nome: promoNome.trim(),
+                promo_inizio: promoInizio.trim(),
+                promo_fine: promoFine.trim(),
               });
 
               if (file) {
-                const res = await api.previewPromoImport(file, codeOverrides);
+                const res = await previewPromoImportLocale(file, codeOverrides);
                 setPreview(res);
               }
 

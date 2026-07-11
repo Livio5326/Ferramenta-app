@@ -553,3 +553,517 @@ export function updateLocalProduct(id: string, payload: any) {
 
   return getLocalProductById(id);
 }
+
+type TipoListaStandard = "categorie" | "fornitori" | "marche";
+
+function rowsToList(rows: any[]) {
+  return rows
+    .map((r: any) => String(r.value || r.nome || r.marca_standard || "").trim())
+    .filter((v: string) => v && v !== "Tutte");
+}
+
+function getDistinctProductValues(field: "categoria" | "fornitore" | "marca_standard") {
+  const rows = db.getAllSync<any>(`
+    SELECT DISTINCT ${field} AS value
+    FROM products
+    WHERE ${field} IS NOT NULL AND TRIM(${field}) != ''
+    ORDER BY ${field} COLLATE NOCASE ASC
+  `);
+
+  return rowsToList(rows);
+}
+
+export function getLocalStandardLists() {
+  try {
+    const info = db.getAllSync<any>("PRAGMA table_info(standard_lists)");
+    const hasValue = Array.isArray(info) && info.some((c: any) => c.name === "value");
+
+    if (info.length > 0 && !hasValue) {
+      db.execSync("DROP TABLE IF EXISTS standard_lists");
+    }
+
+    db.execSync(`
+      CREATE TABLE IF NOT EXISTS standard_lists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tipo TEXT NOT NULL,
+        value TEXT NOT NULL,
+        UNIQUE(tipo, value)
+      );
+    `);
+  } catch (e) {
+    console.warn("Creazione standard_lists fallita", e);
+  }
+
+  const categorieRows = db.getAllSync<any>(
+    "SELECT value FROM standard_lists WHERE tipo = ? ORDER BY value COLLATE NOCASE ASC",
+    ["categorie"]
+  );
+
+  const fornitoriRows = db.getAllSync<any>(
+    "SELECT value FROM standard_lists WHERE tipo = ? ORDER BY value COLLATE NOCASE ASC",
+    ["fornitori"]
+  );
+
+  const marcheRows = db.getAllSync<any>(
+    "SELECT value FROM standard_lists WHERE tipo = ? ORDER BY value COLLATE NOCASE ASC",
+    ["marche"]
+  );
+
+  const categorie = rowsToList(categorieRows);
+  const fornitori = rowsToList(fornitoriRows);
+  const marche = rowsToList(marcheRows);
+
+  return {
+    categorie: categorie.length > 0 ? categorie : getDistinctProductValues("categoria"),
+    fornitori: fornitori.length > 0 ? fornitori : getDistinctProductValues("fornitore"),
+    marche: marche.length > 0 ? marche : getDistinctProductValues("marca_standard"),
+  };
+}
+
+export function addLocalStandardListItem(tipo: TipoListaStandard, value: string) {
+  const cleaned = String(value || "").trim();
+  if (!cleaned) return { items: getLocalStandardLists()[tipo] };
+
+  db.runSync(
+    "INSERT OR IGNORE INTO standard_lists (tipo, value) VALUES (?, ?)",
+    [tipo, cleaned]
+  );
+
+  return { items: getLocalStandardLists()[tipo] };
+}
+
+export function updateLocalStandardListItem(tipo: TipoListaStandard, oldValue: string, newValue: string) {
+  const oldCleaned = String(oldValue || "").trim();
+  const newCleaned = String(newValue || "").trim();
+
+  if (!oldCleaned || !newCleaned) return { items: getLocalStandardLists()[tipo] };
+
+  db.runSync(
+    "DELETE FROM standard_lists WHERE tipo = ? AND value = ?",
+    [tipo, oldCleaned]
+  );
+
+  db.runSync(
+    "INSERT OR IGNORE INTO standard_lists (tipo, value) VALUES (?, ?)",
+    [tipo, newCleaned]
+  );
+
+  return { items: getLocalStandardLists()[tipo] };
+}
+
+export function deleteLocalStandardListItem(tipo: TipoListaStandard, value: string) {
+  const cleaned = String(value || "").trim();
+
+  if (cleaned) {
+    db.runSync(
+      "DELETE FROM standard_lists WHERE tipo = ? AND value = ?",
+      [tipo, cleaned]
+    );
+  }
+
+  return { items: getLocalStandardLists()[tipo] };
+}
+
+export type LocalSearchSynonym = {
+  termine: string;
+  sinonimi: string[];
+};
+
+export function initLocalSearchSynonymsTable() {
+  const info = db.getAllSync<any>("PRAGMA table_info(search_synonyms)");
+  const hasTerm = Array.isArray(info) && info.some((c: any) => c.name === "term");
+  const hasValuesJson = Array.isArray(info) && info.some((c: any) => c.name === "values_json");
+
+  if (info.length > 0 && (!hasTerm || !hasValuesJson)) {
+    db.execSync("DROP TABLE IF EXISTS search_synonyms");
+  }
+
+  db.execSync(`
+    CREATE TABLE IF NOT EXISTS search_synonyms (
+      term TEXT PRIMARY KEY NOT NULL,
+      values_json TEXT NOT NULL
+    );
+  `);
+}
+
+export function listLocalSearchSynonyms(): LocalSearchSynonym[] {
+  initLocalSearchSynonymsTable();
+
+  const rows = db.getAllSync<any>(`
+    SELECT term, values_json
+    FROM search_synonyms
+    ORDER BY term COLLATE NOCASE ASC
+  `);
+
+  return rows.map((r: any) => {
+    let values: string[] = [];
+
+    try {
+      values = JSON.parse(r.values_json || "[]");
+    } catch {
+      values = [];
+    }
+
+    return {
+      termine: String(r.term || ""),
+      sinonimi: Array.isArray(values) ? values : [],
+    };
+  });
+}
+
+export function saveLocalSearchSynonym(term: string, values: string[]) {
+  initLocalSearchSynonymsTable();
+
+  const cleanedTerm = String(term || "").trim().toLowerCase();
+  const cleanedValues = values
+    .map((v) => String(v || "").trim().toLowerCase())
+    .filter(Boolean);
+
+  if (!cleanedTerm || cleanedValues.length === 0) {
+    throw new Error("Termine e sinonimi sono obbligatori");
+  }
+
+  db.runSync(
+    `
+    INSERT OR REPLACE INTO search_synonyms (term, values_json)
+    VALUES (?, ?)
+    `,
+    [cleanedTerm, JSON.stringify(cleanedValues)]
+  );
+
+  return listLocalSearchSynonyms();
+}
+
+export function deleteLocalSearchSynonym(term: string) {
+  initLocalSearchSynonymsTable();
+
+  db.runSync(
+    "DELETE FROM search_synonyms WHERE term = ?",
+    [String(term || "").trim().toLowerCase()]
+  );
+
+  return listLocalSearchSynonyms();
+}
+
+export function listLocalActivePromos() {
+  const rows = db.getAllSync<any>(`
+    SELECT
+      promo_nome,
+      COUNT(*) AS prodotti,
+      SUM(
+        CASE
+          WHEN promo_attiva = 1
+            OR promo_attiva = '1'
+            OR promo_attiva = 'true'
+            OR promo_attiva = 'TRUE'
+          THEN 1
+          ELSE 0
+        END
+      ) AS attivi
+    FROM products
+    WHERE promo_nome IS NOT NULL
+      AND TRIM(promo_nome) != ''
+    GROUP BY promo_nome
+    ORDER BY promo_nome COLLATE NOCASE ASC
+  `);
+
+  const riepilogo = rows.map((r: any) => {
+    const prodotti = Number(r.prodotti || 0);
+    const attivi = Number(r.attivi || 0);
+
+    return {
+      promo_nome: String(r.promo_nome || ""),
+      prodotti,
+      attivi,
+
+      // nomi alternativi, così la pagina non fa la principessa
+      prodotti_totali: prodotti,
+      prodotti_attivi: attivi,
+      totale_prodotti: prodotti,
+      totale_attivi: attivi,
+      attiva: attivi > 0,
+      promo_attiva: attivi > 0,
+      stato: attivi > 0 ? "attiva" : "disattivata",
+    };
+  });
+
+  return {
+    totale_prodotti_promo: riepilogo.reduce(
+      (sum: number, r: any) => sum + Number(r.prodotti || 0),
+      0
+    ),
+    totale_promo: riepilogo.length,
+    riepilogo,
+  };
+}
+
+export function seedOfflinePromos() {
+  let promos: any[] = [];
+
+  try {
+    promos = require("../../assets/offline_promos.json");
+  } catch (e) {
+    console.warn("Nessun file offline_promos.json trovato", e);
+    return;
+  }
+
+  if (!Array.isArray(promos) || promos.length === 0) {
+    console.log("Nessuna promo offline da importare");
+    return;
+  }
+
+  let aggiornati = 0;
+
+  for (const promo of promos) {
+    const id = String(promo.id || "").trim();
+    const codice = String(promo.codice_prodotto || "").trim();
+    const barcode = String(promo.barcode || "").trim();
+
+    const promoNome = String(promo.promo_nome || "").trim();
+    const prezzoPromo = Number(promo.prezzo_promo || 0);
+    const promoAttiva =
+      promo.promo_attiva === true ||
+      promo.promo_attiva === 1 ||
+      promo.promo_attiva === "true" ||
+      promo.promo_attiva === "1"
+        ? 1
+        : 0;
+
+    const promoInizio = String(promo.promo_inizio || "").trim();
+    const promoFine = String(promo.promo_fine || "").trim();
+
+    if (!promoNome || prezzoPromo <= 0) continue;
+
+    const res = db.runSync(
+      `
+      UPDATE products
+      SET
+        promo_nome = ?,
+        promo_attiva = ?,
+        prezzo_promo = ?,
+        promo_inizio = ?,
+        promo_fine = ?
+      WHERE
+        id = ?
+        OR codice_prodotto = ?
+        OR barcode = ?
+      `,
+      [
+        promoNome,
+        promoAttiva,
+        prezzoPromo,
+        promoInizio,
+        promoFine,
+        id,
+        codice,
+        barcode,
+      ]
+    );
+
+    aggiornati += Number(res.changes || 0);
+  }
+
+  console.log("PROMO OFFLINE importate:", aggiornati);
+}
+
+export function setLocalPromoActive(promoNome: string, active: boolean) {
+  const nome = String(promoNome || "").trim();
+  if (!nome) return { modificati: 0 };
+
+  const res = db.runSync(
+    `
+    UPDATE products
+    SET promo_attiva = ?
+    WHERE promo_nome = ?
+    `,
+    [active ? 1 : 0, nome]
+  );
+
+  return {
+    modificati: Number(res.changes || 0),
+  };
+}
+
+export function deleteLocalPromoByName(promoNome: string) {
+  const nome = String(promoNome || "").trim();
+  if (!nome) return { eliminati: 0 };
+
+  const res = db.runSync(
+    `
+    UPDATE products
+    SET
+      promo_nome = '',
+      promo_attiva = 0,
+      prezzo_promo = NULL,
+      promo_inizio = '',
+      promo_fine = ''
+    WHERE promo_nome = ?
+    `,
+    [nome]
+  );
+
+  return {
+    eliminati: Number(res.changes || 0),
+  };
+}
+
+export function deactivateAllLocalPromos() {
+  const res = db.runSync(
+    `
+    UPDATE products
+    SET promo_attiva = 0
+    WHERE promo_nome IS NOT NULL
+      AND TRIM(promo_nome) != ''
+    `
+  );
+
+  return {
+    disattivati: Number(res.changes || 0),
+  };
+}
+
+export function findLocalProductForPromo(codiceProdotto?: string, barcode?: string) {
+  const codice = String(codiceProdotto || "").trim();
+  const bar = String(barcode || "").trim();
+
+  if (codice) {
+    const byCode = db.getFirstSync<any>(
+      `
+      SELECT id, descrizione, codice_prodotto, barcode, prezzo_vendita
+      FROM products
+      WHERE codice_prodotto = ?
+      LIMIT 1
+      `,
+      [codice]
+    );
+
+    if (byCode) return byCode;
+  }
+
+  if (bar) {
+    const byBarcode = db.getFirstSync<any>(
+      `
+      SELECT id, descrizione, codice_prodotto, barcode, prezzo_vendita
+      FROM products
+      WHERE barcode = ?
+      LIMIT 1
+      `,
+      [bar]
+    );
+
+    if (byBarcode) return byBarcode;
+  }
+
+  return null;
+}
+
+export function confirmLocalPromoImport(
+  promoNome: string,
+  promoInizio: string,
+  promoFine: string,
+  righe: any[]
+) {
+  const nome = String(promoNome || "").trim();
+  const inizio = String(promoInizio || "").trim();
+  const fine = String(promoFine || "").trim();
+
+  if (!nome) throw new Error("Nome promozione mancante");
+
+  let aggiornati = 0;
+  let saltati = 0;
+
+  for (const r of righe || []) {
+    const productId = String(r.product_id || "").trim();
+    const prezzoPromo = Number(r.prezzo_promo || 0);
+
+    if (!productId || prezzoPromo <= 0 || r.status !== "trovato") {
+      saltati += 1;
+      continue;
+    }
+
+    const res = db.runSync(
+      `
+      UPDATE products
+      SET
+        prezzo_promo = ?,
+        promo_attiva = 1,
+        promo_nome = ?,
+        promo_inizio = ?,
+        promo_fine = ?
+      WHERE id = ?
+      `,
+      [prezzoPromo, nome, inizio, fine, productId]
+    );
+
+    aggiornati += Number(res.changes || 0);
+  }
+
+  return {
+    aggiornati,
+    saltati,
+    anteprima: {
+      prodotti_aggiornabili: aggiornati,
+      righe,
+    },
+  };
+}
+
+export function createLocalProductFromPromo(payload: any) {
+  const id =
+    payload.id ||
+    `local-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+  db.runSync(
+    `
+    INSERT INTO products (
+      id,
+      codice_prodotto,
+      barcode,
+      descrizione,
+      marca,
+      marca_standard,
+      categoria,
+      categoria_standard,
+      prezzo_acquisto,
+      prezzo_vendita,
+      quantita,
+      fornitore,
+      foto,
+      note,
+      soglia_scorta,
+      prezzo_promo,
+      promo_attiva,
+      promo_nome,
+      promo_inizio,
+      promo_fine
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    [
+      id,
+      String(payload.codice_prodotto || ""),
+      String(payload.barcode || ""),
+      String(payload.descrizione || ""),
+      String(payload.marca || ""),
+      String(payload.marca_standard || payload.marca || ""),
+      String(payload.categoria || "Altro"),
+      String(payload.categoria_standard || payload.categoria || "Altro"),
+      Number(payload.prezzo_acquisto || 0),
+      Number(payload.prezzo_vendita || 0),
+      Number(payload.quantita || 0),
+      String(payload.fornitore || ""),
+      String(payload.foto || ""),
+      String(payload.note || ""),
+      Number(payload.soglia_scorta || 5),
+      Number(payload.prezzo_promo || 0),
+      payload.promo_attiva ? 1 : 0,
+      String(payload.promo_nome || ""),
+      String(payload.promo_inizio || ""),
+      String(payload.promo_fine || ""),
+    ]
+  );
+
+  return {
+    id,
+  };
+}
