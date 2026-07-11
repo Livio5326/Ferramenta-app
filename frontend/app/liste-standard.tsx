@@ -13,8 +13,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
-import { api } from "@/src/api";
+import {
+  getLocalStandardLists,
+  addLocalStandardListItem,
+  updateLocalStandardListItem,
+  deleteLocalStandardListItem,
+} from "@/src/local/db";
 import { COLORS, FONTS } from "@/src/theme";
 
 type TipoLista = "categorie" | "fornitori" | "marche";
@@ -53,7 +57,7 @@ export default function ListeStandardScreen() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await api.getStandardLists();
+      const data = getLocalStandardLists();
       setLists({
         categorie: data.categorie || [],
         fornitori: data.fornitori || [],
@@ -100,8 +104,8 @@ export default function ListeStandardScreen() {
     setSaving(true);
     try {
       const res = oldValue
-        ? await api.updateStandardListItem(active, oldValue, cleaned)
-        : await api.addStandardListItem(active, cleaned);
+        ? updateStandardListItem(active, oldValue, cleaned)
+        : addStandardListItem(active, cleaned);
 
       setLists((prev) => ({
         ...prev,
@@ -128,7 +132,7 @@ export default function ListeStandardScreen() {
           onPress: async () => {
             setSaving(true);
             try {
-              const res = await api.deleteStandardListItem(active, item);
+              const res = deleteStandardListItem(active, item);
               setLists((prev) => ({
                 ...prev,
                 [active]: res.items || [],

@@ -72,7 +72,7 @@ const diminuisciQtaCliente = () => {
   const adjust = async (delta: number) => {
     setBusy(true);
     try {
-      const updated = await api.adjustLocalStock(p.id, delta);
+      const updated = adjustLocalStock(p.id, delta);
       setP(updated as Product);
     } catch (e: any) {
       Alert.alert('Errore', String(e?.message || e));
