@@ -104,8 +104,8 @@ export default function ListeStandardScreen() {
     setSaving(true);
     try {
       const res = oldValue
-        ? updateStandardListItem(active, oldValue, cleaned)
-        : addStandardListItem(active, cleaned);
+        ? updateLocalStandardListItem(active, oldValue, cleaned)
+        : addLocalStandardListItem(active, cleaned);
 
       setLists((prev) => ({
         ...prev,
@@ -132,7 +132,7 @@ export default function ListeStandardScreen() {
           onPress: async () => {
             setSaving(true);
             try {
-              const res = deleteStandardListItem(active, item);
+              const res = deleteLoacalStandardListItem(active, item);
               setLists((prev) => ({
                 ...prev,
                 [active]: res.items || [],

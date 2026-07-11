@@ -612,12 +612,18 @@ export function getLocalStandardLists() {
   const categorie = rowsToList(categorieRows);
   const fornitori = rowsToList(fornitoriRows);
   const marche = rowsToList(marcheRows);
-
-  return {
-    categorie: categorie.length > 0 ? categorie : getDistinctProductValues("categoria"),
-    fornitori: fornitori.length > 0 ? fornitori : getDistinctProductValues("fornitore"),
-    marche: marche.length > 0 ? marche : getDistinctProductValues("marca_standard"),
+  const mergeListe = (manuali: string[], daProdotti: string[]) => {
+    return Array.from(new Set([...(manuali || []), ...(daProdotti || [])]))
+      .map((v) => String(v || "").trim())
+      .filter((v) => v && v !== "Tutte")
+      .sort((a, b) => a.localeCompare(b));
   };
+  return {
+    categorie: mergeListe(categorie, getDistinctProductValues("categoria")),
+    fornitori: mergeListe(fornitori, getDistinctProductValues("fornitore")),
+    marche: mergeListe(marche, getDistinctProductValues("marca_standard")),
+  }; 
+
 }
 
 export function addLocalStandardListItem(tipo: TipoListaStandard, value: string) {
