@@ -24,6 +24,8 @@ type StatsData = {
   vendite_giorno?: number;
   numero_vendite_giorno?: number;
   sotto_scorta_count?: number;
+  piu_venduti?: any[];
+  meno_venduti?: any[];
   totale_costi_secondari_fornitori?: number;
   costi_secondari_fornitori_per_tipo?: {
     tipo: string;
@@ -78,6 +80,34 @@ export default function Stats() {
       LIMIT 8
       `);
 
+    const piuVenduti = db.getAllSync<any>(`
+      SELECT
+        COALESCE(si.descrizione, 'Prodotto senza descrizione') AS descrizione,
+        COALESCE(SUM(si.quantita), 0) AS pezzi_venduti,
+        COALESCE(SUM(si.quantita * si.prezzo_vendita), 0) AS totale_venduto
+      FROM sale_items si
+      GROUP BY COALESCE(si.descrizione, 'Prodotto senza descrizione')
+      HAVING pezzi_venduti > 0
+      ORDER BY pezzi_venduti DESC, totale_venduto DESC
+      LIMIT 5
+    `);
+
+    const menoVenduti = db.getAllSync<any>(`
+      SELECT
+        COALESCE(p.descrizione, 'Prodotto senza descrizione') AS descrizione,
+        COALESCE(SUM(si.quantita), 0) AS pezzi_venduti,
+        COALESCE(SUM(si.quantita * si.prezzo_vendita), 0) AS totale_venduto,
+        COALESCE(p.quantita, 0) AS quantita_magazzino
+      FROM products p
+      LEFT JOIN sale_items si
+        ON si.product_id = p.id
+        OR si.product_id = p.codice_prodotto
+        OR si.product_id = p.barcode
+      GROUP BY p.id
+      ORDER BY pezzi_venduti ASC, quantita_magazzino DESC
+      LIMIT 5
+    `);
+
     setStats({
       valore_magazzino: Number(prodotti?.valore_magazzino || 0),
       valore_vendita_potenziale: Number(prodotti?.valore_vendita_potenziale || 0),
@@ -91,6 +121,8 @@ export default function Stats() {
       totale_costi_secondari_fornitori: 0,
       costi_secondari_fornitori_per_tipo: [],
       categorie: Array.isArray(categorie) ? categorie : [],
+      piu_venduti: Array.isArray(piuVenduti) ? piuVenduti : [],
+      meno_venduti: Array.isArray(menoVenduti) ? menoVenduti : [],
     });
   }, []);
 
@@ -184,6 +216,67 @@ export default function Stats() {
               {stats?.numero_vendite_giorno || 0} transazioni
             </Text>
           </Pressable>
+        </View>
+
+        <View style={styles.sectionBlock}>
+          <Text style={styles.sectionTitle}>PIÙ VENDUTI</Text>
+          <Text style={styles.sectionSubtitle}>
+            Prodotti con più pezzi venduti
+          </Text>
+
+          {(stats?.piu_venduti || []).length === 0 ? (
+            <View style={styles.emptyStatBox}>
+              <Text style={styles.emptyStatText}>Nessuna vendita registrata.</Text>
+            </View>
+          ) : (
+            (stats?.piu_venduti || []).map((item: any, index: number) => (
+              <View key={`${item.descrizione}-${index}`} style={styles.productStatRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.productStatName} numberOfLines={1}>
+                    {index + 1}. {item.descrizione}
+                  </Text>
+                  <Text style={styles.productStatMeta}>
+                    {Number(item.pezzi_venduti || 0)} pezzi
+                  </Text>
+                </View>
+
+                <Text style={styles.productStatValue}>
+                  {fmtEUR(Number(item.totale_venduto || 0))}
+                </Text>
+              </View>
+            ))
+          )}
+        </View>
+
+        <View style={styles.sectionBlock}>
+          <Text style={styles.sectionTitle}>MENO VENDUTI</Text>
+          <Text style={styles.sectionSubtitle}>
+            Prodotti fermi o con poche vendite
+          </Text>
+   
+          {(stats?.meno_venduti || []).length === 0 ? (
+            <View style={styles.emptyStatBox}>
+              <Text style={styles.emptyStatText}>Nessun prodotto trovato.</Text>
+            </View>
+          ) : (
+            (stats?.meno_venduti || []).map((item: any, index: number) => (
+              <View key={`${item.descrizione}-${index}`} style={styles.productStatRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.productStatName} numberOfLines={1}>
+                    {index + 1}. {item.descrizione}
+                  </Text>
+                  <Text style={styles.productStatMeta}>
+                    {Number(item.pezzi_venduti || 0)} pezzi venduti ·{" "}
+                    {Number(item.quantita_magazzino || 0)} in magazzino
+                  </Text>
+                </View>
+
+                <Text style={styles.productStatValue}>
+                  {fmtEUR(Number(item.totale_venduto || 0))}
+                </Text>
+              </View>
+            ))
+          )}
         </View>
 
         <View style={styles.section}>
@@ -669,4 +762,74 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: COLORS.surfaceSecondary,
   },
+  
+  sectionBlock: {
+    marginTop: 28,
+    marginBottom: 8,
+  },
+
+  sectionTitle: {
+    fontFamily: FONTS.mono,
+    fontSize: 24,
+    fontWeight: "900",
+    letterSpacing: 1.5,
+    color: COLORS.text,
+    textTransform: "uppercase",
+  },
+
+  sectionSubtitle: {
+    marginTop: 6,
+    marginBottom: 14,
+    fontFamily: FONTS.mono,
+    fontSize: 13,
+    letterSpacing: 1,
+    color: COLORS.muted,
+    textTransform: "uppercase",
+  },
+
+  productStatRow: {
+    backgroundColor: COLORS.card,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  productStatName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
+  productStatMeta: {
+    marginTop: 4,
+    fontFamily: FONTS.mono,
+    fontSize: 12,
+    color: COLORS.muted,
+  },
+
+  productStatValue: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: COLORS.brown,
+  },
+
+  emptyStatBox: {
+    backgroundColor: COLORS.card,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    padding: 18,
+  },
+
+  emptyStatText: {
+    fontSize: 14,
+    color: COLORS.muted,
+  },  
+
 });
