@@ -132,7 +132,7 @@ export default function ListeStandardScreen() {
           onPress: async () => {
             setSaving(true);
             try {
-              const res = deleteLoacalStandardListItem(active, item);
+              const res = deleteLocalStandardListItem(active, item);
               setLists((prev) => ({
                 ...prev,
                 [active]: res.items || [],

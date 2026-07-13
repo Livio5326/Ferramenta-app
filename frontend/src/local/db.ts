@@ -1,4 +1,5 @@
 import * as SQLite from "expo-sqlite";
+import { FORNITORI_STANDARD } from "../fornitoriStandard";
 
 const db = SQLite.openDatabaseSync("ferramenta_offline.db");
 const offlineProducts = require("../../assets/offline_products.json");
@@ -109,6 +110,17 @@ export function initLocalDb() {
   } catch (e) {
     console.warn("Migrazione soglia_scorta fallita", e);
   }
+}
+
+try {
+  const cols = db.getAllSync<any>("PRAGMA table_info(products)");
+  const hasCategoriaStandard = cols.some((c: any) => c.name === "categoria_standard");
+
+  if (!hasCategoriaStandard) {
+    db.execSync("ALTER TABLE products ADD COLUMN categoria_standard TEXT");
+  }
+} catch (e) {
+  console.warn("Migrazione categoria_standard fallita:", e);
 }
 
 export function seedProductsIfEmpty() {
@@ -592,6 +604,21 @@ export function getLocalStandardLists() {
     `);
   } catch (e) {
     console.warn("Creazione standard_lists fallita", e);
+  }
+  
+  try {
+    FORNITORI_STANDARD.forEach((nome: string) => {
+      const cleaned = String(nome || "").trim();
+
+      if (cleaned) {
+        db.runSync(
+          "INSERT OR IGNORE INTO standard_lists (tipo, value) VALUES (?, ?)",
+          ["fornitori", cleaned]
+        );
+      }
+    });
+  } catch (e) {
+    console.warn("Import fornitori standard fallito:", e);
   }
 
   const categorieRows = db.getAllSync<any>(

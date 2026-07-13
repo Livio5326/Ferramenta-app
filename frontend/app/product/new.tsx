@@ -16,6 +16,7 @@ import {
   listLocalBrands,
 } from '@/src/local/db';
 import { FORNITORI_STANDARD } from '@/src/fornitoriStandard';
+import { getLocalStandardLists } from "@/src/local/db";
 import { CATEGORIE_STANDARD } from '@/src/categorieStandard';
 
 type Form = {
@@ -51,22 +52,24 @@ export default function ProductForm() {
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
 
   useEffect(() => {
-    const categorie = listLocalCategories();
-    const marche = listLocalBrands();
+    try {
+      const liste = getLocalStandardLists();
 
-    setCategorieStandard(
-      (categorie.length > 0 ? categorie : CATEGORIE_STANDARD).filter(
-        (v: string) => v && v !== "Tutte"
-      )
-    );
+      const fornitori =
+        liste.fornitori && liste.fornitori.length > 0
+          ? liste.fornitori
+          : FORNITORI_STANDARD;
 
-    setFornitoriStandard(
-      FORNITORI_STANDARD.filter((v: string) => v && v !== "Tutte")
-    );
-
-    setBrands(
-      marche.filter((v: string) => v && v !== "Tutte")
-    );
+      setFornitoriStandard(
+        fornitori
+          .map((v: string) => String(v || "").trim())
+          .filter((v: string) => v && v !== "Tutte")
+      );
+    } catch (e) {
+      setFornitoriStandard(
+        FORNITORI_STANDARD.filter((v: string) => v && v !== "Tutte")
+      );
+    }
   }, []);
 
   useEffect(() => {
