@@ -35,7 +35,7 @@ type Form = {
 };
 
 const empty: Form = {
-  barcode: '', codice_prodotto: '', descrizione: '', marca: '', categoria: '', prezzo_acquisto: '0', prezzo_vendita: '0', quantita: '0', fornitore: '', foto: '', note: '', soglia_scorta: '5',
+  barcode: '', codice_prodotto: '', descrizione: '', marca: '', categoria: '', prezzo_acquisto: '0', prezzo_vendita: '0', quantita: '0', fornitore: '', foto: '', note: '', soglia_scorta: '0',
 };
 
 export default function ProductForm() {
@@ -115,7 +115,7 @@ export default function ProductForm() {
           fornitore: p.fornitore || "",
           foto: p.foto || "",
           note: p.note || "",
-          soglia_scorta: String(p.soglia_scorta || 5),
+          soglia_scorta: String(p.soglia_scorta ?? 0),
         });
       }
     } else if (params.barcode) {
@@ -161,7 +161,7 @@ export default function ProductForm() {
       fornitore: form.fornitore.trim(),
       foto: form.foto,
       note: form.note,
-      soglia_scorta: form.soglia_scorta.trim() === '' ? 5 : Number(form.soglia_scorta),
+      soglia_scorta: form.soglia_scorta.trim() === '' ? 0 : Number(form.soglia_scorta),
     };
     try {
     if (editing && params.id) {
