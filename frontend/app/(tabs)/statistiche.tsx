@@ -82,6 +82,7 @@ export default function Stats() {
 
     const piuVenduti = db.getAllSync<any>(`
       SELECT
+        COALESCE(si.product_id, '') AS product_id,
         COALESCE(si.descrizione, 'Prodotto senza descrizione') AS descrizione,
         COALESCE(SUM(si.quantita), 0) AS pezzi_venduti,
         COALESCE(SUM(si.quantita * si.prezzo_vendita), 0) AS totale_venduto
@@ -94,6 +95,7 @@ export default function Stats() {
 
     const menoVenduti = db.getAllSync<any>(`
       SELECT
+        p.id AS product_id, 
         COALESCE(p.descrizione, 'Prodotto senza descrizione') AS descrizione,
         COALESCE(SUM(si.quantita), 0) AS pezzi_venduti,
         COALESCE(SUM(si.quantita * si.prezzo_vendita), 0) AS totale_venduto,
@@ -230,7 +232,15 @@ export default function Stats() {
             </View>
           ) : (
             (stats?.piu_venduti || []).map((item: any, index: number) => (
-              <View key={`${item.descrizione}-${index}`} style={styles.productStatRow}>
+              <Pressable 
+                key={`${item.descrizione}-${index}`}
+                style={styles.productStatRow}  
+                onPress={() => {
+                  if (item.product_id) {
+                    router.push(`/product/${item.product_id}`);
+                  }
+                }}
+              >
                 <View style={{ flex: 1 }}>
                   <Text style={styles.productStatName} numberOfLines={1}>
                     {index + 1}. {item.descrizione}
@@ -243,7 +253,7 @@ export default function Stats() {
                 <Text style={styles.productStatValue}>
                   {fmtEUR(Number(item.totale_venduto || 0))}
                 </Text>
-              </View>
+              </Pressable>
             ))
           )}
         </View>
@@ -259,23 +269,33 @@ export default function Stats() {
               <Text style={styles.emptyStatText}>Nessun prodotto trovato.</Text>
             </View>
           ) : (
-            (stats?.meno_venduti || []).map((item: any, index: number) => (
-              <View key={`${item.descrizione}-${index}`} style={styles.productStatRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.productStatName} numberOfLines={1}>
-                    {index + 1}. {item.descrizione}
-                  </Text>
-                  <Text style={styles.productStatMeta}>
-                    {Number(item.pezzi_venduti || 0)} pezzi venduti ·{" "}
-                    {Number(item.quantita_magazzino || 0)} in magazzino
-                  </Text>
-                </View>
+            
+             (stats?.meno_venduti || []).map((item: any, index: number) => (
+                <Pressable
+                  key={`${item.product_id || item.descrizione}-${index}`}
+                  style={styles.productStatRow}
+                  onPress={() => {
+                    if (item.product_id) {
+                      router.push(`/product/${item.product_id}`);
+                    }
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.productStatName} numberOfLines={1}>
+                      {index + 1}. {item.descrizione}
+                    </Text>
+                    <Text style={styles.productStatMeta}>
+                      {Number(item.pezzi_venduti || 0)} pezzi venduti ·{" "}
+                      {Number(item.quantita_magazzino || 0)} in magazzino
+                    </Text>
+                  </View>
 
-                <Text style={styles.productStatValue}>
-                  {fmtEUR(Number(item.totale_venduto || 0))}
-                </Text>
-              </View>
-            ))
+                  <Text style={styles.productStatValue}>
+                    {fmtEUR(Number(item.totale_venduto || 0))}
+                  </Text>
+                </Pressable>
+              ))
+
           )}
         </View>
 
