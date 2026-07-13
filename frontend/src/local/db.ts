@@ -381,8 +381,20 @@ export function createLocalSale(items: any[]) {
   const createdAt = new Date().toISOString();
 
   const total = items.reduce((sum, item) => {
-    const prezzo = Number(item.prezzo_vendita || 0);
-    const quantita = Number(item.quantita || 0);
+    const prezzo = Number(
+      item.prezzo_vendita ??
+      item.price ??
+      item.prezzo ??
+      item.prezzo_unitario ??
+      0
+    );
+
+    const quantita = Number(
+      item.quantita ??
+      item.quantity ??
+      0
+    );
+
     return sum + prezzo * quantita;
   }, 0);
 
@@ -1112,4 +1124,43 @@ export function createLocalProductFromPromo(payload: any) {
   return {
     id,
   };
+}
+
+export function deleteLocalSale(saleId: string) {
+  const id = String(saleId || "").trim();
+
+  if (!id) {
+    throw new Error("ID vendita mancante");
+  }
+
+  const items = db.getAllSync<any>(
+    "SELECT product_id, quantita FROM sale_items WHERE sale_id = ?",
+    [id]
+  );
+
+  db.withTransactionSync(() => {
+    for (const item of items) {
+      const productId = String(item.product_id || "").trim();
+      const quantita = Number(item.quantita || 0);
+
+      if (productId && quantita > 0) {
+        db.runSync(
+          `
+          UPDATE products
+          SET quantita = COALESCE(quantita, 0) + ?,
+              updated_at = ?
+          WHERE id = ?
+             OR codice_prodotto = ?
+             OR barcode = ?
+          `,
+          [quantita, new Date().toISOString(), productId, productId, productId]
+        );
+      }
+    }
+
+    db.runSync("DELETE FROM sale_items WHERE sale_id = ?", [id]);
+    db.runSync("DELETE FROM sales WHERE id = ?", [id]);
+  });
+
+  return { ok: true };
 }

@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import {
   RefreshControl,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -8,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { useFocusEffect } from "expo-router";
-
+import { router } from "expo-router";
 import { COLORS, FONTS, fmtEUR } from "@/src/theme";
 import { api } from "@/src/api";
 import { getDb } from "@/src/local/db";
@@ -20,6 +21,8 @@ type StatsData = {
   total_pieces?: number;
   vendite_totali?: number;
   numero_vendite?: number;
+  vendite_giorno?: number;
+  numero_vendite_giorno?: number;
   sotto_scorta_count?: number;
   totale_costi_secondari_fornitori?: number;
   costi_secondari_fornitori_per_tipo?: {
@@ -51,8 +54,18 @@ export default function Stats() {
 
     const vendite = db.getFirstSync<any>(`
       SELECT
-        COUNT(*) AS numero_vendite
+        COUNT(*) AS numero_vendite,
+        COALESCE(SUM(total), 0) AS vendite_totali
+      FROM sales      
+      WHERE strftime('%Y-%m', datetime(created_at, 'localtime')) = strftime('%Y-%m', 'now', 'localtime')
+    `);
+
+    const venditeGiorno = db.getFirstSync<any>(`
+      SELECT
+        COUNT(*) AS numero_vendite_giorno,
+        COALESCE(SUM(total), 0) AS vendite_giorno
       FROM sales
+      WHERE date(created_at, 'localtime') = date('now', 'localtime')
     `);
 
     const categorie = db.getAllSync<any>(`
@@ -72,6 +85,8 @@ export default function Stats() {
       total_pieces: Number(prodotti?.total_pieces || 0),
       vendite_totali: Number(vendite?.vendite_totali || 0),
       numero_vendite: Number(vendite?.numero_vendite || 0),
+      vendite_giorno: Number(venditeGiorno?.vendite_giorno || 0),
+      numero_vendite_giorno: Number(venditeGiorno?.numero_vendite_giorno || 0),
       sotto_scorta_count: Number(prodotti?.sotto_scorta_count || 0),
       totale_costi_secondari_fornitori: 0,
       costi_secondari_fornitori_per_tipo: [],
@@ -144,45 +159,31 @@ export default function Stats() {
           />
 
           <StatCard
-            label="Vendite totali"
+            label="Vendite del mese"
             value={fmtEUR(stats?.vendite_totali || 0)}
             footer={`${stats?.numero_vendite || 0} transazioni`}
-            highlight
           />
         </View>
 
-        <View
-          style={[
-            styles.alertCard,
-            (stats?.sotto_scorta_count || 0) > 0 && styles.alertCardActive,
-          ]}
-        >
-          <Text
-            style={[
-              styles.alertLabel,
-              (stats?.sotto_scorta_count || 0) > 0 && styles.alertLabelActive,
-            ]}
-          >
-            SOTTO SCORTA
-          </Text>
+        <View style={styles.smallCardsRow}>
+          <StatCard
+            label="Sotto scorta"
+            value={String(stats?.sotto_scorta_count || 0)}
+            footer="prodotti"
+          />
 
-          <Text
-            style={[
-              styles.alertValue,
-              (stats?.sotto_scorta_count || 0) > 0 && styles.alertValueActive,
-            ]}
+          <Pressable
+            style={styles.clickableSmallCard}
+            onPress={() => router.push("/vendite-oggi")}
           >
-            {stats?.sotto_scorta_count || 0}
-          </Text>
-
-          <Text
-            style={[
-              styles.alertFooter,
-              (stats?.sotto_scorta_count || 0) > 0 && styles.alertFooterActive,
-            ]}
-          >
-            prodotti da controllare
-          </Text>
+            <Text style={styles.clickableSmallCardLabel}>VENDITE DEL GIORNO</Text>
+            <Text style={styles.clickableSmallCardValue}>
+              {fmtEUR(stats?.vendite_giorno || 0)}
+            </Text>
+            <Text style={styles.clickableSmallCardFooter}>
+              {stats?.numero_vendite_giorno || 0} transazioni
+            </Text>
+          </Pressable>
         </View>
 
         <View style={styles.section}>
@@ -304,6 +305,80 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.surface,
   },
+
+  smallCardsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 24,
+  },
+
+  standardSmallCard: {
+    width: "48%",
+    height: 150,
+    borderRadius: 22,
+    paddingHorizontal: 28,
+    paddingVertical: 20,
+    justifyContent: "center",
+    backgroundColor: COLORS.card,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+  },
+
+  clickableSmallCard: {
+    width: "48%",
+    height: 126,
+    borderRadius: 22,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    justifyContent: "center",
+    backgroundColor: "#1F4D36",
+    borderWidth: 2,
+    borderColor: "#1F4D36",
+  },
+
+  smallCardLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: 13,
+    letterSpacing: 3,
+    color: COLORS.text,
+    textTransform: "uppercase",
+    marginBottom: 14,
+  },
+
+  smallCardValue: {
+    fontSize: 34,
+    fontWeight: "900",
+    color: COLORS.text,
+  },
+
+  smallCardFooter: {
+    marginTop: 10,
+    fontFamily: FONTS.mono,
+    fontSize: 14,
+    color: COLORS.muted,
+  },
+
+  clickableSmallCardLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: 12,
+    letterSpacing: 2,
+    color: "#FFFFFF",
+    textTransform: "uppercase",
+    marginBottom: 12,
+  },
+
+  clickableSmallCardValue: {
+    fontSize: 30,
+    fontWeight: "900",
+    color: "#FFFFFF",
+  },
+
+  clickableSmallCardFooter: {
+    marginTop: 10,
+    fontFamily: FONTS.mono,
+    fontSize: 13,
+    color: "#FFFFFF",
+  },  
 
   header: {
     paddingHorizontal: 18,
@@ -429,11 +504,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 
-  alertCardActive: {
-    backgroundColor: COLORS.error,
-    borderColor: COLORS.error,
-  },
-
   alertLabel: {
     fontFamily: FONTS.mono,
     fontSize: 11,
@@ -467,6 +537,53 @@ const styles = StyleSheet.create({
   alertFooterActive: {
     color: COLORS.onError,
   },
+
+  sottoScortaLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: 13,
+    letterSpacing: 3,
+    color: COLORS.text,
+    textTransform: "uppercase",
+    marginBottom: 14,
+  },
+
+  sottoScortaValue: {
+    fontSize: 34,
+    fontWeight: "900",
+    color: COLORS.text,
+  },
+
+  sottoScortaFooter: {
+    marginTop: 10,
+    fontFamily: FONTS.mono,
+    fontSize: 14,
+    color: COLORS.muted,
+  },
+
+
+  alertCardActive: {},
+
+  daySalesLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: 12,
+    letterSpacing: 2,
+    color: COLORS.text,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+
+  daySalesValue: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: COLORS.green,
+  },
+
+  daySalesFooter: {
+    marginTop: 10,
+    fontFamily: FONTS.mono,
+    fontSize: 13,
+    color: COLORS.muted,
+  },  
 
   section: {
     marginTop: 4,
