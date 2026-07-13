@@ -38,7 +38,8 @@ export function initLocalDb() {
       id TEXT PRIMARY KEY NOT NULL,
       totale REAL DEFAULT 0,
       metodo_pagamento TEXT,
-      created_at TEXT
+      created_at TEXT,
+      total REAL DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS sale_items (
@@ -121,6 +122,16 @@ try {
   }
 } catch (e) {
   console.warn("Migrazione categoria_standard fallita:", e);
+}
+try {
+  const cols = db.getAllSync<any>("PRAGMA table_info(sales)");
+  const hasTotal = cols.some((c: any) => c.name === "total");
+
+  if (!hasTotal) {
+    db.execSync("ALTER TABLE sales ADD COLUMN total REAL DEFAULT 0");
+  }
+} catch (e) {
+  console.warn("Migrazione sales total fallita:", e);
 }
 
 export function seedProductsIfEmpty() {
@@ -389,19 +400,21 @@ export function createLocalSale(items: any[]) {
       const descrizione = String(item.descrizione || "");
       const prezzoVendita = Number(item.prezzo_vendita || 0);
       const quantita = Number(item.quantita || 0);
+      const saleItemId = `${saleId}-${productId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
       db.runSync(
         `
         INSERT INTO sale_items (
+          id,
           sale_id,
           product_id,
           descrizione,
           prezzo_vendita,
           quantita
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
         `,
-        [saleId, productId, descrizione, prezzoVendita, quantita]
+        [saleItemId, saleId, productId, descrizione, prezzoVendita, quantita]
       );
 
       db.runSync(
