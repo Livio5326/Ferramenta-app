@@ -102,6 +102,37 @@ export function initLocalDb() {
       sinonimi TEXT
     );
   `);
+
+  try {
+    const invoiceCols = db.getAllSync<any>("PRAGMA table_info(invoice_imports)");
+    const invoiceColNames = invoiceCols.map((c: any) => c.name);
+
+    if (!invoiceColNames.includes("costi_secondari_fornitori")) {
+      db.execSync("ALTER TABLE invoice_imports ADD COLUMN costi_secondari_fornitori TEXT");
+    }
+
+    if (!invoiceColNames.includes("totale_costi_secondari_fornitori")) {
+      db.execSync("ALTER TABLE invoice_imports ADD COLUMN totale_costi_secondari_fornitori REAL DEFAULT 0");
+    }
+  } catch (e) {
+    console.warn("Migrazione invoice_imports costi secondari fallita:", e);
+  }
+
+  try {
+    const pendingCols = db.getAllSync<any>("PRAGMA table_info(pending_invoice_products)");
+    const pendingColNames = pendingCols.map((c: any) => c.name);
+
+    if (pendingColNames.length > 0 && !pendingColNames.includes("costi_secondari_fornitori")) {
+      db.execSync("ALTER TABLE pending_invoice_products ADD COLUMN costi_secondari_fornitori TEXT");
+    }
+
+    if (pendingColNames.length > 0 && !pendingColNames.includes("totale_costi_secondari_fornitori")) {
+      db.execSync("ALTER TABLE pending_invoice_products ADD COLUMN totale_costi_secondari_fornitori REAL DEFAULT 0");
+    }
+  } catch (e) {
+    console.warn("Migrazione pending_invoice_products costi secondari fallita:", e);
+  }  
+
   try {
     const cols = db.getAllSync<any>("PRAGMA table_info(products)");
     const hasSogliaScorta = cols.some((c: any) => c.name === "soglia_scorta");

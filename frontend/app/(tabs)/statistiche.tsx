@@ -109,6 +109,55 @@ export default function Stats() {
       ORDER BY pezzi_venduti ASC, quantita_magazzino DESC
       LIMIT 5
     `);
+ 
+    const costiSecondariRows = db.getAllSync<any>(`
+      SELECT
+        COALESCE(totale_costi_secondari_fornitori, 0) AS totale,
+        costi_secondari_fornitori
+      FROM invoice_imports
+
+      UNION ALL
+
+      SELECT
+        MAX(COALESCE(totale_costi_secondari_fornitori, 0)) AS totale,
+        MAX(costi_secondari_fornitori) AS costi_secondari_fornitori
+      FROM pending_invoice_products
+      GROUP BY COALESCE(numero_fattura, fornitore, 'senza_fattura')
+    `);
+
+    let totaleCostiSecondariFornitori = 0;
+    const costiSecondariMap: Record<string, number> = {};
+
+    for (const row of costiSecondariRows || []) {
+      totaleCostiSecondariFornitori += Number(row.totale || 0);
+
+      try {
+        const raw = row.costi_secondari_fornitori;
+        const parsed = raw ? JSON.parse(String(raw)) : null;
+
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          Object.entries(parsed).forEach(([tipo, valore]) => {
+            const nomeTipo = String(tipo || "Altro");
+            const importo = Number(valore || 0);
+
+            if (!costiSecondariMap[nomeTipo]) {
+              costiSecondariMap[nomeTipo] = 0;
+            }
+
+            costiSecondariMap[nomeTipo] += importo;
+          });
+        }
+      } catch (e) {
+        console.warn("Costi secondari non leggibili:", e);
+      }
+    }
+
+    const costiSecondariPerTipo = Object.entries(costiSecondariMap).map(
+      ([tipo, totale]) => ({
+        tipo,
+        totale,
+      })
+    );
 
     setStats({
       valore_magazzino: Number(prodotti?.valore_magazzino || 0),
@@ -120,8 +169,8 @@ export default function Stats() {
       vendite_giorno: Number(venditeGiorno?.vendite_giorno || 0),
       numero_vendite_giorno: Number(venditeGiorno?.numero_vendite_giorno || 0),
       sotto_scorta_count: Number(prodotti?.sotto_scorta_count || 0),
-      totale_costi_secondari_fornitori: 0,
-      costi_secondari_fornitori_per_tipo: [],
+      totale_costi_secondari_fornitori: totaleCostiSecondariFornitori,
+      costi_secondari_fornitori_per_tipo: costiSecondariPerTipo,
       categorie: Array.isArray(categorie) ? categorie : [],
       piu_venduti: Array.isArray(piuVenduti) ? piuVenduti : [],
       meno_venduti: Array.isArray(menoVenduti) ? menoVenduti : [],
