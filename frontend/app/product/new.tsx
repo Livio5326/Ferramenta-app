@@ -60,14 +60,40 @@ export default function ProductForm() {
           ? liste.fornitori
           : FORNITORI_STANDARD;
 
+      const categorie =
+        liste.categorie && liste.categorie.length > 0
+          ? liste.categorie
+          : CATEGORIE_STANDARD;
+
+      const marche =
+        liste.marche && liste.marche.length > 0
+          ? liste.marche
+          : [];
+
       setFornitoriStandard(
         fornitori
+          .map((v: string) => String(v || "").trim())
+          .filter((v: string) => v && v !== "Tutte")
+      );
+
+      setCategorieStandard(
+        categorie
+          .map((v: string) => String(v || "").trim())
+          .filter((v: string) => v && v !== "Tutte")
+      );
+
+      setBrands(
+        marche
           .map((v: string) => String(v || "").trim())
           .filter((v: string) => v && v !== "Tutte")
       );
     } catch (e) {
       setFornitoriStandard(
         FORNITORI_STANDARD.filter((v: string) => v && v !== "Tutte")
+      );
+
+      setCategorieStandard(
+        CATEGORIE_STANDARD.filter((v: string) => v && v !== "Tutte")
       );
     }
   }, []);
