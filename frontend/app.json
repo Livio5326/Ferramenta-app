@@ -18,7 +18,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000"
+        "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
@@ -26,6 +26,9 @@
         "READ_EXTERNAL_STORAGE",
         "READ_MEDIA_IMAGES"
       ],
+      "package": "com.dario0228.frontend"
+    },
+    "androidStatusBar": {
       "backgroundColor": "#1F3A2A"
     },
     "web": {
@@ -38,10 +41,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#000"
+          "backgroundColor": "#1F3A2A"
         }
       ],
       "expo-font",
@@ -58,6 +61,17 @@
     "experiments": {
       "typedRoutes": true
     },
-    "backgroundColor": "#1F3A2A"
+    "backgroundColor": "#1F3A2A",
+    "extra": {
+      "router": {},
+      "expo-navigation-bar": {
+        "hidden": true,
+        "style": "dark",
+        "enforceContrast": false
+      },
+      "eas": {
+        "projectId": "6806bb11-0fef-4fc2-8681-f0c82b9939bf"
+      }
+    }
   }
 }

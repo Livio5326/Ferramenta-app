@@ -71,8 +71,21 @@ export default function FornitoriScreen() {
 
 
 const loadInvoiceImports = async () => {
+  try {
+    setLoadingImports(true);
+
+    const result = await listInvoiceImports();
+
+    setInvoiceImports(
+      Array.isArray(result) ? result : result?.items || []
+    );
+  } catch (e) {
+    console.warn("Errore caricamento storico fatture", e);
     setInvoiceImports([]);
-  };
+  } finally {
+    setLoadingImports(false);
+  }
+};
 
 const loadMissingProducts = async (invoice: any) => {
     const numeroFattura = String(
@@ -97,12 +110,14 @@ const loadMissingProducts = async (invoice: any) => {
     }
   };
 
-  
   const handleImportInvoiceXml = async () => {
     try {
+      setImportingInvoice(true);
+
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["text/xml", "application/xml", "*/*"],
+        type: "*/*",
         copyToCacheDirectory: true,
+        multiple: false,
       });
 
       if (result.canceled) {
@@ -116,16 +131,45 @@ const loadMissingProducts = async (invoice: any) => {
         return;
       }
 
-      await importInvoiceXml({
+      const fileName = String(file.name || "").toLowerCase();
+
+      if (!fileName.endsWith(".xml")) {
+        Alert.alert("File non valido", "Seleziona una fattura in formato XML.");
+        return;
+      }
+
+      const importResult = await importInvoiceXml({
         uri: file.uri,
         name: file.name,
         mimeType: file.mimeType,
       });
-    } catch (e) {
+
+    setInvoiceResult(importResult);
+
+      if (importResult?.gia_importata) {
+        Alert.alert(
+          "Fattura già importata",
+          `La fattura ${importResult.numero || ""} risulta già caricata.`
+          );
+      } else {
+        Alert.alert(
+          "Import completato",
+          `Prodotti aggiornati: ${importResult?.prodotti_aggiornati ?? 0}\nProdotti non trovati: ${importResult?.barcode_non_trovati ?? 0}\nRighe saltate: ${importResult?.righe_saltate ?? 0}`
+        );
+      }
+
+      await loadInvoiceImports();
+    } catch (e: any) {
       console.warn("Errore import fattura XML", e);
-      Alert.alert("Errore", "Impossibile importare la fattura XML.");
+
+      Alert.alert(
+        "Errore import fattura XML",
+        e?.message || String(e)
+      );
+    } finally {
+      setImportingInvoice(false);
     }
-  };
+  };  
 
 return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>

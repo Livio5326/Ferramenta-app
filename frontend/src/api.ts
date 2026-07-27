@@ -1,4 +1,10 @@
 import { Product } from './store';
+import {
+  importInvoiceXmlOffline,
+  listInvoiceImportsOffline,
+  getPendingInvoiceProductsOffline,
+  createPendingInvoiceProductsOffline,
+} from "./local/invoiceImporter";
 
 const BASE = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/api';
 
@@ -59,12 +65,8 @@ export const api = {
     return req<{ brands: string[]; total: number }>("/products/brands");
   },
 
-  getPendingInvoiceProducts: (numeroFattura?: string) =>
-  req<any[]>(
-    `/invoices/pending-products${
-      numeroFattura ? `?numero_fattura=${encodeURIComponent(numeroFattura)}` : ""
-    }`
-  ),
+  getPendingInvoiceProducts: async (numeroFattura?: string) =>
+    getPendingInvoiceProductsOffline(numeroFattura),
 
   getStandardLists: () =>
     req<{
@@ -261,119 +263,28 @@ export const api = {
     });
   },
 };
+
 export async function importInvoiceXml(file: {
   uri: string;
   name: string;
   mimeType?: string;
 }) {
-  const formData = new FormData();
-
-  formData.append("file", {
-    uri: file.uri,
-    name: file.name || "fattura.xml",
-    type: file.mimeType || "text/xml",
-  } as any);
-
-  const res = await fetch(`${BASE}/invoices/import-xml`, {
-    method: "POST",
-    body: formData,
-  });
-
-  const text = await res.text();
-
-  let data: any = null;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = { ok: false, errore: text };
-  }
-
-  if (!res.ok) {
-    throw new Error(data?.errore || data?.detail || text);
-  }
-
-  return data;
+  return await importInvoiceXmlOffline(file);
 }
 
 export async function listInvoiceImports() {
-  const res = await fetch(`${BASE}/invoices/imports`);
-
-  const text = await res.text();
-
-  let data: any = null;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = { items: [], total: 0, errore: text };
-  }
-
-  if (!res.ok) {
-    throw new Error(data?.errore || data?.detail || text);
-  }
-
-  return data;
+  return listInvoiceImportsOffline();
 }
 
-export async function getMissingInvoiceProducts(filePath: string) {
-  const qs = new URLSearchParams();
-  qs.set("file_path", filePath);
+export async function getMissingInvoiceProducts(_filePath: string) {
+  const items = getPendingInvoiceProductsOffline();
 
-  const res = await fetch(`${BASE}/invoices/missing-products?${qs.toString()}`);
-
-  const text = await res.text();
-
-  let data: any = null;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = { items: [], total: 0, errore: text };
-  }
-
-  if (!res.ok) {
-    throw new Error(data?.errore || data?.detail || text);
-  }
-
-  return data;
+  return {
+    items,
+    total: items.length,
+  };
 }
 
 export async function createPendingInvoiceProducts(items: any[]) {
-  let created = 0;
-  let gia_presenti = 0;
-  const errors: any[] = [];
-
-  for (const item of items) {
-    const res = await fetch(`${BASE}/invoices/pending-products/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ item }),
-    });
-
-    const text = await res.text();
-
-    let data: any = null;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { ok: false, error: text };
-    }
-
-    if (!res.ok) {
-      errors.push(data);
-      continue;
-    }
-
-    created += data?.created || 0;
-    gia_presenti += data?.gia_presenti || 0;
-  }
-
-  if (errors.length > 0) {
-    throw new Error(JSON.stringify(errors, null, 2));
-  }
-
-  return {
-    created,
-    gia_presenti,
-  };
+  return createPendingInvoiceProductsOffline(items);
 }

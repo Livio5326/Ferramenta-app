@@ -316,8 +316,13 @@ export function listLocalProductsPage({
   }
 
   if (categoriaPulita && categoriaPulita.toLowerCase() !== "tutti") {
-    where.push("categoria = ?");
-    params.push(categoriaPulita);
+    where.push(`
+  (
+  LOWER(TRIM(categoria)) = LOWER(?)
+  OR LOWER(TRIM(categoria_standard)) = LOWER(?)
+  )
+  `);
+  params.push(categoriaPulita, categoriaPulita);
   }
 
   const marcaPulita = String(marca_standard || "").trim();

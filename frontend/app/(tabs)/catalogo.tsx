@@ -248,9 +248,18 @@ export default function CatalogoScreen() {
 
     try {
       const res = listLocalProductsPage({
+        search_mode: searchMode,
         q: q || "",
         categoria: categoria || "",
-        limit: options?.keepLoaded ? Math.max(loadedCountRef.current, PAGE_SIZE) : PAGE_SIZE,
+        marca_standard: marcaStandard || "",
+        vendibile: soloVendita,
+        sotto_scorta: soloSottoScorta,
+        da_completare: filtroDaCompletare,
+        prezzo_min: filtroPrezzoAttivo ? Number(prezzoMin) : undefined,
+        prezzo_max: filtroPrezzoAttivo ? Number(prezzoMax) : undefined,
+        limit: options?.keepLoaded
+          ? Math.max(loadedCountRef.current, PAGE_SIZE)
+          : PAGE_SIZE,
         page: 1,
       });
      
@@ -363,6 +372,12 @@ const loadMore = useCallback(async () => {
         categoria: categoria || "",
         limit: PAGE_SIZE,
         page: Math.floor(currentSkip / PAGE_SIZE) + 1,
+        marca_standard: marcaStandard,
+        vendibile: soloVendita,
+        sotto_scorta: soloSottoScorta,
+        da_completare: filtriDaCompletare,
+        prezzo_min: filtriPrezzoAttivo ? Number(prezzoMin) : undefined,
+        prezzo_max: filtriPrezzoAttivo ? Number(prezzoMax) : undefined,
       });      
 
       const data: Product[] = Array.isArray(res?.items) ? res.items : [];
