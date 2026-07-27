@@ -8,7 +8,11 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as XLSX from 'xlsx';
 
 import { COLORS, FONTS } from '@/src/theme';
-import { api } from '@/src/api';
+import {
+  createLocalProduct,
+  getLocalProductById,
+  updateLocalProduct,
+} from '@/src/local/db';
 
 const COLS = ['BARCODE', 'CODICE PRODOTTO', 'DESCRIZIONE', 'MARCA', 'CATEGORIA', 'P. ACQUISTO', 'P. VENDITA', 'QUANTITÀ', 'FORNITORE', 'FOTO', 'NOTE'];
 
@@ -76,9 +80,44 @@ export default function ImportScreen() {
     setLog('Caricamento in corso...');
     try {
       const data = normalize(rows);
-      const r = await api.bulkImport(data);
-      setLog(`${r.inserted} prodotti importati.`);
-      Alert.alert('Import completato', `${r.inserted} prodotti caricati/aggiornati.`, [
+      let inseriti = 0;  
+      let aggiornati = 0;
+      let errori = 0;
+ 
+      for (const prodotto of data) {
+        try {
+          const identificativo =
+            prodotto.codice_prodotto ||
+            prodotto.barcode ||
+            '';
+
+          const esistente = identificativo
+            ? (getLocalProductById(identificativo) as any)
+            : null;
+
+          if (esistente) {
+            updateLocalProduct(String(esistente.id), prodotto);
+            aggiornati++;
+          } else {
+            createLocalProduct(prodotto);
+            inseriti++;
+          }
+        } catch (errore) {
+          console.warn('Errore import prodotto:', prodotto, errore);
+          errori++;
+        }
+      }
+
+      const totale = inseriti + aggiornati;
+
+      setLog(
+        `${totale} prodotti elaborati: ${inseriti} inseriti, ${aggiornati} aggiornati, ${errori} errori.`
+      );
+
+      Alert.alert(
+        'Import completato',
+        `${inseriti} prodotti inseriti.\n${aggiornati} prodotti aggiornati.\n${errori} errori.`,
+        [
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (e: any) {

@@ -94,25 +94,30 @@ const diminuisciQtaCliente = () => {
   };
 
   const low = p.quantita <= p.soglia_scorta;
-  const fotoProdottoUrl = p?.foto
-    ? String(p.foto).startsWith('http') || String(p.foto).startsWith('data:')
-    ? String(p.foto)
-    : `${(process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '')}/uploads/${String(p.foto).replace(/^\/+/, '')}`
-  : '';
+  const fotoProdottoUrl = (() => {
+    const value = String(p?.foto || '').trim();
+
+    if (
+      value.startsWith('data:image/') ||
+      value.startsWith('file://') ||
+      value.startsWith('content://')
+    ) {
+      return value;
+    }
+
+    return '';
+  })();
   return (
     <SafeAreaView style={styles.safe} edges={['top']} testID="product-detail">
       <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
         <View style={styles.imgWrap}>
-          {p.foto ? (
-<Image
-  source={{
-    uri: String(p.foto).startsWith('http') || String(p.foto).startsWith('data:')
-      ? p.foto
-      : `${(process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '')}/uploads/${p.foto}`,
-  }}
-  style={styles.img}
-  contentFit="contain"
-/>        ) : (
+          {fotoProdottoUrl ? (
+            <Image
+              source={{ uri: fotoProdottoUrl }}
+              style={styles.img}
+              contentFit="contain"
+            />
+          ) : (
             <View style={[styles.img, { backgroundColor: COLORS.surfaceTertiary, alignItems: 'center', justifyContent: 'center' }]}>
               <Feather name="package" size={64} color={COLORS.brand} />
             </View>

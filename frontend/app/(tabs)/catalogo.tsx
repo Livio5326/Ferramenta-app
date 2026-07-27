@@ -152,14 +152,17 @@ function getProductPhoto(p: Product) {
 }
 
 function buildImageUri(foto: string) {
-  if (!foto) return "";
-  const value = String(foto);
-  if (value.startsWith("http") || value.startsWith("data:")) return value;
+  const value = String(foto || "").trim();
 
-  const base = (process.env.EXPO_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
-  if (!base) return value;
+  if (
+    value.startsWith("data:image/") ||
+    value.startsWith("file://") ||
+    value.startsWith("content://")
+  ) {
+    return value;
+  }
 
-  return `${base}/uploads/cropped/${value}`;
+  return "";
 }
 
 export default function CatalogoScreen() {

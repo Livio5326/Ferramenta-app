@@ -12,7 +12,7 @@ import { useAppStore } from '@/src/store';
 import { api } from '@/src/api';
 import { getDb } from "../../src/local/db";
 
-const WOOD_BG = 'https://images.unsplash.com/photo-1583418007992-a8e33a92e7ad?w=800';
+const WOOD_BG = require('../../assets/images/wood-bg.jpg');
 
 export default function Dashboard() {
   const router = useRouter();
