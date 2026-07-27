@@ -14,6 +14,7 @@ export function initLocalDb() {
       marca TEXT,
       marca_standard TEXT,
       categoria TEXT,
+      categoria_standard TEXT,
       fornitore TEXT,
       quantita INTEGER DEFAULT 0,
       prezzo_acquisto REAL DEFAULT 0,
@@ -102,6 +103,17 @@ export function initLocalDb() {
       sinonimi TEXT
     );
   `);
+
+  try {
+    const productCols = db.getAllSync<any>("PRAGMA table_info(products)");
+    const productColNames = productCols.map((c: any) => c.name);
+
+    if (!productColNames.includes("categoria_standard")) {
+      db.execSync("ALTER TABLE products ADD COLUMN categoria_standard TEXT;");
+    }
+  } catch (e) {
+    console.warn("Migrazione categoria_standard fallita", e);
+  }
 
   try {
     const invoiceCols = db.getAllSync<any>("PRAGMA table_info(invoice_imports)");
