@@ -8,7 +8,6 @@ import { COLORS, FONTS, fmtEUR } from '@/src/theme';
 import { ScreenHeader } from '@/src/components/ScreenHeader';
 import { useAppStore, cartTotal } from '@/src/store';
 import { api } from '@/src/api';
-import { createLocalSale } from "../../src/local/db";
 
 function prezzoFinaleProdotto(p: any): number {
   const prezzoPromo = Number(p?.prezzo_promo || 0);
@@ -36,7 +35,7 @@ export default function Vendita() {
     setCompleting(true);
 
     try {
-      createLocalSale(
+      await api.createSale(
         cartVendibile.map((c) => ({
           product_id: c.product.id || c.product.codice_prodotto || c.product.barcode,
           descrizione: c.product.descrizione,

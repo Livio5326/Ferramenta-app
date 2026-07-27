@@ -1,4 +1,3 @@
-import { getLocalProductById, adjustLocalStock, deleteLocalProduct } from "../../src/local/db";
 import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -55,7 +54,7 @@ const diminuisciQtaCliente = () => {
   const load = useCallback(async () => {
     if (!id) return;
     try {
-      const data = getLocalProductById(String(id)) as Product | null; 
+      const data = await api.getProduct(String(id));
       setP(data);
     } catch (e) {
       Alert.alert('Errore', 'Prodotto non trovato');
@@ -72,7 +71,7 @@ const diminuisciQtaCliente = () => {
   const adjust = async (delta: number) => {
     setBusy(true);
     try {
-      const updated = adjustLocalStock(p.id, delta);
+      const updated = await api.adjustStock(String(p.id || (p as any)._id), delta);
       setP(updated as Product);
     } catch (e: any) {
       Alert.alert('Errore', String(e?.message || e));
@@ -86,7 +85,7 @@ const diminuisciQtaCliente = () => {
       { text: 'Annulla', style: 'cancel' },
       {
         text: 'Elimina', style: 'destructive', onPress: async () => {
-          deleteLocalProduct(p.id);
+          await api.deleteProduct(String(p.id || (p as any)._id));
           router.back();
         }
       }
@@ -127,7 +126,7 @@ const diminuisciQtaCliente = () => {
             <Feather name="arrow-left" size={20} color={COLORS.onSurfaceInverse} />
           </Pressable>
           {!isCliente && (
-            <Pressable style={styles.editBtn} onPress={() => router.push({ pathname: '/product/new', params: { id: p.id } })} testID="edit-btn">
+            <Pressable style={styles.editBtn} onPress={() => router.push({ pathname: '/product/new', params: { id: p.id || (p as any)._id} })} testID="edit-btn">
               <Feather name="edit-2" size={16} color={COLORS.onSurfaceInverse} />
               <Text style={styles.editTxt}>MODIFICA</Text>
             </Pressable>

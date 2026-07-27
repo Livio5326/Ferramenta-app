@@ -9,15 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { COLORS, FONTS } from '@/src/theme';
 import { api } from '@/src/api';
 import type { Product } from '@/src/store';
-import {
-  getLocalProductById,
-  createLocalProduct,
-  updateLocalProduct,
-  listLocalCategories,
-  listLocalBrands,
-} from '@/src/local/db';
 import { FORNITORI_STANDARD } from '@/src/fornitoriStandard';
-import { getLocalStandardLists } from "@/src/local/db";
 import { CATEGORIE_STANDARD } from '@/src/categorieStandard';
 
 type Form = {
@@ -53,8 +45,9 @@ export default function ProductForm() {
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
 
   useEffect(() => {
+  const load = async () => {
     try {
-      const liste = getLocalStandardLists();
+      const liste = await api.getStandardLists();
 
       const fornitori =
         liste.fornitori && liste.fornitori.length > 0
@@ -88,7 +81,7 @@ export default function ProductForm() {
           .map((v: string) => String(v || "").trim())
           .filter((v: string) => v && v !== "Tutte")
       );
-    } catch (e) {
+    } catch {
       setFornitoriStandard(
         FORNITORI_STANDARD.filter((v: string) => v && v !== "Tutte")
       );
@@ -96,12 +89,18 @@ export default function ProductForm() {
       setCategorieStandard(
         CATEGORIE_STANDARD.filter((v: string) => v && v !== "Tutte")
       );
-    }
-  }, []);
 
-  useEffect(() => {
+      setBrands([]);
+    }
+  };
+
+  load();
+}, []);
+
+useEffect(() => {
+  const load = async () => {
     if (params.id) {
-      const p = getLocalProductById(String(params.id)) as Product | null;
+      const p = await api.getProduct(String(params.id));
 
       if (p) {
         setForm({
@@ -122,7 +121,10 @@ export default function ProductForm() {
     } else if (params.barcode) {
       setForm((f) => ({ ...f, barcode: String(params.barcode) }));
     }
-  }, [params.id, params.barcode]);
+  };
+
+  load();
+}, [params.id, params.barcode]);
 
   const set = useCallback((k: keyof Form, v: string) => setForm((f) => ({ ...f, [k]: v })), []);
 
@@ -166,9 +168,9 @@ export default function ProductForm() {
     };
     try {
     if (editing && params.id) {
-      updateLocalProduct(String(params.id), payload);
+      await api.updateProduct(String(params.id), payload);
     } else {
-      createLocalProduct(payload);
+      await api.createProduct(payload);
     }
 
     router.back();

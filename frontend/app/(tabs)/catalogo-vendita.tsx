@@ -1,3 +1,4 @@
+import { api } from "../../src/api";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -15,9 +16,6 @@ import {
   View,
 } from "react-native";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-
-import { api } from "../../src/api";
-import { listLocalProductsPage, listLocalCategories, listLocalBrands } from "../../src/local/db";
 import { useAppStore } from "../../src/store";
 
 const PAGE_SIZE = 30;
@@ -225,15 +223,38 @@ export default function CatalogoVenditaScreen() {
   );
 
   useEffect(() => {
-    const categorieLocali = listLocalCategories();
-    setCategorieStandardBackend(categorieLocali.filter((v: string) => v && v !== "Tutte")); 
-  }, []);
+  let active = true;
 
-  useEffect(() => {
-    const marcheLocali = listLocalBrands();
-    setBrandsReali(["Tutte", ...marcheLocali.filter((m: string) => m && m !== "Tutte")]);
-  }, []);
+  const loadStandardLists = async () => {
+    try {
+      const res = await api.getStandardLists();
 
+      if (!active) return;
+
+      setCategorieStandardBackend(
+        (res.categorie || []).filter(
+          (v: string) => v && v !== "Tutte"
+        )
+      );
+
+      setBrandsReali([
+        "Tutte",
+        ...(res.marche || []).filter(
+          (m: string) => m && m !== "Tutte"
+        ),
+      ]);
+    } catch (e) {
+      console.warn("Errore caricamento liste standard", e);
+    }
+  };
+
+  loadStandardLists();
+
+  return () => {
+    active = false;
+  };
+}, []);
+   
   useEffect(() => {
     if (!catalogoFiltratoDaPagina) return;
     setCategoria(categoriaDaPagina);
@@ -250,7 +271,7 @@ export default function CatalogoVenditaScreen() {
     skipRef.current = 0;
 
     try {
-      const res = listLocalProductsPage({
+      const res = await api.listProductsPage({
         search_mode: searchMode,
         q: q || undefined,
         categoria: categoria || undefined,
@@ -280,10 +301,10 @@ export default function CatalogoVenditaScreen() {
 
       setItems(prodottiVisibili);
       loadedCountRef.current = prodottiVisibili.length;
-      const more = data.length === PAGE_SIZE;
+      const more = Boolean(res.has_more);
       setHasMore(more);
       hasMoreRef.current = more;
-      skipRef.current = prodottiVisibili.length;
+      skipRef.current = data.length;
       loadedCountRef.current = prodottiVisibili.length;
 
       setTimeout(() => {
@@ -374,7 +395,7 @@ const loadMore = useCallback(async () => {
     try {
       const currentSkip = skipRef.current;
 
-      const res = listLocalProductsPage({
+      const res = await api.listProductsPage({
         search_mode: searchMode,
         q: q || undefined,
         categoria: categoria || undefined,
@@ -411,7 +432,7 @@ const loadMore = useCallback(async () => {
         return [...prev, ...nuovi];
       });
 
-      const more = data.length === PAGE_SIZE;
+      const more = Boolean(res.has_more);
       setHasMore(more);
       hasMoreRef.current = more;
       skipRef.current = currentSkip + PAGE_SIZE;
