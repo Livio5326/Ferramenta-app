@@ -156,7 +156,7 @@ async function previewPromoImportLocale(
       barcode,
       descrizione_file: descrizioneFile,
       prezzo_promo: prezzoPromo > 0 ? prezzoPromo : null,
-      status,
+      stato: status,
       match_usato: prodotto ? (codiceUsato ? "codice_prodotto" : "barcode") : "",
       product_id: prodotto?.id || null,
       descrizione_db: prodotto?.descrizione || "",
@@ -166,10 +166,10 @@ async function previewPromoImportLocale(
 
   return {
     prodotti_letti: righe.length,
-    prodotti_trovati: righe.filter((r) => r.status === "trovato").length,
-    prodotti_aggiornabili: righe.filter((r) => r.status === "trovato" && r.prezzo_promo).length,
-    prodotti_non_trovati: righe.filter((r) => r.status === "non_trovato").length,
-    prezzo_mancante_o_non_valido: righe.filter((r) => r.status === "prezzo_mancante_o_non_valido").length,
+    prodotti_trovati: righe.filter((r) => r.stato === "trovato").length,
+    prodotti_aggiornabili: righe.filter((r) => r.stato === "trovato" && r.prezzo_promo).length,
+    prodotti_non_trovati: righe.filter((r) => r.stato === "non_trovato").length,
+    prezzo_mancante_o_non_valido: righe.filter((r) => r.stato === "prezzo_mancante_o_non_valido").length,
     righe,
   };
 }
@@ -303,7 +303,7 @@ export default function PromozioniScreen() {
               setActivePromos(nuovePromo);
 
               Alert.alert("Import completato", `Prodotti aggiornati: ${res.aggiornati}`);
-              setPreview(res.anteprima);
+              setPreview(null);
             } catch (err: any) {
               Alert.alert('Errore conferma', err?.message || 'Aggiornamento non riuscito.');
             } finally {

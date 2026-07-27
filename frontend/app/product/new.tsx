@@ -8,6 +8,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { COLORS, FONTS } from '@/src/theme';
 import { api } from '@/src/api';
+import type { Product } from '@/src/store';
 import {
   getLocalProductById,
   createLocalProduct,
@@ -100,7 +101,7 @@ export default function ProductForm() {
 
   useEffect(() => {
     if (params.id) {
-      const p = getLocalProductById(String(params.id));
+      const p = getLocalProductById(String(params.id)) as Product | null;
 
       if (p) {
         setForm({

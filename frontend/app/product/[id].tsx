@@ -55,7 +55,7 @@ const diminuisciQtaCliente = () => {
   const load = useCallback(async () => {
     if (!id) return;
     try {
-      const data = getLocalProductById(String(id));
+      const data = getLocalProductById(String(id)) as Product | null; 
       setP(data);
     } catch (e) {
       Alert.alert('Errore', 'Prodotto non trovato');

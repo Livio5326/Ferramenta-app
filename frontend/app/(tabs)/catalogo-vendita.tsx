@@ -269,7 +269,7 @@ export default function CatalogoVenditaScreen() {
 
       if (requestId !== requestRef.current) return;
 
-      const data: Product[] = Array.isArray(res?.items) ? res.items : [];
+      const data = (Array.isArray(res?.items) ? res.items : []) as Product[];
 
       const prodottiVisibili = soloVendita
         ? data.filter((p) => Number(p.quantita ?? 0) > 0)
@@ -391,7 +391,7 @@ const loadMore = useCallback(async () => {
         skip: currentSkip,
       });
 
-      const data: Product[] = Array.isArray(res?.items) ? res.items : [];
+      const data = (Array.isArray(res?.items) ? res.items : []) as Product[];
 
       const prodottiVisibili = soloVendita
         ? data.filter((p) => Number(p.quantita ?? 0) > 0)

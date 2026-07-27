@@ -265,7 +265,7 @@ export default function CatalogoScreen() {
      
       if (requestId !== requestRef.current) return;
 
-      const data: Product[] = Array.isArray(res?.items) ? res.items : [];
+      const data = (Array.isArray(res?.items) ? res.items : []) as Product[];
 
       const prodottiVisibili = soloVendita
         ? data.filter((p) => Number(p.quantita ?? 0) > 0)
@@ -372,15 +372,15 @@ const loadMore = useCallback(async () => {
         categoria: categoria || "",
         limit: PAGE_SIZE,
         page: Math.floor(currentSkip / PAGE_SIZE) + 1,
-        marca_standard: marcaStandard,
+        marca_standard: marcaStandard || undefined,
         vendibile: soloVendita,
         sotto_scorta: soloSottoScorta,
-        da_completare: filtriDaCompletare,
-        prezzo_min: filtriPrezzoAttivo ? Number(prezzoMin) : undefined,
-        prezzo_max: filtriPrezzoAttivo ? Number(prezzoMax) : undefined,
+        da_completare: filtroDaCompletare,
+        prezzo_min: filtroPrezzoAttivo ? Number(prezzoMin) : undefined,
+        prezzo_max: filtroPrezzoAttivo ? Number(prezzoMax) : undefined,
       });      
 
-      const data: Product[] = Array.isArray(res?.items) ? res.items : [];
+      const data = (Array.isArray(res?.items) ? res.items : []) as Product[];
 
       const prodottiVisibili = soloVendita
         ? data.filter((p) => Number(p.quantita ?? 0) > 0)
@@ -682,12 +682,6 @@ const loadMore = useCallback(async () => {
             }, 500);
           }}
           data={items}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-          removeClippedSubviews={true}
-          updateCellsBatchingPeriod={80}
-          onEndReachedThreshold={0.7}
           numColumns={2}
           keyExtractor={(it, index) => `${getProductId(it)}-${index}`}
           renderItem={renderCard}
@@ -698,7 +692,7 @@ const loadMore = useCallback(async () => {
           removeClippedSubviews
           keyboardShouldPersistTaps="handled"
           onEndReached={loadMore}
-          onEndReachedThreshold={0.5}
+          onEndReachedThreshold={0.7}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }

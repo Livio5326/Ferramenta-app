@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingVertical: 20,
     justifyContent: "center",
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.surface,
     borderWidth: 2,
     borderColor: COLORS.border,
   },
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 13,
     letterSpacing: 3,
-    color: COLORS.text,
+    color: COLORS.onSurface,
     textTransform: "uppercase",
     marginBottom: 14,
   },
@@ -510,14 +510,14 @@ const styles = StyleSheet.create({
   smallCardValue: {
     fontSize: 34,
     fontWeight: "900",
-    color: COLORS.text,
+    color: COLORS.onSurface,
   },
 
   smallCardFooter: {
     marginTop: 10,
     fontFamily: FONTS.mono,
     fontSize: 14,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
   },
 
   clickableSmallCardLabel: {
@@ -704,7 +704,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 13,
     letterSpacing: 3,
-    color: COLORS.text,
+    color: COLORS.onSurface,
     textTransform: "uppercase",
     marginBottom: 14,
   },
@@ -712,14 +712,14 @@ const styles = StyleSheet.create({
   sottoScortaValue: {
     fontSize: 34,
     fontWeight: "900",
-    color: COLORS.text,
+    color: COLORS.onSurface,
   },
 
   sottoScortaFooter: {
     marginTop: 10,
     fontFamily: FONTS.mono,
     fontSize: 14,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
   },
 
 
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 12,
     letterSpacing: 2,
-    color: COLORS.text,
+    color: COLORS.onSurface,
     textTransform: "uppercase",
     marginBottom: 10,
   },
@@ -737,14 +737,14 @@ const styles = StyleSheet.create({
   daySalesValue: {
     fontSize: 24,
     fontWeight: "900",
-    color: COLORS.green,
+    color: COLORS.success,
   },
 
   daySalesFooter: {
     marginTop: 10,
     fontFamily: FONTS.mono,
     fontSize: 13,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
   },  
 
   section: {
@@ -837,27 +837,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  sectionTitle: {
-    fontFamily: FONTS.mono,
-    fontSize: 24,
-    fontWeight: "900",
-    letterSpacing: 1.5,
-    color: COLORS.text,
-    textTransform: "uppercase",
-  },
-
-  sectionSubtitle: {
-    marginTop: 6,
-    marginBottom: 14,
-    fontFamily: FONTS.mono,
-    fontSize: 13,
-    letterSpacing: 1,
-    color: COLORS.muted,
-    textTransform: "uppercase",
-  },
-
   productStatRow: {
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.surface,
     borderRadius: 18,
     borderWidth: 1.5,
     borderColor: COLORS.border,
@@ -872,24 +853,24 @@ const styles = StyleSheet.create({
   productStatName: {
     fontSize: 16,
     fontWeight: "700",
-    color: COLORS.text,
+    color: COLORS.onSurface,
   },
 
   productStatMeta: {
     marginTop: 4,
     fontFamily: FONTS.mono,
     fontSize: 12,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
   },
 
   productStatValue: {
     fontSize: 16,
     fontWeight: "900",
-    color: COLORS.brown,
+    color: COLORS.brand,
   },
 
   emptyStatBox: {
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.surface,
     borderRadius: 18,
     borderWidth: 1.5,
     borderColor: COLORS.border,
@@ -898,7 +879,7 @@ const styles = StyleSheet.create({
 
   emptyStatText: {
     fontSize: 14,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
   },  
 
 });
