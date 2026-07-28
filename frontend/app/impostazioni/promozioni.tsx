@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Feather } from '@expo/vector-icons';
-import { listLocalActivePromos, setLocalPromoActive, deleteLocalPromoByName, deactivateAllLocalPromos, findLocalProductForPromo, confirmLocalPromoImport, createLocalProductFromPromo, } from "@/src/local/db";
 import { api } from '@/src/api';
 import { COLORS, FONTS } from '@/src/theme';
 import * as FileSystem from "expo-file-system/legacy";
@@ -105,73 +104,7 @@ async function previewPromoImportLocale(
   file: PromoFile,
   codeOverrides: Record<string, string>
 ): Promise<PreviewResult> {
-  const rows = await leggiRighePromoDaFile(file);
-
-  const righe = rows.map((row: any, index: number) => {
-    const codiceFile = String(
-      valoreDaRiga(row, [
-        "codice_prodotto",
-        "codice prodotto",
-        "codice",
-        "codice fornitore",
-        "articolo",
-        "cod_art",
-      ])
-    ).trim();
-
-    const barcode = String(
-      valoreDaRiga(row, ["barcode", "codice a barre", "ean", "ean13"])
-    ).trim();
-
-    const descrizioneFile = String(
-      valoreDaRiga(row, ["descrizione", "descrizione_file", "prodotto", "nome"])
-    ).trim();
-
-    const prezzoPromo = numeroPrezzo(
-      valoreDaRiga(row, [
-        "prezzo_promo",
-        "prezzo promo",
-        "promo",
-        "promo euro",
-        "promo €",
-        "prezzo",
-      ])
-    );
-
-    const codiceOverride = codeOverrides[codiceFile] || "";
-    const codiceUsato = codiceOverride || codiceFile;
-
-    const prodotto = findLocalProductForPromo(codiceUsato, barcode);
-
-    let status = "trovato";
-    if (!codiceUsato && !barcode) status = "codice_mancante";
-    else if (!prezzoPromo || prezzoPromo <= 0) status = "prezzo_mancante_o_non_valido";
-    else if (!prodotto) status = "non_trovato";
-
-    return {
-      riga: index + 2,
-      codice_prodotto: codiceFile,
-      codice_usato: codiceUsato,
-      codice_override: codiceOverride,
-      barcode,
-      descrizione_file: descrizioneFile,
-      prezzo_promo: prezzoPromo > 0 ? prezzoPromo : null,
-      stato: status,
-      match_usato: prodotto ? (codiceUsato ? "codice_prodotto" : "barcode") : "",
-      product_id: prodotto?.id || null,
-      descrizione_db: prodotto?.descrizione || "",
-      prezzo_vendita_attuale: prodotto?.prezzo_vendita ?? null,
-    };
-  });
-
-  return {
-    prodotti_letti: righe.length,
-    prodotti_trovati: righe.filter((r) => r.stato === "trovato").length,
-    prodotti_aggiornabili: righe.filter((r) => r.stato === "trovato" && r.prezzo_promo).length,
-    prodotti_non_trovati: righe.filter((r) => r.stato === "non_trovato").length,
-    prezzo_mancante_o_non_valido: righe.filter((r) => r.stato === "prezzo_mancante_o_non_valido").length,
-    righe,
-  };
+  return api.previewPromoImport(file, codeOverrides);
 }
 
 export default function PromozioniScreen() {
@@ -192,7 +125,7 @@ export default function PromozioniScreen() {
     try {
       setLoadingActivePromos(true);
 
-      const res = listLocalActivePromos();
+      const res = await api.listActivePromos();
 
       const riepilogoOrdinato = Array.isArray(res?.riepilogo)
         ? [...res.riepilogo].sort((a, b) =>
@@ -292,14 +225,19 @@ export default function PromozioniScreen() {
           onPress: async () => {
             try {
               setLoading(true);
-              const res = confirmLocalPromoImport( 
+              if (!file) {
+                throw new Error('File promozione non selezionato.');
+              }
+
+              const res = await api.confirmPromoImport(
+                file,
                 promoNome.trim(),
                 promoInizio.trim(),
                 promoFine.trim(),
-                preview.righe || []
+                codeOverrides
               );
 
-              const nuovePromo = listLocalActivePromos();
+              const nuovePromo = await api.listActivePromos();
               setActivePromos(nuovePromo);
 
               Alert.alert("Import completato", `Prodotti aggiornati: ${res.aggiornati}`);
@@ -328,8 +266,8 @@ export default function PromozioniScreen() {
             try {
               setLoadingActivePromos(true);
 
-              const resDelete = deleteLocalPromoByName(promoNome);
-              const nuovePromo = listLocalActivePromos();
+              const resDelete = await api.deletePromoByName(promoNome);
+              const nuovePromo = await api.listActivePromos();
 
               setActivePromos(nuovePromo);
               setSelectedPromoNome(null);
@@ -367,15 +305,19 @@ export default function PromozioniScreen() {
             try {
               setLoadingActivePromos(true);
 
-              const res = setLocalPromoActive(promoNome, attiva);
-              const nuovePromo = listLocalActivePromos();
+              const res = attiva
+                ? await api.activatePromoByName(promoNome)
+                : await api.deactivatePromoByName(promoNome);
+              const nuovePromo = await api.listActivePromos();
 
               setActivePromos(nuovePromo);
               setSelectedPromoNome(null);
 
               Alert.alert(
                 attiva ? "Promo attivata" : "Promo disattivata",
-                `Prodotti modificati: ${res.modificati}`
+                `Prodotti modificati: ${
+                  attiva ? ('attivati' in res ? res.attivati : 0) : ('disattivati' in res ? res.disattivati : 0)
+                }`
               );
             } catch (err: any) {
               Alert.alert(
@@ -404,8 +346,8 @@ export default function PromozioniScreen() {
             try {
               setLoading(true);
 
-              const res = deactivateAllLocalPromos();
-              const nuovePromo = listLocalActivePromos();
+              const res = await api.deactivatePromoPrices();
+              const nuovePromo = await api.listActivePromos();
 
               setActivePromos(nuovePromo);
               setSelectedPromoNome(null);
@@ -474,7 +416,7 @@ export default function PromozioniScreen() {
             try {
               setLoading(true);
 
-              createLocalProductFromPromo({
+              await api.createProduct({
                 codice_prodotto: r.codice_prodotto,
                 barcode: "",
                 descrizione: r.descrizione_file || r.codice_prodotto || "Prodotto promo",
@@ -493,7 +435,7 @@ export default function PromozioniScreen() {
                 promo_nome: promoNome.trim(),
                 promo_inizio: promoInizio.trim(),
                 promo_fine: promoFine.trim(),
-              });
+              } as any);
 
               if (file) {
                 const res = await previewPromoImportLocale(file, codeOverrides);

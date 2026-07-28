@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { deleteLocalSale, getDb } from "@/src/local/db";
+import { api } from "@/src/api";
 
 const COLORS = {
   bg: "#F4EFE6",
@@ -60,35 +60,19 @@ export default function VenditeOggiScreen() {
   const [loading, setLoading] = useState(true);
   const [vendite, setVendite] = useState<SaleToday[]>([]);
 
-  const load = useCallback(() => {
-    setLoading(true);
+  const load = useCallback(async () => {
+  setLoading(true);
 
-    try {
-      const db = getDb();
-
-      const rows = db.getAllSync<SaleToday>(`
-        SELECT
-          s.id,
-          COALESCE(s.total, 0) AS total,
-          s.created_at,
-          COUNT(si.id) AS articoli,
-          COALESCE(SUM(si.quantita), 0) AS pezzi,
-          COALESCE(MIN(si.descrizione), 'Prodotto venduto') AS prodotto_titolo
-        FROM sales s
-        LEFT JOIN sale_items si ON si.sale_id = s.id
-        WHERE date(s.created_at) = date('now', 'localtime')
-        GROUP BY s.id, s.total, s.created_at
-        ORDER BY s.created_at DESC
-      `);
-
-      setVendite(rows || []);
-    } catch (e) {
-      console.warn("Caricamento vendite oggi fallito:", e);
-      setVendite([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  try {
+    const rows = await api.listSalesToday();
+    setVendite(rows || []);
+  } catch (e) {
+    console.warn("Caricamento vendite oggi fallito:", e);
+    setVendite([]);
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -108,10 +92,10 @@ export default function VenditeOggiScreen() {
         {
           text: "Elimina",
           style: "destructive",
-          onPress: () => {
+          onPress: async () => {
             try {
-              deleteLocalSale(saleId);
-              load();
+              await api.deleteSale(saleId);
+              await load();
             } catch (e: any) {
               Alert.alert("Errore", String(e?.message || e));
             }

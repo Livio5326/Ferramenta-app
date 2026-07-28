@@ -10,7 +10,6 @@ import { ScreenHeader } from '@/src/components/ScreenHeader';
 import { ModeToggle } from '@/src/components/ModeToggle';
 import { useAppStore } from '@/src/store';
 import { api } from '@/src/api';
-import { getDb } from "../../src/local/db";
 
 const WOOD_BG = require('../../assets/images/wood-bg.jpg');
 
@@ -24,30 +23,10 @@ export default function Dashboard() {
 
   const load = useCallback(async () => {
     try {
-      const db = getDb();
-
-      const prodotti = db.getFirstSync<{ total: number }>(
-        "SELECT COUNT(*) as total FROM products"
-      );
-
-      const pezzi = db.getFirstSync<{ total: number }>(
-        "SELECT SUM(quantita) as total FROM products"
-      );
-
-      const valoreMagazzino = db.getFirstSync<{ total: number }>(
-        "SELECT SUM(quantita * prezzo_acquisto) as total FROM products"
-      );
-
-      setStats({
-        total_products: prodotti?.total || 0,
-        total_pieces: pezzi?.total || 0,
-        valore_magazzino: valoreMagazzino?.total || 0,
-        sotto_scorta_count: 0,
-        vendite_totali: 0,
-        numero_vendite: 0,
-      });
+      const data = await api.statistiche();
+      setStats(data);
     } catch (e) {
-      console.warn("Errore statistiche offline", e);
+      console.warn("Errore caricamento dashboard", e);
     }
   }, []);
 

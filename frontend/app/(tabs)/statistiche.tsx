@@ -12,7 +12,6 @@ import { useFocusEffect } from "expo-router";
 import { router } from "expo-router";
 import { COLORS, FONTS, fmtEUR } from "@/src/theme";
 import { api } from "@/src/api";
-import { getDb } from "@/src/local/db";
 
 type StatsData = {
   valore_magazzino?: number;
@@ -42,140 +41,10 @@ export default function Stats() {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const db = getDb();
 
-    const prodotti = db.getFirstSync<any>(`
-      SELECT
-        COUNT(*) AS total_products,
-        COALESCE(SUM(quantita), 0) AS total_pieces,
-        COALESCE(SUM(quantita * prezzo_acquisto), 0) AS valore_magazzino,
-        COALESCE(SUM(quantita * prezzo_vendita), 0) AS valore_vendita_potenziale,
-        COALESCE(SUM(CASE WHEN quantita <= soglia_scorta THEN 1 ELSE 0 END), 0) AS sotto_scorta_count
-      FROM products
-    `);
-
-    const vendite = db.getFirstSync<any>(`
-      SELECT
-        COUNT(*) AS numero_vendite,
-        COALESCE(SUM(total), 0) AS vendite_totali
-      FROM sales      
-      WHERE strftime('%Y-%m', datetime(created_at, 'localtime')) = strftime('%Y-%m', 'now', 'localtime')
-    `);
-
-    const venditeGiorno = db.getFirstSync<any>(`
-      SELECT
-        COUNT(*) AS numero_vendite_giorno,
-        COALESCE(SUM(total), 0) AS vendite_giorno
-      FROM sales
-      WHERE date(created_at, 'localtime') = date('now', 'localtime')
-    `);
-
-    const categorie = db.getAllSync<any>(`
-      SELECT
-        COALESCE(categoria, 'Senza categoria') AS nome,
-        COUNT(*) AS count
-      FROM products
-      GROUP BY COALESCE(categoria, 'Senza categoria')
-      ORDER BY count DESC
-      LIMIT 8
-      `);
-
-    const piuVenduti = db.getAllSync<any>(`
-      SELECT
-        COALESCE(si.product_id, '') AS product_id,
-        COALESCE(si.descrizione, 'Prodotto senza descrizione') AS descrizione,
-        COALESCE(SUM(si.quantita), 0) AS pezzi_venduti,
-        COALESCE(SUM(si.quantita * si.prezzo_vendita), 0) AS totale_venduto
-      FROM sale_items si
-      GROUP BY COALESCE(si.descrizione, 'Prodotto senza descrizione')
-      HAVING pezzi_venduti > 0
-      ORDER BY pezzi_venduti DESC, totale_venduto DESC
-      LIMIT 5
-    `);
-
-    const menoVenduti = db.getAllSync<any>(`
-      SELECT
-        p.id AS product_id, 
-        COALESCE(p.descrizione, 'Prodotto senza descrizione') AS descrizione,
-        COALESCE(SUM(si.quantita), 0) AS pezzi_venduti,
-        COALESCE(SUM(si.quantita * si.prezzo_vendita), 0) AS totale_venduto,
-        COALESCE(p.quantita, 0) AS quantita_magazzino
-      FROM products p
-      LEFT JOIN sale_items si
-        ON si.product_id = p.id
-        OR si.product_id = p.codice_prodotto
-        OR si.product_id = p.barcode
-      GROUP BY p.id
-      ORDER BY pezzi_venduti ASC, quantita_magazzino DESC
-      LIMIT 5
-    `);
- 
-    const costiSecondariRows = db.getAllSync<any>(`
-      SELECT
-        COALESCE(totale_costi_secondari_fornitori, 0) AS totale,
-        costi_secondari_fornitori
-      FROM invoice_imports
-
-      UNION ALL
-
-      SELECT
-        MAX(COALESCE(totale_costi_secondari_fornitori, 0)) AS totale,
-        MAX(costi_secondari_fornitori) AS costi_secondari_fornitori
-      FROM pending_invoice_products
-      GROUP BY COALESCE(numero_fattura, fornitore, 'senza_fattura')
-    `);
-
-    let totaleCostiSecondariFornitori = 0;
-    const costiSecondariMap: Record<string, number> = {};
-
-    for (const row of costiSecondariRows || []) {
-      totaleCostiSecondariFornitori += Number(row.totale || 0);
-
-      try {
-        const raw = row.costi_secondari_fornitori;
-        const parsed = raw ? JSON.parse(String(raw)) : null;
-
-        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-          Object.entries(parsed).forEach(([tipo, valore]) => {
-            const nomeTipo = String(tipo || "Altro");
-            const importo = Number(valore || 0);
-
-            if (!costiSecondariMap[nomeTipo]) {
-              costiSecondariMap[nomeTipo] = 0;
-            }
-
-            costiSecondariMap[nomeTipo] += importo;
-          });
-        }
-      } catch (e) {
-        console.warn("Costi secondari non leggibili:", e);
-      }
-    }
-
-    const costiSecondariPerTipo = Object.entries(costiSecondariMap).map(
-      ([tipo, totale]) => ({
-        tipo,
-        totale,
-      })
-    );
-
-    setStats({
-      valore_magazzino: Number(prodotti?.valore_magazzino || 0),
-      valore_vendita_potenziale: Number(prodotti?.valore_vendita_potenziale || 0),
-      total_products: Number(prodotti?.total_products || 0),
-      total_pieces: Number(prodotti?.total_pieces || 0),
-      vendite_totali: Number(vendite?.vendite_totali || 0),
-      numero_vendite: Number(vendite?.numero_vendite || 0),
-      vendite_giorno: Number(venditeGiorno?.vendite_giorno || 0),
-      numero_vendite_giorno: Number(venditeGiorno?.numero_vendite_giorno || 0),
-      sotto_scorta_count: Number(prodotti?.sotto_scorta_count || 0),
-      totale_costi_secondari_fornitori: totaleCostiSecondariFornitori,
-      costi_secondari_fornitori_per_tipo: costiSecondariPerTipo,
-      categorie: Array.isArray(categorie) ? categorie : [],
-      piu_venduti: Array.isArray(piuVenduti) ? piuVenduti : [],
-      meno_venduti: Array.isArray(menoVenduti) ? menoVenduti : [],
-    });
-  }, []);
+    const data = await api.statistiche();
+    setStats(data);
+  }, []);    
 
   useFocusEffect(
     useCallback(() => {

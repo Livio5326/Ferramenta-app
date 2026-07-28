@@ -8,11 +8,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as XLSX from 'xlsx';
 
 import { COLORS, FONTS } from '@/src/theme';
-import {
-  createLocalProduct,
-  getLocalProductById,
-  updateLocalProduct,
-} from '@/src/local/db';
+import { api } from '@/src/api';
 
 const COLS = ['BARCODE', 'CODICE PRODOTTO', 'DESCRIZIONE', 'MARCA', 'CATEGORIA', 'P. ACQUISTO', 'P. VENDITA', 'QUANTITÀ', 'FORNITORE', 'FOTO', 'NOTE'];
 
@@ -80,33 +76,10 @@ export default function ImportScreen() {
     setLog('Caricamento in corso...');
     try {
       const data = normalize(rows);
-      let inseriti = 0;  
-      let aggiornati = 0;
-      let errori = 0;
- 
-      for (const prodotto of data) {
-        try {
-          const identificativo =
-            prodotto.codice_prodotto ||
-            prodotto.barcode ||
-            '';
-
-          const esistente = identificativo
-            ? (getLocalProductById(identificativo) as any)
-            : null;
-
-          if (esistente) {
-            updateLocalProduct(String(esistente.id), prodotto);
-            aggiornati++;
-          } else {
-            createLocalProduct(prodotto);
-            inseriti++;
-          }
-        } catch (errore) {
-          console.warn('Errore import prodotto:', prodotto, errore);
-          errori++;
-        }
-      }
+      const { inserted, updated } = await api.bulkImportProducts(data);
+      const inseriti = inserted;
+      const aggiornati = updated;
+      const errori = 0;   
 
       const totale = inseriti + aggiornati;
 

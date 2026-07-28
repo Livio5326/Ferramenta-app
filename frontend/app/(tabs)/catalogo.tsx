@@ -299,7 +299,7 @@ const res = await api.listProductsPage({
 
       setItems(prodottiVisibili);
       loadedCountRef.current = prodottiVisibili.length;
-      const more = Boolean(res.has_more);
+      const more = Boolean(res.hasMore);
       setHasMore(more);
       hasMoreRef.current = more;
       skipRef.current = data.length;
@@ -424,10 +424,10 @@ const loadMore = useCallback(async () => {
         return [...prev, ...nuovi];
       });
 
-      const more = Boolean(res.has_more);
+      const more = Boolean(res.hasMore);
       setHasMore(more);
       hasMoreRef.current = more;
-      skipRef.current = currentSkip + PAGE_SIZE;
+      skipRef.current = currentSkip + data.length;
     } catch (e: any) {
       console.warn("Errore caricamento altri prodotti", e);
     } finally {
@@ -495,6 +495,7 @@ const loadMore = useCallback(async () => {
       const hasPromo = haPromoProdotto(item);
       const foto = getProductPhoto(item);
       const uri = buildImageUri(foto);
+      console.log("URI FOTO:", uri.substring(0, 50), uri.length);
       const productId = getProductId(item);
 
       return (

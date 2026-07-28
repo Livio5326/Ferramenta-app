@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 import uuid
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from fastapi.staticfiles import StaticFiles
 from import_fatture_service import importa_fattura_xml_da_file
 
@@ -2337,23 +2337,31 @@ def calcola_categoria_standard_import(data: dict) -> str:
 @api_router.post("/products/bulk")
 async def bulk_import(products: List[ProductCreate]):
     inserted = 0
+    updated = 0
+
     for p in products:
         data = p.dict()
         data["categoria_standard"] = calcola_categoria_standard_import(data)
         prod = Product(**data)
-        # upsert per barcode se presente, altrimenti per descrizione
+
         key = {"barcode": prod.barcode} if prod.barcode else {"descrizione": prod.descrizione}
         existing = await db.products.find_one(key, {"_id": 0})
+
         if existing:
             await db.products.update_one(
                 {"id": existing["id"]},
                 {"$set": {**prod.dict(), "id": existing["id"]}},
             )
+            updated += 1
         else:
             data = applica_marca_standard_al_prodotto(prod.dict())
-    await db.products.insert_one(data)
-    return {"inserted": inserted}
+            await db.products.insert_one(data)
+            inserted += 1
 
+    return {
+        "inserted": inserted,
+        "updated": updated,
+    }
 
 @api_router.post("/seed")
 async def seed_demo():
@@ -2459,6 +2467,102 @@ async def stats():
         )
     ]
 
+    from datetime import date
+
+    oggi = date.today().isoformat()
+
+    sales_today = [
+        s for s in sales_docs
+        if str(s.get("created_at", "")).startswith(oggi)
+    ]
+
+    vendite_giorno = round(
+        sum(float(s.get("totale", 0)) for s in sales_today),
+        2
+    )
+
+    numero_vendite_giorno = len(sales_today)
+
+    # Più venduti
+    pipeline_best = [
+        {"$unwind": "$items"},
+        {
+            "$group": {
+                "_id": "$items.product_id",
+                "descrizione": {"$first": "$items.descrizione"},
+                "pezzi_venduti": {"$sum": "$items.quantita"},
+                "totale_venduto": {
+                    "$sum": {
+                        "$multiply": [
+                            "$items.prezzo_vendita",
+                            "$items.quantita"
+                        ]
+                    }
+                },
+            }
+        },
+        {"$sort": {"pezzi_venduti": -1, "totale_venduto": -1}},
+        {"$limit": 5},
+        {
+            "$project": {
+                "_id": 0,
+                "product_id": "$_id",
+                "descrizione": 1,
+                "pezzi_venduti": 1,
+                "totale_venduto": {"$round": ["$totale_venduto", 2]},
+            }
+        },
+    ]
+
+    piu_venduti = await db.sales.aggregate(pipeline_best).to_list(5)
+
+    # Meno venduti
+    pipeline_least = [
+        {
+            "$lookup": {
+                "from": "sales",
+                "pipeline": [
+                    {"$unwind": "$items"},
+                    {
+                        "$group": {
+                            "_id": "$items.product_id",
+                            "pezzi_venduti": {"$sum": "$items.quantita"},
+                            "totale_venduto": {
+                                "$sum": {
+                                    "$multiply": ["$items.prezzo_vendita", "$items.quantita"]
+                                }
+                            },
+                        }
+                    },
+                ],
+                "as": "vendite",
+            }
+        },
+        {
+            "$addFields": {
+                "vendita": {"$arrayElemAt": ["$vendite", 0]}
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "product_id": "$id",
+                "descrizione": 1,
+                "pezzi_venduti": {"$ifNull": ["$vendita.pezzi_venduti", 0]},
+                "totale_venduto": {"$ifNull": ["$vendita.totale_venduto", 0]},
+                "quantita_magazzino": "$quantita",
+            }
+        },
+        {
+            "$sort": {
+                "pezzi_venduti": 1,
+                "quantita_magazzino": -1,
+            }
+        },
+        {"$limit": 5},
+    ]
+
+    meno_venduti = await db.products.aggregate(pipeline_least).to_list(5)
 
     return {
         "total_products": total_products,
@@ -2472,6 +2576,10 @@ async def stats():
         "categorie": [{"nome": k, "count": v} for k, v in sorted(cat_counts.items(), key=lambda x: -x[1])],
         "vendite_totali": round(totale_vendite, 2),
         "numero_vendite": len(sales_docs),
+        "vendite_giorno": vendite_giorno,
+        "numero_vendite_giorno": numero_vendite_giorno,
+        "piu_venduti": piu_venduti,
+        "meno_venduti": meno_venduti,
     }
 
 @api_router.get("/stats/best-sellers")
@@ -2547,6 +2655,84 @@ async def list_sales(limit: int = 50):
     docs = await db.sales.find({}, {"_id": 0}).sort("created_at", -1).to_list(limit)
     return [Sale(**d) for d in docs]
 
+@api_router.get("/sales/today")
+async def list_sales_today():
+    oggi = datetime.now().astimezone().date()
+
+    docs = await db.sales.find(
+        {},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+
+    risultato = []
+
+    for vendita in docs:
+        created_at = str(vendita.get("created_at") or "")
+
+        try:
+            data_vendita = datetime.fromisoformat(
+                created_at.replace("Z", "+00:00")
+            ).astimezone().date()
+        except Exception:
+            continue
+
+        if data_vendita != oggi:
+            continue
+
+        items = vendita.get("items") or []
+
+        risultato.append({
+            "id": vendita.get("id", ""),
+            "total": round(float(vendita.get("totale", 0)), 2),
+            "created_at": created_at,
+            "articoli": len(items),
+            "pezzi": sum(int(item.get("quantita", 0)) for item in items),
+            "prodotto_titolo": (
+                str(items[0].get("descrizione") or "Prodotto venduto")
+                if items
+                else "Prodotto venduto"
+            ),
+        })
+
+    return risultato
+
+
+@api_router.delete("/sales/{sale_id}")
+async def delete_sale(sale_id: str):
+    vendita = await db.sales.find_one({"id": sale_id})
+
+    if not vendita:
+        raise HTTPException(
+            status_code=404,
+            detail="Vendita non trovata"
+        )
+
+    items = vendita.get("items") or []
+
+    for item in items:
+        product_id = str(item.get("product_id") or "")
+        quantita = int(item.get("quantita") or 0)
+
+        if product_id and quantita > 0:
+            await db.products.update_one(
+                {"id": product_id},
+                {
+                    "$inc": {"quantita": quantita},
+                    "$set": {
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    },
+                },
+            )
+
+    await db.sales.delete_one({"id": sale_id})
+
+    return {
+        "ok": True,
+        "sale_id": sale_id,
+        "quantita_ripristinate": sum(
+            int(item.get("quantita") or 0) for item in items
+        ),
+    }
 
 
 

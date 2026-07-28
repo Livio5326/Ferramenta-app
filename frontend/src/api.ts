@@ -29,10 +29,18 @@ export const api = {
     if (params.marca_standard && params.marca_standard !== 'Tutte') qs.set('marca_standard', params.marca_standard);
     if (params.sotto_scorta) qs.set('sotto_scorta', 'true');
     
-
     const s = qs.toString();
     return req<Product[]>('/products' + (s ? '?' + s : ''));
   },
+
+  bulkImportProducts: (products: any[]) =>
+    req<{
+      inserted: number;
+      updated: number;
+    }>('/products/bulk', {
+      method: 'POST',
+      body: JSON.stringify(products),
+    }),
   listStandardBrands: () => req<{ items: string[] }>('/brands/standard'),
   listProductsPage: (params: {
     q?: string;
@@ -242,10 +250,39 @@ export const api = {
       categorie: { nome: string; count: number }[];
       vendite_totali: number;
       numero_vendite: number;
+      vendite_giorno: number;
+      numero_vendite_giorno: number;
+      piu_venduti: any[];
+      meno_venduti: any[];
+      totale_costi_secondari_fornitori: number;
+      costi_secondari_fornitori_per_tipo: {
+        tipo: string;
+        totale: number;
+      }[];
+
     }>('/statistiche'),
   createSale: (items: { product_id: string; descrizione: string; prezzo_vendita: number; quantita: number }[]) =>
     req<{ id: string; totale: number }>('/sales', { method: 'POST', body: JSON.stringify({ items }) }),
 
+  listSalesToday: () =>
+    req<{
+      id: string;
+      total: number;
+      created_at: string;
+      articoli: number;
+      pezzi: number;
+      prodotto_titolo: string;
+    }[]>('/sales/today'),
+
+  deleteSale: (saleId: string) =>
+    req<{
+      ok: boolean;
+      sale_id: string;
+      quantita_ripristinate: number;
+    }>(`/sales/${encodeURIComponent(saleId)}`, {
+      method: 'DELETE',
+    }), 
+ 
   listSearchSynonyms: async () => {
     return req<{ termine: string; sinonimi: string[] }[]>('/search-synonyms');
   },
