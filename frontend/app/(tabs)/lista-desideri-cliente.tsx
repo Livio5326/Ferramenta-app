@@ -1,10 +1,11 @@
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS } from '@/src/theme';
 import { useClienteStore } from '@/src/clienteStore';
 import { Image } from 'expo-image';
 
+import AppButton from '@/src/components/AppButton';
 const BACKEND_URL = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
 
 function getFotoUrl(foto?: string) {
@@ -73,20 +74,20 @@ export default function ListaDesideriClienteScreen() {
                 </Text>
 
                 <View style={styles.actions}>
-                  <Pressable
+                  <AppButton
   style={styles.cartButton}
   onPress={() => {
     aggiungiCarrello(item, item.quantitaCarrello || 1);
 }}
 >
   <Text style={styles.cartButtonText}>AGGIUNGI AL CARRELLO</Text>
-</Pressable>
-                  <Pressable
+</AppButton>
+                  <AppButton
                     style={styles.removeButton}
                     onPress={() => rimuoviDesideri(item.id)}
                   >
                     <Text style={styles.removeButtonText}>RIMUOVI</Text>
-                  </Pressable>
+                  </AppButton>
                 </View>
               </View>
             ))}

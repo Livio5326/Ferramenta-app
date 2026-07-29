@@ -3,7 +3,6 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { COLORS, FONTS } from '@/src/theme';
 
+import AppButton from '@/src/components/AppButton';
 export default function PreventivoScreen() {
   const router = useRouter();
 
@@ -45,9 +45,9 @@ export default function PreventivoScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.content}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
+          <AppButton style={styles.backBtn} onPress={() => router.back()}>
             <Text style={styles.backTxt}>← INDIETRO</Text>
-          </Pressable>
+          </AppButton>
 
           <Text style={styles.kicker}>FERRAMENTA LOPERFIDO</Text>
           <Text style={styles.title}>RICHIEDI PREVENTIVO</Text>
@@ -107,9 +107,9 @@ export default function PreventivoScreen() {
               textAlignVertical="top"
             />
 
-            <Pressable style={styles.submitBtn} onPress={handleInvia}>
+            <AppButton style={styles.submitBtn} onPress={handleInvia}>
               <Text style={styles.submitTxt}>INVIA RICHIESTA</Text>
-            </Pressable>
+            </AppButton>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

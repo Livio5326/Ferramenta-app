@@ -1,18 +1,19 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { COLORS, FONTS } from '@/src/theme';
 
+import AppButton from '@/src/components/AppButton';
 export default function IdraulicaScreen() {
   const router = useRouter();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <AppButton style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backTxt}>← INDIETRO</Text>
-        </Pressable>
+        </AppButton>
 
         <Text style={styles.kicker}>FERRAMENTA LOPERFIDO</Text>
         <Text style={styles.title}>IDRAULICA</Text>
@@ -28,7 +29,7 @@ export default function IdraulicaScreen() {
             Questa sarà la pagina dedicata al reparto Idraulica. Qui poi mostreremo i prodotti filtrati dal catalogo.
           </Text>
 
-          <Pressable
+          <AppButton
             style={styles.catalogBtn}
             onPress={() =>
   router.push({
@@ -38,7 +39,7 @@ export default function IdraulicaScreen() {
 }
           >
             <Text style={styles.catalogBtnText}>APRI CATALOGO</Text>
-          </Pressable>
+          </AppButton>
         </View>
       </ScrollView>
     </SafeAreaView>

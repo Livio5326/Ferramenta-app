@@ -1,10 +1,11 @@
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS } from '@/src/theme';
 import { useClienteStore } from '@/src/clienteStore';
 import { useRouter } from 'expo-router';import { Image } from 'expo-image';
 
+import AppButton from '@/src/components/AppButton';
 const BACKEND_URL = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
 
 function getFotoUrl(foto?: string) {
@@ -84,7 +85,7 @@ export default function CarrelloClienteScreen() {
                     </Text>
                   </View>
 <View style={styles.qtyRow}>
-  <Pressable
+  <AppButton
     style={styles.qtyBtn}
     onPress={() =>
       aggiornaQuantitaCarrello(
@@ -94,11 +95,11 @@ export default function CarrelloClienteScreen() {
     }
   >
     <Text style={styles.qtyBtnText}>-</Text>
-  </Pressable>
+  </AppButton>
 
   <Text style={styles.qtyNum}>{item.quantitaCarrello || 1}</Text>
 
-  <Pressable
+  <AppButton
     style={styles.qtyBtn}
     onPress={() =>
       aggiornaQuantitaCarrello(
@@ -108,14 +109,14 @@ export default function CarrelloClienteScreen() {
     }
   >
     <Text style={styles.qtyBtnText}>+</Text>
-  </Pressable>
+  </AppButton>
 </View>
-                  <Pressable
+                  <AppButton
                     style={styles.removeButton}
                     onPress={() => rimuoviCarrello(item.id)}
                   >
                     <Text style={styles.removeButtonText}>RIMUOVI</Text>
-                  </Pressable>
+                  </AppButton>
                 </View>
               ))}
             </View>
@@ -127,12 +128,12 @@ export default function CarrelloClienteScreen() {
               </Text>
             </View>
 
-            <Pressable
+            <AppButton
   style={styles.buyButton}
   onPress={() => router.push('/checkout-cliente' as any)}
 >
   <Text style={styles.buyButtonText}>ACQUISTA</Text>
-</Pressable>
+</AppButton>
           </>
         )}
       </ScrollView>

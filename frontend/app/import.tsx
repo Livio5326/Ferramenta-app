@@ -1,5 +1,12 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  useState } from 'react';
+import { View,
+  Text,
+  StyleSheet,
+  Alert,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -10,6 +17,7 @@ import * as XLSX from 'xlsx';
 import { COLORS, FONTS } from '@/src/theme';
 import { api } from '@/src/api';
 
+import AppButton from '@/src/components/AppButton';
 const COLS = ['BARCODE', 'CODICE PRODOTTO', 'DESCRIZIONE', 'MARCA', 'CATEGORIA', 'P. ACQUISTO', 'P. VENDITA', 'QUANTITÀ', 'FORNITORE', 'FOTO', 'NOTE'];
 
 export default function ImportScreen() {
@@ -30,8 +38,19 @@ export default function ImportScreen() {
       setLog('Lettura file...');
       const b64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
       const wb = XLSX.read(b64, { type: 'base64' });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const json: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      const json: any[] = wb.SheetNames.flatMap((sheetName) => {
+        console.log(
+          "Righe Saratoga:",
+          json.filter((r) =>
+            JSON.stringify(r).toLowerCase().includes("saratoga")
+          )
+        );
+        const sheet = wb.Sheets[sheetName];
+
+        return XLSX.utils.sheet_to_json(sheet, {
+          defval: '',
+        });
+      });
       setLog(`${json.length} righe trovate. Anteprima:`);
       setPreview(json.slice(0, 5));
       // store full
@@ -43,28 +62,128 @@ export default function ImportScreen() {
     }
   };
 
-  const normalize = (rows: any[]) => {
-    const num = (v: any) => {
-      if (typeof v === 'number') return v;
-      const s = String(v || '').replace(',', '.').replace(/[^0-9.\-]/g, '');
-      const n = parseFloat(s);
-      return Number.isFinite(n) ? n : 0;
-    };
-    return rows.map((r) => ({
-      barcode: String(r['BARCODE'] ?? r['barcode'] ?? '').trim(),
-      codice_prodotto: String(r['CODICE PRODOTTO'] ?? r['Codice Prodotto'] ?? r['codice_prodotto'] ?? r['CODICE FORNITORE'] ?? r['Codice Fornitore'] ?? '').trim(),
-      descrizione: String(r['DESCRIZIONE'] ?? r['descrizione'] ?? '').trim() || 'Senza descrizione',
-      marca: String(r['MARCA'] ?? r['marca'] ?? '').trim(),
-      categoria: String(r['CATEGORIA'] ?? r['categoria'] ?? '').trim(),
-      prezzo_acquisto: num(r['P. ACQUISTO'] ?? r['prezzo_acquisto']),
-      prezzo_vendita: num(r['P. VENDITA'] ?? r['prezzo_vendita']),
-      quantita: parseInt(String(r['QUANTITÀ'] ?? r['QUANTITA'] ?? r['quantita'] ?? 0)) || 0,
-      fornitore: String(r['FORNITORE'] ?? r['fornitore'] ?? '').trim(),
-      foto: String(r['FOTO'] ?? r['foto'] ?? '').trim(),
-      note: String(r['NOTE'] ?? r['note'] ?? '').trim(),
-      soglia_scorta: 5,
-    }));
+  const normalize = (rows: any[], marcheStandard: string[]) => {
+  const num = (v: any) => {
+    if (typeof v === 'number') return v;
+
+    const s = String(v || '')
+      .replace(',', '.')
+      .replace(/[^0-9.\-]/g, '');
+
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n : 0;
   };
+
+  const pulisciTesto = (valore: any) =>
+    String(valore || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
+
+  const trovaMarcaStandard = (marca: string, fornitore: string) => {
+    const testoCompleto = pulisciTesto(`${marca} ${fornitore}`);
+
+    if (!testoCompleto) return '';
+
+    const marcheOrdinate = [...marcheStandard]
+      .filter((m) => m && m !== 'Tutte')
+      .sort((a, b) => b.length - a.length);
+
+    return (
+      marcheOrdinate.find((marcaStandard) => {
+        const marcaPulita = pulisciTesto(marcaStandard);
+
+        return (
+          marcaPulita.length >= 3 &&
+          testoCompleto.includes(marcaPulita)
+        );
+      }) || ''
+    );
+  };
+
+  return rows.map((r) => {
+    const marca = String(
+      r['MARCA'] ??
+      r['marca'] ??
+      ''
+    ).trim();
+
+    const fornitore = String(
+      r['FORNITORE'] ??
+      r['fornitore'] ??
+      ''
+    ).trim();
+
+    return {
+      barcode: String(
+        r['BARCODE'] ??
+        r['barcode'] ??
+        ''
+      ).trim(),
+
+      codice_prodotto: String(
+        r['CODICE PRODOTTO'] ??
+        r['Codice Prodotto'] ??
+        r['codice_prodotto'] ??
+        r['CODICE FORNITORE'] ??
+        r['Codice Fornitore'] ??
+        ''
+      ).trim(),
+
+      descrizione: String(
+        r['DESCRIZIONE'] ??
+        r['descrizione'] ??
+        ''
+      ).trim() || 'Senza descrizione',
+
+      marca,
+      marca_standard: trovaMarcaStandard(marca, fornitore),
+
+      categoria: String(
+        r['CATEGORIA'] ??
+        r['categoria'] ??
+        ''
+      ).trim(),
+
+      prezzo_acquisto: num(
+        r['P. ACQUISTO'] ??
+        r['prezzo_acquisto']
+      ),
+
+      prezzo_vendita: num(
+        r['P. VENDITA'] ??
+        r['prezzo_vendita']
+      ),
+
+      quantita:
+        parseInt(
+          String(
+            r['QUANTITÀ'] ??
+            r['QUANTITA'] ??
+            r['quantita'] ??
+            0
+          )
+        ) || 0,
+
+      fornitore,
+
+      foto: String(
+        r['FOTO'] ??
+        r['foto'] ??
+        ''
+      ).trim(),
+
+      note: String(
+        r['NOTE'] ??
+        r['note'] ??
+        ''
+      ).trim(),
+
+      soglia_scorta: 5,
+    };
+  });
+};
 
   const upload = async () => {
     const rows: any[] = (globalThis as any).__imported || [];
@@ -75,7 +194,8 @@ export default function ImportScreen() {
     setBusy(true);
     setLog('Caricamento in corso...');
     try {
-      const data = normalize(rows);
+      const listeStandard = await api.getStandardLists();
+      const data = normalize(rows, listeStandard.marche || []);
       const { inserted, updated } = await api.bulkImportProducts(data);
       const inseriti = inserted;
       const aggiornati = updated;
@@ -103,7 +223,7 @@ export default function ImportScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']} testID="import-screen">
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} testID="import-close"><Feather name="x" size={24} color={COLORS.onSurface} /></Pressable>
+        <AppButton onPress={() => router.back()} testID="import-close"><Feather name="x" size={24} color={COLORS.onSurface} /></AppButton>
         <Text style={styles.title}>IMPORTA EXCEL</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -116,10 +236,10 @@ export default function ImportScreen() {
           </View>
         </View>
 
-        <Pressable style={styles.pickBtn} onPress={pickAndParse} disabled={busy} testID="pick-file-btn">
+        <AppButton style={styles.pickBtn} onPress={pickAndParse} disabled={busy} testID="pick-file-btn">
           <Feather name="file-plus" size={24} color={COLORS.onBrandPrimary} />
           <Text style={styles.pickBtnTxt}>{busy ? 'ATTENDI...' : 'SCEGLI FILE EXCEL'}</Text>
-        </Pressable>
+        </AppButton>
 
         {log ? <Text style={styles.log}>{log}</Text> : null}
 
@@ -132,14 +252,14 @@ export default function ImportScreen() {
                 <Text style={styles.previewMeta}>{r['MARCA'] || ''} · {r['CATEGORIA'] || ''} · QTA {r['QUANTITÀ'] || r['QUANTITA'] || 0}</Text>
               </View>
             ))}
-            <Pressable style={styles.uploadBtn} onPress={upload} disabled={busy} testID="confirm-import">
+            <AppButton style={styles.uploadBtn} onPress={upload} disabled={busy} testID="confirm-import">
               {busy ? <ActivityIndicator color={COLORS.onSuccess} /> : (
                 <>
                   <Feather name="upload-cloud" size={20} color={COLORS.onSuccess} />
                   <Text style={styles.uploadTxt}>CONFERMA IMPORT</Text>
                 </>
               )}
-            </Pressable>
+            </AppButton>
           </View>
         )}
       </ScrollView>

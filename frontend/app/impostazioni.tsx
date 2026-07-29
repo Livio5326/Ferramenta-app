@@ -1,19 +1,23 @@
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { COLORS, FONTS } from '@/src/theme';
+import { useAuth } from '@/src/auth';
 
+import AppButton from '@/src/components/AppButton';
 export default function ImpostazioniScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+  const isAdmin = user?.ruolo === 'amministratore';  
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
+          <AppButton style={styles.backBtn} onPress={() => router.back()}>
             <Feather name="arrow-left" size={22} color={COLORS.onSurface} />
-          </Pressable>
+          </AppButton>
 
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>IMPOSTAZIONI</Text>
@@ -21,7 +25,53 @@ export default function ImpostazioniScreen() {
           </View>
         </View>
 
-        <Pressable
+        <AppButton
+          style={styles.optionCard}
+          onPress={() => router.push('/profile')}
+        >
+          <View style={styles.optionIcon}>
+            <Feather name="user" size={22} color="#FFFFFF" />
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.optionTitle}>Profilo</Text>
+            <Text style={styles.optionText}>
+              Gestisci account, password e sessione.
+            </Text>
+          </View>
+
+          <Feather
+            name="chevron-right"
+            size={22}
+            color={COLORS.onSurfaceSecondary}
+          />
+        </AppButton>
+
+        {isAdmin && (
+          <AppButton
+            style={styles.optionCard}
+            onPress={() => router.push('/users' as any)}
+          >
+            <View style={styles.optionIcon}>
+              <Feather name="users" size={22} color="#FFFFFF" />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.optionTitle}>Gestione utenti</Text>
+              <Text style={styles.optionText}>
+                Crea e gestisci gli utenti del gestionale.
+              </Text>
+            </View>
+
+            <Feather
+              name="chevron-right"
+              size={22}
+              color={COLORS.onSurfaceSecondary}
+            />
+          </AppButton>
+        )}
+
+        <AppButton
           style={styles.optionCard}
           onPress={() => router.push('/impostazioni/sinonimi-ricerca' as any)}
         >
@@ -37,9 +87,9 @@ export default function ImpostazioniScreen() {
           </View>
 
           <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
-        </Pressable>
+        </AppButton>
 
-        <Pressable
+        <AppButton
           style={styles.optionCard}
           onPress={() => router.push('/impostazioni/promozioni' as any)}
         >
@@ -55,8 +105,8 @@ export default function ImpostazioniScreen() {
           </View>
 
           <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
-        </Pressable>
-       <Pressable
+        </AppButton>
+       <AppButton
          style={styles.optionCard}
          onPress={() => router.push('/liste-standard' as any)}
        >
@@ -72,7 +122,7 @@ export default function ImpostazioniScreen() {
          </View>
 
          <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
-       </Pressable>
+       </AppButton>
       </ScrollView>
     </SafeAreaView>
   );

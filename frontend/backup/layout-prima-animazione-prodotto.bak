@@ -1,0 +1,116 @@
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { AuthProvider, useAuth } from '@/src/auth';
+import { useIconFonts } from '@/src/hooks/use-icon-fonts';
+import { COLORS } from '@/src/theme';
+
+SplashScreen.preventAutoHideAsync();
+
+function AppNavigator() {
+  const { loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [authLoading]);
+
+  if (authLoading) {
+    return null;
+  }
+
+  return (
+    <>
+      <StatusBar style="dark" />
+
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: {
+            backgroundColor: COLORS.surface,
+          },
+        }}
+      >
+        <Stack.Screen
+          name="login"
+          options={{ presentation: 'modal' }}
+        />
+
+        <Stack.Screen name="(tabs)" />
+
+        <Stack.Screen
+          name="profile"
+          options={{ presentation: 'card' }}
+        />
+
+        <Stack.Screen
+          name="edit-profile"
+          options={{ presentation: 'card' }}
+        />
+
+        <Stack.Screen
+          name="users"
+          options={{ presentation: 'card' }}
+        />
+
+        <Stack.Screen
+          name="user-detail"
+          options={{ presentation: 'card' }}
+        />
+
+        <Stack.Screen
+          name="change-password"
+          options={{ presentation: 'card' }}
+        />
+
+        <Stack.Screen
+          name="product/[id]"
+          options={{ presentation: 'card' }}
+        />
+
+        <Stack.Screen
+          name="product/new"
+          options={{ presentation: 'modal' }}
+        />
+
+        <Stack.Screen
+          name="scanner"
+          options={{ presentation: 'modal' }}
+        />
+
+        <Stack.Screen
+          name="import"
+          options={{ presentation: 'modal' }}
+        />
+      </Stack>
+    </>
+  );
+}
+
+export default function RootLayout() {
+  const [fontsLoaded, fontsError] = useIconFonts();
+
+  if (!fontsLoaded && !fontsError) {
+    return null;
+  }
+
+  return (
+    <GestureHandlerRootView
+      style={{
+        flex: 1,
+        backgroundColor: COLORS.surface,
+      }}
+    >
+      <SafeAreaProvider>
+        <AuthProvider>
+          <AppNavigator />
+        </AuthProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}

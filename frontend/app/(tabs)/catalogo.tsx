@@ -1,12 +1,17 @@
-import { api } from "../../src/api";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  api } from "../../src/api";
+import React,
+  { useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Image,
   Modal,
-  Pressable,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -14,10 +19,11 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
+} from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useAppStore } from "../../src/store";
 
+import AppButton from '@/src/components/AppButton';
 const PAGE_SIZE = 30;
 
 const COLORS = {
@@ -222,38 +228,40 @@ export default function CatalogoScreen() {
     m.toLowerCase().includes(brandSearch.toLowerCase())
   );
 
-  useEffect(() => {
-  let active = true;
+  useFocusEffect(
+  useCallback(() => {
+    let active = true;
 
-  const loadStandardLists = async () => {
-    try {
-      const res = await api.getStandardLists();
+    const loadStandardLists = async () => {
+      try {
+        const res = await api.getStandardLists();
 
-      if (!active) return;
+        if (!active) return;
 
-      setCategorieStandardBackend(
-        (res.categorie || []).filter(
-          (v: string) => v && v !== "Tutte"
-        )
-      );
+        setCategorieStandardBackend(
+          (res.categorie || []).filter(
+            (v: string) => v && v !== "Tutte"
+          )
+        );
 
-      setBrandsReali([
-        "Tutte",
-        ...(res.marche || []).filter(
-          (m: string) => m && m !== "Tutte"
-        ),
-      ]);
-    } catch (e) {
-      console.warn("Errore caricamento liste standard", e);
-    }
-  };
+        setBrandsReali([
+          "Tutte",
+          ...(res.marche || []).filter(
+            (m: string) => m && m !== "Tutte"
+          ),
+        ]);
+      } catch (e) {
+        console.warn("Errore caricamento liste standard", e);
+      }
+    };
 
-  loadStandardLists();
+    loadStandardLists();
 
-  return () => {
-    active = false;
-  };
-}, []);
+    return () => {
+      active = false;
+    };
+  }, [])
+);
 
   useEffect(() => {
     if (!catalogoFiltratoDaPagina) return;
@@ -499,7 +507,7 @@ const loadMore = useCallback(async () => {
       const productId = getProductId(item);
 
       return (
-        <Pressable
+        <AppButton
           style={styles.card}
           onPress={() => {
             if (!productId) return;
@@ -554,7 +562,7 @@ const loadMore = useCallback(async () => {
             </View>
 
             {isCliente ? (
-              <Pressable
+              <AppButton
                 style={styles.addButton}
                 onPress={(event) => {
                   event.stopPropagation();
@@ -563,10 +571,10 @@ const loadMore = useCallback(async () => {
                 }}
               >
                 <Text style={styles.addButtonText}>AGGIUNGI</Text>
-              </Pressable>
+              </AppButton>
             ) : null}
           </View>
-        </Pressable>
+        </AppButton>
       );
     },
     [addToCart, isCliente]
@@ -586,9 +594,9 @@ const loadMore = useCallback(async () => {
           <Text style={styles.subtitle}>{headerSubtitle}</Text>
         </View>
 
-        <Pressable style={styles.filterButton} onPress={() => setFiltersOpen(true)}>
+        <AppButton style={styles.filterButton} onPress={() => setFiltersOpen(true)}>
           <Text style={styles.filterButtonText}>Filtri</Text>
-        </Pressable>
+        </AppButton>
       </View>
 
       <View style={styles.searchBox}>
@@ -611,7 +619,7 @@ const loadMore = useCallback(async () => {
       </View>
 
       <View style={styles.searchModeRow}>
-        <Pressable
+        <AppButton
           style={[styles.modeChip, searchMode === "descrizione" && styles.modeChipActive]}
           onPress={() => changeSearchMode("descrizione")}
         >
@@ -623,9 +631,9 @@ const loadMore = useCallback(async () => {
           >
             Descrizione
           </Text>
-        </Pressable>
+        </AppButton>
 
-        <Pressable
+        <AppButton
           style={[styles.modeChip, searchMode === "codice" && styles.modeChipActive]}
           onPress={() => changeSearchMode("codice")}
         >
@@ -637,9 +645,9 @@ const loadMore = useCallback(async () => {
           >
             Codice
           </Text>
-        </Pressable>
+        </AppButton>
 
-        <Pressable
+        <AppButton
           style={[styles.modeChip, searchMode === "barcode" && styles.modeChipActive]}
           onPress={() => changeSearchMode("barcode")}
         >
@@ -651,7 +659,7 @@ const loadMore = useCallback(async () => {
           >
             Barcode
           </Text>
-        </Pressable>
+        </AppButton>
       </View>
 
       <View style={styles.chipsWrap}>
@@ -661,7 +669,7 @@ const loadMore = useCallback(async () => {
           contentContainerStyle={styles.chipsContent}
         >
           {!catalogoFiltratoDaPagina ? (
-            <Pressable
+            <AppButton
               style={[styles.chip, !categoria && styles.chipActive]}
               onPress={() => cambiaCategoria(null)}
               testID="chip-tutti"
@@ -669,11 +677,11 @@ const loadMore = useCallback(async () => {
               <Text style={[styles.chipTxt, !categoria && styles.chipTxtActive]}>
                 TUTTI
               </Text>
-            </Pressable>
+            </AppButton>
           ) : null}
 
           {cats.map((c) => (
-            <Pressable
+            <AppButton
               key={c}
               style={[styles.chip, categoria === c && styles.chipActive]}
               onPress={() => cambiaCategoria(c)}
@@ -682,7 +690,7 @@ const loadMore = useCallback(async () => {
               <Text style={[styles.chipTxt, categoria === c && styles.chipTxtActive]}>
                 {c.toUpperCase()}
               </Text>
-            </Pressable>
+            </AppButton>
           ))}
         </ScrollView>
       </View>
@@ -754,9 +762,9 @@ const loadMore = useCallback(async () => {
           <View style={styles.filtersPanel}>
             <View style={styles.filtersHeader}>
               <Text style={styles.filtersTitle}>Filtri</Text>
-              <Pressable onPress={() => setFiltersOpen(false)}>
+              <AppButton onPress={() => setFiltersOpen(false)}>
                 <Text style={styles.closeText}>CHIUDI</Text>
-              </Pressable>
+              </AppButton>
             </View>
 
             <ScrollView
@@ -767,7 +775,7 @@ const loadMore = useCallback(async () => {
               nestedScrollEnabled
             >
 
-            <Pressable
+            <AppButton
               style={[
                 styles.priceToggle,
                 (brandFilterOpen || marcaStandard) && styles.completeToggleActive,
@@ -782,7 +790,7 @@ const loadMore = useCallback(async () => {
               >
                 Marca: {marcaStandard || "Tutte"} {brandFilterOpen ? "▲" : "▼"}
               </Text>
-            </Pressable>
+            </AppButton>
 
             {brandFilterOpen ? (
               <>
@@ -807,7 +815,7 @@ const loadMore = useCallback(async () => {
                       (!marcaStandard && m === "Tutte") || marcaStandard === m;
 
                     return (
-                      <Pressable
+                      <AppButton
                         key={m}
                         style={[styles.brandRow, active && styles.brandRowActive]}
                         onPress={() => cambiaMarca(m)}
@@ -820,14 +828,14 @@ const loadMore = useCallback(async () => {
                         >
                           {m}
                         </Text>
-                      </Pressable>
+                      </AppButton>
                     );
                   })}
                 </ScrollView>
               </>
             ) : null}
 
-            <Pressable
+            <AppButton
               style={[
                 styles.completeToggle,
                 filtroDaCompletare && styles.completeToggleActive,
@@ -842,9 +850,9 @@ const loadMore = useCallback(async () => {
               >
                 "Da completare"
               </Text>
-            </Pressable>
+            </AppButton>
 
-            <Pressable
+            <AppButton
               style={[
                 styles.priceToggle,
                 (priceFilterOpen || filtroPrezzoAttivo) && styles.completeToggleActive,
@@ -859,7 +867,7 @@ const loadMore = useCallback(async () => {
               >
                 Filtro prezzo {priceFilterOpen ? "▲" : "▼"}
               </Text>
-            </Pressable>
+            </AppButton>
 
             {priceFilterOpen ? (
               <View style={styles.priceBox}>
@@ -879,7 +887,7 @@ const loadMore = useCallback(async () => {
                   style={styles.priceInput}
                 />
 
-                <Pressable
+                <AppButton
                   style={[
                     styles.applyPrice,
                     filtroPrezzoAttivo && styles.applyPriceActive,
@@ -894,11 +902,11 @@ const loadMore = useCallback(async () => {
                   >
                     {filtroPrezzoAttivo ? "DISATTIVA PREZZO" : "ATTIVA PREZZO"}
                   </Text>
-                </Pressable>
+                </AppButton>
               </View>
             ) : null}
 
-            <Pressable
+            <AppButton
               style={styles.resetButton}
               onPress={() => {
                 setMarcaStandard(null);
@@ -912,7 +920,7 @@ const loadMore = useCallback(async () => {
               }}
             >
               <Text style={styles.resetButtonText}>RESET FILTRI</Text>
-            </Pressable>
+            </AppButton>
             </ScrollView>
           </View>
         </View>

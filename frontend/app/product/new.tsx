@@ -1,5 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, Pressable, Modal, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  useCallback,
+  useEffect,
+  useState } from 'react';
+import { View,
+  Text,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  Modal,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -12,6 +24,7 @@ import type { Product } from '@/src/store';
 import { FORNITORI_STANDARD } from '@/src/fornitoriStandard';
 import { CATEGORIE_STANDARD } from '@/src/categorieStandard';
 
+import AppButton from '@/src/components/AppButton';
 type Form = {
   barcode: string;
   codice_prodotto: string;
@@ -186,12 +199,12 @@ useEffect(() => {
     <SafeAreaView style={styles.safe} edges={['top']} testID="product-form">
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} testID="form-close"><Feather name="x" size={24} color={COLORS.onSurface} /></Pressable>
+          <AppButton onPress={() => router.back()} testID="form-close"><Feather name="x" size={24} color={COLORS.onSurface} /></AppButton>
           <Text style={styles.headerTitle}>{editing ? 'MODIFICA' : 'NUOVO PRODOTTO'}</Text>
           <View style={{ width: 24 }} />
         </View>
         <ScrollView contentContainerStyle={{ paddingBottom: 120 }} keyboardShouldPersistTaps="handled">
-          <Pressable style={styles.photoBlock} onPress={() => Alert.alert('Foto', '', [
+          <AppButton style={styles.photoBlock} onPress={() => Alert.alert('Foto', '', [
             { text: 'Camera', onPress: () => pickImage(true) },
             { text: 'Galleria', onPress: () => pickImage(false) },
             { text: 'URL', onPress: () => set('foto', form.foto) },
@@ -205,7 +218,7 @@ useEffect(() => {
                 <Text style={styles.photoHint}>TOCCA PER FOTO</Text>
               </View>
             )}
-          </Pressable>
+          </AppButton>
 
           <Field label="DESCRIZIONE *" value={form.descrizione} onChange={(v) => set('descrizione', v)} testID="f-descrizione" multiline />
           <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
@@ -213,7 +226,7 @@ useEffect(() => {
               <Field label="BARCODE" value={form.barcode} onChange={(v) => set('barcode', v)} testID="f-barcode" keyboard="numeric" />
             </View>
 
-            <Pressable
+            <AppButton
               onPress={() => router.push({ pathname: '/scanner', params: { returnTo: 'product-new' } })}
               style={{
                 width: 54,
@@ -228,14 +241,14 @@ useEffect(() => {
               testID="scan-barcode-new-product"
             >
                <Feather name="maximize" size={22} color={COLORS.brand} />
-            </Pressable>
+            </AppButton>
           </View>
           
           <Field label="CODICE PRODOTTO" value={form.codice_prodotto} onChange={(v) => set('codice_prodotto', v)} testID="f-codice-prodotto" />
           <Field label="URL FOTO (opz.)" value={form.foto.startsWith('data:') ? '' : form.foto} onChange={(v) => set('foto', v)} testID="f-foto" placeholder="https://..." />
           <View style={styles.field}>
           <Text style={styles.fieldSelectLabel}>MARCA</Text>
-          <Pressable
+          <AppButton
             style={[styles.input, styles.selectInput]}
             onPress={() => setBrandPickerOpen(true)}
             testID="f-marca"
@@ -246,11 +259,11 @@ useEffect(() => {
               </Text>
               <Feather name="chevron-down" size={18} color={COLORS.onSurface} />
             </View>
-          </Pressable>
+          </AppButton>
         </View>
           <View style={styles.field}>
           <Text style={styles.fieldSelectLabel}>CATEGORIA</Text>
-          <Pressable
+          <AppButton
             style={[styles.input, styles.selectInput]}
             onPress={() => setCategoryPickerOpen(true)}
             testID="f-categoria"
@@ -261,7 +274,7 @@ useEffect(() => {
               </Text>
               <Feather name="chevron-down" size={18} color={COLORS.onSurface} />
             </View>
-          </Pressable>
+          </AppButton>
         </View>
           <View style={styles.row2}>
             <Field label="P. ACQUISTO €" value={form.prezzo_acquisto} onChange={(v) => set('prezzo_acquisto', v)} testID="f-acq" keyboard="decimal-pad" half />
@@ -273,7 +286,7 @@ useEffect(() => {
           </View>
           <View style={styles.field}>
           <Text style={styles.fieldSelectLabel}>FORNITORE</Text>
-          <Pressable
+          <AppButton
             style={[styles.input, styles.selectInput]}
             onPress={() => setSupplierPickerOpen(true)}
             testID="f-forn"
@@ -284,7 +297,7 @@ useEffect(() => {
               </Text>
               <Feather name="chevron-down" size={18} color={COLORS.onSurface} />
             </View>
-          </Pressable>
+          </AppButton>
         </View>
           <Field label="NOTE" value={form.note} onChange={(v) => set('note', v)} testID="f-note" multiline />
         </ScrollView>
@@ -298,14 +311,14 @@ useEffect(() => {
             <View style={styles.selectBox}>
               <View style={styles.selectHeader}>
                 <Text style={styles.selectTitle}>Marca</Text>
-                <Pressable onPress={() => setBrandPickerOpen(false)}>
+                <AppButton onPress={() => setBrandPickerOpen(false)}>
                   <Text style={styles.selectClose}>×</Text>
-                </Pressable>
+                </AppButton>
               </View>
 
               <ScrollView style={styles.selectList}>
                 {brands.map((brand) => (
-                  <Pressable
+                  <AppButton
                     key={brand}
                     style={[
                       styles.selectOption,
@@ -317,7 +330,7 @@ useEffect(() => {
                     }}
                   >
                     <Text style={styles.selectOptionText}>{brand}</Text>
-                  </Pressable>
+                  </AppButton>
                 ))}
               </ScrollView>
             </View>
@@ -334,14 +347,14 @@ useEffect(() => {
             <View style={styles.selectBox}>
               <View style={styles.selectHeader}>
                 <Text style={styles.selectTitle}>Fornitore</Text>
-                <Pressable onPress={() => setSupplierPickerOpen(false)}>
+                <AppButton onPress={() => setSupplierPickerOpen(false)}>
                   <Text style={styles.selectClose}>×</Text>
-                </Pressable>
+                </AppButton>
               </View>
 
               <ScrollView style={styles.selectList}>
                 {fornitoriStandard.map((supplier: string) => (
-                  <Pressable
+                  <AppButton
                     key={supplier}
                     style={[
                       styles.selectOption,
@@ -353,7 +366,7 @@ useEffect(() => {
                     }}
                   >
                     <Text style={styles.selectOptionText}>{supplier}</Text>
-                  </Pressable>
+                  </AppButton>
                 ))}
               </ScrollView>
             </View>
@@ -370,14 +383,14 @@ useEffect(() => {
             <View style={styles.selectBox}>
               <View style={styles.selectHeader}>
                 <Text style={styles.selectTitle}>Categoria</Text>
-                <Pressable onPress={() => setCategoryPickerOpen(false)}>
+                <AppButton onPress={() => setCategoryPickerOpen(false)}>
                   <Text style={styles.selectClose}>×</Text>
-                </Pressable>
+                </AppButton>
               </View>
 
               <ScrollView style={styles.selectList}>
                 {categorieStandard.map((cat: string) => (
-                  <Pressable
+                  <AppButton
                     key={cat}
                     style={[
                       styles.selectOption,
@@ -389,7 +402,7 @@ useEffect(() => {
                     }}
                   >
                     <Text style={styles.selectOptionText}>{cat}</Text>
-                  </Pressable>
+                  </AppButton>
                 ))}
               </ScrollView>
             </View>
@@ -397,10 +410,10 @@ useEffect(() => {
         </Modal>
 
       <View style={styles.footer}>
-          <Pressable style={[styles.saveBtn, saving && { opacity: 0.5 }]} onPress={submit} disabled={saving} testID="save-btn">
+          <AppButton style={[styles.saveBtn, saving && { opacity: 0.5 }]} onPress={submit} disabled={saving} testID="save-btn">
             <Feather name="check" size={20} color={COLORS.onBrandPrimary} />
             <Text style={styles.saveTxt}>{saving ? 'SALVATAGGIO...' : (editing ? 'AGGIORNA' : 'SALVA PRODOTTO')}</Text>
-          </Pressable>
+          </AppButton>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -31,6 +31,16 @@ export type CartItem = {
   quantita: number;
 };
 
+function getProductId(product: Product): string {
+  return String(
+    product.id ||
+    (product as Product & { _id?: string })._id ||
+    product.codice_prodotto ||
+    product.barcode ||
+    ''
+  );
+}
+
 export function getPrezzoFinale(product: Product): number {
   const prezzoPromo = Number(product.prezzo_promo || 0);
   if (product.promo_attiva && prezzoPromo > 0) {
@@ -50,42 +60,75 @@ type State = {
 };
 
 export const useAppStore = create<State>((set) => ({
-  mode: 'gestore',
+  mode: 'cliente',
   cart: [],
   setMode: (mode) => set({ mode }),
   
   addToCart: (product, q = 1) =>
-  set((s) => {
-    const disponibile = Number(product.quantita ?? 0);
+    set((s) => {
+      const disponibile = Number(product.quantita ?? 0);
+      const productId = getProductId(product);
 
-    if (disponibile <= 0) {
-      return s;
-    }
+      if (disponibile <= 0 || !productId) {
+        return s;
+      }
 
-    const existing = s.cart.find((c) => c.product.id === product.id);
-
-    if (existing) {
-      return {
-        cart: s.cart.map((c) =>
-          c.product.id === product.id
-            ? { ...c, quantita: Math.min(disponibile, c.quantita + q) }
-            : c
-        ),
+      const normalizedProduct = {
+        ...product,
+        id: productId,
       };
-    }
 
-    return {
-      cart: [...s.cart, { product, quantita: Math.min(disponibile, q) }],
-    };
-  }),
+      const existing = s.cart.find(
+        (c) => getProductId(c.product) === productId
+      );
 
-  removeFromCart: (id) => set((s) => ({ cart: s.cart.filter((c) => c.product.id !== id) })),
+      if (existing) {
+        return {
+          cart: s.cart.map((c) =>
+            getProductId(c.product) === productId
+              ? {
+                  ...c,
+                  product: normalizedProduct,
+                  quantita: Math.min(disponibile, c.quantita + q),
+                }
+              : c
+          ),
+        };
+      }
+
+      return {
+        cart: [
+          ...s.cart,
+          {
+            product: normalizedProduct,
+            quantita: Math.min(disponibile, q),
+          },
+        ],
+      };
+    }),
+
+  removeFromCart: (id) =>
+    set((s) => ({
+      cart: s.cart.filter((c) => getProductId(c.product) !== id),
+    })),
+
   updateCartQty: (id, q) =>
     set((s) => ({
       cart: s.cart
-        .map((c) => (c.product.id === id ? { ...c, quantita: Math.min(Number(c.product.quantita ?? 0), Math.max(0, q)) } : c))
+        .map((c) =>
+          getProductId(c.product) === id
+            ? {
+                ...c,
+                quantita: Math.min(
+                  Number(c.product.quantita ?? 0),
+                  Math.max(0, q)
+                ),
+              }
+            : c
+        )
         .filter((c) => c.quantita > 0),
-    })),
+    })),  
+
   clearCart: () => set({ cart: [] }),
 }));
 

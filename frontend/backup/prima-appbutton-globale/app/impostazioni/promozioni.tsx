@@ -1,0 +1,1112 @@
+import { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import { Feather } from '@expo/vector-icons';
+import { api } from '@/src/api';
+import { COLORS, FONTS } from '@/src/theme';
+import * as FileSystem from "expo-file-system/legacy";
+import * as XLSX from "xlsx";
+
+type PromoFile = {
+  uri: string;
+  name?: string;
+  mimeType?: string;
+};
+
+type PreviewResult = {
+  prodotti_letti: number;
+  prodotti_trovati: number;
+  prodotti_aggiornabili: number;
+  prodotti_non_trovati: number;
+  prezzo_mancante_o_non_valido: number;
+  righe?: Array<{
+    riga: number;
+    codice_prodotto: string;
+    codice_usato?: string;
+    codice_override?: string;
+    barcode: string;
+    descrizione_file: string;
+    prezzo_promo: number | null;
+    stato: string;
+    match_usato: string;
+    product_id: string | null;
+    descrizione_db: string;
+    prezzo_vendita_attuale: number | null;
+  }>;
+};
+
+function fmtEUR(value: number | null | undefined) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '-';
+  return `${Number(value).toFixed(2).replace('.', ',')} €`;
+}
+
+function normalizzaChiave(v: any) {
+  return String(v || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[àá]/g, "a")
+    .replace(/[èé]/g, "e")
+    .replace(/[ìí]/g, "i")
+    .replace(/[òó]/g, "o")
+    .replace(/[ùú]/g, "u");
+}
+
+function valoreDaRiga(row: any, possibili: string[]) {
+  const keys = Object.keys(row || {});
+
+  for (const nome of possibili) {
+    const cercato = normalizzaChiave(nome);
+    const key = keys.find((k) => normalizzaChiave(k) === cercato);
+    if (key) return row[key];
+  }
+
+  return "";
+}
+
+function numeroPrezzo(v: any) {
+  const raw = String(v ?? "")
+    .replace("€", "")
+    .replace(/\s/g, "")
+    .replace(",", ".");
+
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : 0;
+}
+
+async function leggiRighePromoDaFile(file: PromoFile) {
+  const base64 = await FileSystem.readAsStringAsync(file.uri, {
+    encoding: "base64" as any,
+  });
+
+  const workbook = XLSX.read(base64, { type: "base64" });
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+
+  const rows = XLSX.utils.sheet_to_json<any>(sheet, {
+    defval: "",
+  });
+
+  return rows;
+}
+
+async function previewPromoImportLocale(
+  file: PromoFile,
+  codeOverrides: Record<string, string>
+): Promise<PreviewResult> {
+  return api.previewPromoImport(file, codeOverrides);
+}
+
+export default function PromozioniScreen() {
+  const [file, setFile] = useState<PromoFile | null>(null);
+  const [promoNome, setPromoNome] = useState('Promo Stanley 2026');
+  const [promoInizio, setPromoInizio] = useState('');
+  const [promoFine, setPromoFine] = useState('');
+  const [preview, setPreview] = useState<PreviewResult | null>(null);
+  const [importPromoOpen, setImportPromoOpen] = useState(false);
+  const [codeOverrides, setCodeOverrides] = useState<Record<string, string>>({});
+  const [overrideInputs, setOverrideInputs] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [activePromos, setActivePromos] = useState<any | null>(null);
+  const [loadingActivePromos, setLoadingActivePromos] = useState(false);
+  const [selectedPromoNome, setSelectedPromoNome] = useState<string | null>(null);
+
+  async function caricaPromozioniAttive() {
+    try {
+      setLoadingActivePromos(true);
+
+      const res = await api.listActivePromos();
+
+      const riepilogoOrdinato = Array.isArray(res?.riepilogo)
+        ? [...res.riepilogo].sort((a, b) =>
+            String(a?.promo_nome || "").localeCompare(String(b?.promo_nome || ""))
+          )
+        : [];
+
+      setActivePromos({
+        ...res,
+        riepilogo: riepilogoOrdinato,
+      });
+
+      setSelectedPromoNome(null);
+    } catch (err: any) {
+      console.warn("Errore promozioni attive offline", err);
+      setActivePromos({
+        totale_prodotti_promo: 0,
+        totale_promo: 0,
+        riepilogo: [],
+      });
+    } finally {
+      setLoadingActivePromos(false);
+    }
+  }
+
+  async function scegliFile() {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          'text/csv',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-excel',
+          '*/*',
+        ],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      const asset = result.assets?.[0];
+      if (!asset) return;
+
+      setFile({
+        uri: asset.uri,
+        name: asset.name,
+        mimeType: asset.mimeType,
+      });
+      setPreview(null);
+      setCodeOverrides({});
+      setOverrideInputs({});
+    } catch (err: any) {
+      Alert.alert('Errore file', err?.message || 'Impossibile selezionare il file.');
+    }
+  }
+
+  async function anteprimaImport() {
+    if (!file) {
+      Alert.alert('File mancante', 'Seleziona prima un file CSV o Excel.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await previewPromoImportLocale(file, codeOverrides);
+      setPreview(res);
+    } catch (err: any) {
+      Alert.alert('Errore anteprima', err?.message || 'Import non riuscito.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function confermaImport() {
+    if (!file) {
+      Alert.alert('File mancante', 'Seleziona prima un file CSV o Excel.');
+      return;
+    }
+
+    if (!promoNome.trim()) {
+      Alert.alert('Nome promozione mancante', 'Inserisci il nome della promozione.');
+      return;
+    }
+
+    if (!preview) {
+      Alert.alert('Anteprima mancante', 'Prima fai l’anteprima, poi conferma.');
+      return;
+    }
+
+    Alert.alert(
+      'Confermare import?',
+      `Aggiornerai ${preview.prodotti_aggiornabili} prodotti con il prezzo promozionale.`,
+      [
+        { text: 'Annulla', style: 'cancel' },
+        {
+          text: 'Conferma',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setLoading(true);
+              if (!file) {
+                throw new Error('File promozione non selezionato.');
+              }
+
+              const res = await api.confirmPromoImport(
+                file,
+                promoNome.trim(),
+                promoInizio.trim(),
+                promoFine.trim(),
+                codeOverrides
+              );
+
+              const nuovePromo = await api.listActivePromos();
+              setActivePromos(nuovePromo);
+
+              Alert.alert("Import completato", `Prodotti aggiornati: ${res.aggiornati}`);
+              setPreview(null);
+            } catch (err: any) {
+              Alert.alert('Errore conferma', err?.message || 'Aggiornamento non riuscito.');
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  }
+
+  async function eliminaPromo(promoNome: string) {
+    Alert.alert(
+      "Sei sicuro di eliminare?",
+      `Vuoi davvero eliminare la promozione "${promoNome}"?\n\nLa promozione verrà rimossa dai prodotti collegati. I prodotti non verranno cancellati.`,
+      [
+        { text: "Annulla", style: "cancel" },
+        {
+          text: "Sì, elimina",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoadingActivePromos(true);
+
+              const resDelete = await api.deletePromoByName(promoNome);
+              const nuovePromo = await api.listActivePromos();
+
+              setActivePromos(nuovePromo);
+              setSelectedPromoNome(null);
+
+              Alert.alert(
+                "Promo eliminata",
+                `Promozione rimossa da ${resDelete.eliminati} prodotti.`
+              );
+            } catch (err: any) {
+              Alert.alert(
+                "Errore eliminazione promo",
+                err?.message || "Impossibile eliminare la promozione."
+              );
+            } finally {
+              setLoadingActivePromos(false);
+            }
+          },
+        },
+      ]
+    );
+  }
+
+  async function cambiaStatoPromo(promoNome: string, attiva: boolean) {
+    Alert.alert(
+      attiva ? "Attivare promozione?" : "Disattivare promozione?",
+      attiva
+        ? `Vuoi attivare la promozione "${promoNome}"?`
+        : `Vuoi disattivare la promozione "${promoNome}"?`,
+      [
+        { text: "Annulla", style: "cancel" },
+        {
+          text: attiva ? "Attiva" : "Disattiva",
+          style: attiva ? "default" : "destructive",
+          onPress: async () => {
+            try {
+              setLoadingActivePromos(true);
+
+              const res = attiva
+                ? await api.activatePromoByName(promoNome)
+                : await api.deactivatePromoByName(promoNome);
+              const nuovePromo = await api.listActivePromos();
+
+              setActivePromos(nuovePromo);
+              setSelectedPromoNome(null);
+
+              Alert.alert(
+                attiva ? "Promo attivata" : "Promo disattivata",
+                `Prodotti modificati: ${
+                  attiva ? ('attivati' in res ? res.attivati : 0) : ('disattivati' in res ? res.disattivati : 0)
+                }`
+              );
+            } catch (err: any) {
+              Alert.alert(
+                "Errore promozione",
+                err?.message || "Impossibile aggiornare la promozione."
+              );
+            } finally {
+              setLoadingActivePromos(false);
+            }
+          },
+        },
+      ]
+    );
+  }
+
+  async function disattivaPromo() {
+    Alert.alert(
+      "Disattivare promozioni?",
+      "Verranno disattivate tutte le promozioni attive. I prezzi standard non verranno modificati.",
+      [
+        { text: "Annulla", style: "cancel" },
+        {
+          text: "Disattiva",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoading(true);
+
+              const res = await api.deactivatePromoPrices();
+              const nuovePromo = await api.listActivePromos();
+
+              setActivePromos(nuovePromo);
+              setSelectedPromoNome(null);
+
+              Alert.alert(
+                "Promozioni disattivate",
+                `Prodotti aggiornati: ${res.disattivati}`
+              );
+            } catch (err: any) {
+              Alert.alert(
+                "Errore",
+                err?.message || "Disattivazione non riuscita."
+              );
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  }
+
+  async function applicaCodiceCorretto(codicePromo: string) {
+    const codicePulito = (overrideInputs[codicePromo] || '').trim();
+
+    if (!codicePulito) {
+      Alert.alert('Codice mancante', 'Inserisci il codice corretto presente nel catalogo.');
+      return;
+    }
+
+    const nuovaMappa = {
+      ...codeOverrides,
+      [codicePromo]: codicePulito,
+    };
+
+    setCodeOverrides(nuovaMappa);
+
+    if (!file) return;
+
+    try {
+      setLoading(true);
+      const res = await previewPromoImportLocale(file, nuovaMappa);
+      setPreview(res);
+    } catch (err: any) {
+      Alert.alert('Errore anteprima', err?.message || 'Impossibile ricalcolare l’anteprima.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function creaProdottoDaRiga(r: NonNullable<PreviewResult['righe']>[number]) {
+    if (!r.codice_prodotto || !r.descrizione_file) {
+      Alert.alert('Dati mancanti', 'Codice prodotto o descrizione mancanti.');
+      return;
+    }
+
+    Alert.alert(
+      'Creare nuovo prodotto?',
+      `Verrà creato un nuovo prodotto con codice ${r.codice_prodotto}. Quantità iniziale: 0.`,
+      [
+        { text: 'Annulla', style: 'cancel' },
+        {
+          text: 'Crea',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setLoading(true);
+
+              await api.createProduct({
+                codice_prodotto: r.codice_prodotto,
+                barcode: "",
+                descrizione: r.descrizione_file || r.codice_prodotto || "Prodotto promo",
+                marca: "STANLEY",
+                marca_standard: "Stanley",
+                categoria: "Altro",
+                categoria_standard: "Altro",
+                prezzo_acquisto: 0,
+                prezzo_vendita: Number(r.prezzo_promo || 0),
+                quantita: 0,
+                fornitore: "Stanley Black & Decker",
+                foto: "",
+                note: "Creato da import promozione fornitori",
+                prezzo_promo: Number(r.prezzo_promo || 0),
+                promo_attiva: true,
+                promo_nome: promoNome.trim(),
+                promo_inizio: promoInizio.trim(),
+                promo_fine: promoFine.trim(),
+              } as any);
+
+              if (file) {
+                const res = await previewPromoImportLocale(file, codeOverrides);
+                setPreview(res);
+              }
+
+              Alert.alert('Prodotto creato', 'Il prodotto è stato creato con quantità 0. Ora può essere aggiornato dalla promozione.');
+            } catch (err: any) {
+              Alert.alert('Errore creazione prodotto', err?.message || 'Impossibile creare il prodotto.');
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  }
+
+  const righeProblematiche = preview?.righe?.filter(
+    r => r.stato !== 'aggiornabile'
+  ).slice(0, 20) || [];
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.iconBox}>
+            <Feather name="truck" size={38} color={COLORS.brand} />
+          </View>
+          <Text style={styles.title}>PROMOZIONI</Text>
+          <Text style={styles.subtitle}>
+            Gestione import, attivazione e controllo promozioni.
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.importPromoToggleBtn}
+          onPress={() => setImportPromoOpen(prev => !prev)}
+        >
+          <Feather name={importPromoOpen ? "x-circle" : "upload-cloud"} size={18} color="#FFFFFF" />
+          <Text style={styles.importPromoToggleText}>
+            {importPromoOpen ? 'Chiudi' : 'Importa promozione'}
+          </Text>
+        </TouchableOpacity>
+
+        {importPromoOpen && (
+          <>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Importa promozione</Text>
+          <Text style={styles.cardText}>
+            Carica un file CSV o Excel con codice prodotto o barcode e prezzo promo.
+            Il prezzo standard resta intatto.
+          </Text>
+
+          <Text style={styles.label}>Nome promozione</Text>
+          <TextInput
+            style={styles.input}
+            value={promoNome}
+            onChangeText={setPromoNome}
+            placeholder="Es. Promo Stanley 2026"
+            placeholderTextColor={COLORS.onSurfaceTertiary}
+          />
+
+          <Text style={styles.label}>Data inizio</Text>
+          <TextInput
+            style={styles.input}
+            value={promoInizio}
+            onChangeText={setPromoInizio}
+            placeholder="Es. 2026-01-01"
+            placeholderTextColor={COLORS.onSurfaceTertiary}
+          />
+
+          <Text style={styles.label}>Data fine</Text>
+          <TextInput
+            style={styles.input}
+            value={promoFine}
+            onChangeText={setPromoFine}
+            placeholder="Es. 2026-12-31"
+            placeholderTextColor={COLORS.onSurfaceTertiary}
+          />
+
+          <TouchableOpacity style={styles.secondaryButton} onPress={scegliFile}>
+            <Feather name="file-plus" size={18} color={COLORS.onSurface} />
+            <Text style={styles.secondaryButtonText}>
+              {file?.name ? file.name : 'Seleziona file CSV / Excel'}
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.row}>
+            <TouchableOpacity
+              style={[styles.button, loading && styles.disabled]}
+              onPress={anteprimaImport}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>ANTEPRIMA</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.confirmButton, loading && styles.disabled]}
+              onPress={confermaImport}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>CONFERMA</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loading && <ActivityIndicator style={{ marginTop: 16 }} />}
+        </View>
+
+        {preview && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Risultato anteprima</Text>
+
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>Prodotti letti</Text>
+              <Text style={styles.statValue}>{preview.prodotti_letti}</Text>
+            </View>
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>Prodotti trovati</Text>
+              <Text style={styles.statValue}>{preview.prodotti_trovati}</Text>
+            </View>
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>Aggiornabili</Text>
+              <Text style={styles.statValue}>{preview.prodotti_aggiornabili}</Text>
+            </View>
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>Non trovati</Text>
+              <Text style={styles.statValue}>{preview.prodotti_non_trovati}</Text>
+            </View>
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>Prezzo mancante/non valido</Text>
+              <Text style={styles.statValue}>{preview.prezzo_mancante_o_non_valido}</Text>
+            </View>
+          </View>
+        )}
+
+        {preview?.righe?.length ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Prime righe aggiornabili</Text>
+            {preview.righe.filter(r => r.stato === 'aggiornabile').slice(0, 10).map((r, index) => (
+              <View key={`${r.riga}-${index}`} style={styles.productRow}>
+                <Text style={styles.productTitle}>{r.descrizione_db || r.descrizione_file}</Text>
+                <Text style={styles.productText}>Codice: {r.codice_prodotto || '-'}</Text>
+                <Text style={styles.productText}>Barcode: {r.barcode || '-'}</Text>
+                <Text style={styles.productText}>Match: {r.match_usato || '-'}</Text>
+                <Text style={styles.promoPrice}>Promo: {fmtEUR(r.prezzo_promo)}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
+        {righeProblematiche.length > 0 && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Righe da controllare</Text>
+            {righeProblematiche.map((r, index) => {
+              const codicePromo = r.codice_prodotto || '';
+              const valoreCampo = overrideInputs[codicePromo] ?? codeOverrides[codicePromo] ?? '';
+
+              return (
+                <View key={`${r.riga}-${index}`} style={styles.problemRow}>
+                  <Text style={styles.productTitle}>Riga {r.riga}: {r.stato}</Text>
+                  <Text style={styles.productText}>Codice promo: {r.codice_prodotto || '-'}</Text>
+                  <Text style={styles.productText}>Codice usato: {r.codice_usato || r.codice_prodotto || '-'}</Text>
+                  <Text style={styles.productText}>Barcode: {r.barcode || '-'}</Text>
+                  <Text style={styles.productText}>Descrizione: {r.descrizione_file || '-'}</Text>
+                  <Text style={styles.promoPrice}>Prezzo promo file: {fmtEUR(r.prezzo_promo)}</Text>
+
+                  <Text style={styles.label}>Codice corretto nel catalogo</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={valoreCampo}
+                    onChangeText={(value) =>
+                      setOverrideInputs(prev => ({
+                        ...prev,
+                        [codicePromo]: value,
+                      }))
+                    }
+                    placeholder="Es. codice prodotto presente nel catalogo"
+                    placeholderTextColor={COLORS.onSurfaceTertiary}
+                    autoCapitalize="characters"
+                  />
+
+                  <TouchableOpacity
+                    style={[styles.secondaryButton, loading && styles.disabled]}
+                    onPress={() => applicaCodiceCorretto(codicePromo)}
+                    disabled={loading}
+                  >
+                    <Feather name="edit-3" size={18} color={COLORS.onSurface} />
+                    <Text style={styles.secondaryButtonText}>APPLICA CODICE</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.dangerButton, loading && styles.disabled]}
+                    onPress={() => creaProdottoDaRiga(r)}
+                    disabled={loading}
+                  >
+                    <Text style={styles.buttonText}>CREA PRODOTTO</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </View>
+        )}
+          </>
+        )}
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Promozioni salvate</Text>
+          <Text style={styles.cardText}>
+            Seleziona una promozione per vedere prodotti collegati, stato e prezzi.
+          </Text>
+
+          <TouchableOpacity
+            style={[styles.secondaryButton, loadingActivePromos && styles.disabled]}
+            onPress={caricaPromozioniAttive}
+            disabled={loadingActivePromos}
+          >
+            <Feather name="refresh-cw" size={18} color={COLORS.onSurface} />
+            <Text style={styles.secondaryButtonText}>
+              {loadingActivePromos ? 'CARICAMENTO...' : 'AGGIORNA LISTA'}
+            </Text>
+          </TouchableOpacity>
+
+          {activePromos && (
+            <>
+              <View style={styles.statRow}>
+                <Text style={styles.statLabel}>Prodotti totali in promo</Text>
+                <Text style={styles.statValue}>{activePromos.totale_prodotti}</Text>
+              </View>
+
+              {activePromos.riepilogo?.length === 0 && (
+                <Text style={styles.cardText}>Nessuna promozione salvata.</Text>
+              )}
+
+              {activePromos.riepilogo?.map((p: any, index: number) => {
+                const isSelected = selectedPromoNome === p.promo_nome;
+
+                return (
+                  <TouchableOpacity
+              key={`${p.promo_nome}-${index}`}
+              style={[
+                styles.productRow,
+                styles.promoListCard,
+                isSelected && styles.promoListCardSelected,
+              ]}
+              onPress={() =>
+                setSelectedPromoNome(isSelected ? null : p.promo_nome)
+              }
+            >
+              <View style={styles.promoCardHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.productTitle}>{p.promo_nome}</Text>
+                  <Text style={styles.promoDateText}>
+                    {p.promo_inizio || '-'} / {p.promo_fine || '-'}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.promoStatusBadge,
+                    p.attiva ? styles.promoStatusActive : styles.promoStatusInactive,
+                  ]}
+                >
+                  <Text style={styles.promoStatusText}>
+                    {p.attiva ? 'ATTIVA' : 'DISATTIVATA'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.promoStatsRow}>
+                <View style={styles.promoStatBox}>
+                  <Text style={styles.promoStatLabel}>PRODOTTI</Text>
+                  <Text style={styles.promoStatValue}>{p.prodotti}</Text>
+                </View>
+
+                <View style={styles.promoStatBox}>
+                  <Text style={styles.promoStatLabel}>ATTIVI</Text>
+                  <Text style={styles.promoStatValue}>{p.prodotti_attivi}</Text>
+                </View>
+              </View>
+
+              <Text style={styles.promoOpenText}>
+                {isSelected ? 'Nascondi prodotti' : 'Vedi prodotti'}
+              </Text>
+            </TouchableOpacity>
+                );
+              })}
+
+              {selectedPromoNome && (
+                <View style={styles.card}>
+                  <Text style={styles.cardTitle}>{selectedPromoNome}</Text>
+                  <Text style={styles.cardText}>
+                    Prodotti contenuti nella promozione selezionata.
+                  </Text>
+
+                  {(() => {
+                    const promoSelezionata = activePromos.riepilogo?.find(
+                      (p: any) => p.promo_nome === selectedPromoNome
+                    );
+
+                    if (!promoSelezionata) return null;
+
+                    return (
+                      <View style={styles.row}>
+                        {promoSelezionata.attiva ? (
+                          <TouchableOpacity
+                            style={[styles.dangerButton, loadingActivePromos && styles.disabled]}
+                            onPress={() => cambiaStatoPromo(selectedPromoNome, false)}
+                            disabled={loadingActivePromos}
+                          >
+                            <Text style={styles.buttonText}>DISATTIVA QUESTA PROMO</Text>
+                          </TouchableOpacity>
+                        ) : (
+                          <TouchableOpacity
+                            style={[styles.button, loadingActivePromos && styles.disabled]}
+                            onPress={() => cambiaStatoPromo(selectedPromoNome, true)}
+                            disabled={loadingActivePromos}
+                          >
+                            <Text style={styles.buttonText}>ATTIVA QUESTA PROMO</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    );
+                  })()}
+
+                  {selectedPromoNome && (
+                    <TouchableOpacity
+                      style={[styles.dangerButton, loadingActivePromos && styles.disabled]}
+                      onPress={() => eliminaPromo(selectedPromoNome)}
+                      disabled={loadingActivePromos}
+                    >
+                      <Text style={styles.buttonText}>ELIMINA PROMO</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {activePromos.prodotti
+                    ?.filter((p: any) => p.promo_nome === selectedPromoNome)
+                    .map((p: any, index: number) => (
+                      <View key={`${p.id}-${index}`} style={styles.productRow}>
+                        <Text style={styles.productTitle}>{p.descrizione}</Text>
+                        <Text style={styles.productText}>Codice: {p.codice_prodotto || '-'}</Text>
+                        <Text style={styles.productText}>
+                          Prezzo normale: {fmtEUR(p.prezzo_vendita)}
+                        </Text>
+                        <Text style={styles.promoPrice}>
+                          Promo: {fmtEUR(p.prezzo_promo)}
+                        </Text>
+                      </View>
+                    ))}
+                </View>
+              )}
+            </>
+          )}
+        </View>
+
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+  },
+  container: {
+    padding: 18,
+    paddingBottom: 40,
+    gap: 16,
+  },
+  header: {
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 4,
+  },
+  iconBox: {
+    width: 76,
+    height: 76,
+    borderWidth: 1,
+    borderColor: COLORS.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+  },
+  title: {
+    fontFamily: FONTS.display,
+    fontSize: 24,
+    color: COLORS.onSurface,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  subtitle: {
+    fontFamily: FONTS.mono,
+    fontSize: 14,
+    color: COLORS.onSurfaceTertiary,
+    textAlign: 'center',
+    lineHeight: 21,
+  },
+  importPromoToggleBtn: {
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: COLORS.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+    elevation: 4,
+  },
+  importPromoToggleText: {
+    fontFamily: FONTS.mono,
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.4,
+  },
+
+  card: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 14,
+    gap: 10,
+  },
+  cardTitle: {
+    fontFamily: FONTS.display,
+    fontSize: 18,
+    fontWeight: '900',
+    color: COLORS.onSurface,
+    letterSpacing: 1,
+  },
+  cardText: {
+    fontFamily: FONTS.mono,
+    fontSize: 13,
+    color: COLORS.onSurfaceTertiary,
+    lineHeight: 19,
+  },
+  label: {
+    fontFamily: FONTS.mono,
+    fontSize: 12,
+    color: COLORS.onSurfaceTertiary,
+    marginTop: 4,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
+    color: COLORS.onSurface,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontFamily: FONTS.mono,
+    fontSize: 14,
+  },
+   secondaryButton: {
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  paddingVertical: 13,
+  paddingHorizontal: 14,
+  borderRadius: 14,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  backgroundColor: COLORS.surface,
+  marginTop: 10,
+},
+
+secondaryButtonText: {
+  flexShrink: 1,
+  fontFamily: FONTS.mono,
+  color: COLORS.onSurface,
+  fontSize: 13,
+  fontWeight: '800',
+  textAlign: 'center',
+},
+
+row: {
+  flexDirection: 'row',
+  gap: 10,
+  marginTop: 10,
+},
+
+button: {
+  flex: 1,
+  backgroundColor: COLORS.brand,
+  paddingVertical: 14,
+  paddingHorizontal: 12,
+  borderRadius: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: 48,
+},
+
+confirmButton: {
+  backgroundColor: COLORS.surfaceInverse,
+},
+
+dangerButton: {
+  flex: 1,
+  backgroundColor: '#8B1E1E',
+  paddingVertical: 14,
+  paddingHorizontal: 12,
+  borderRadius: 14,
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: 48,
+},
+
+disabled: {
+  opacity: 0.5,
+},
+
+buttonText: {
+  fontFamily: FONTS.display,
+  color: COLORS.onSurfaceInverse,
+  fontWeight: '900',
+  fontSize: 13,
+  letterSpacing: 0.8,
+  textAlign: 'center',
+},
+  statRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingVertical: 8,
+  },
+  statLabel: {
+    fontFamily: FONTS.mono,
+    color: COLORS.onSurfaceTertiary,
+    fontSize: 13,
+  },
+  statValue: {
+    fontFamily: FONTS.display,
+    color: COLORS.onSurface,
+    fontWeight: '900',
+    fontSize: 16,
+  },
+promoListCard: {
+  borderRadius: 18,
+  padding: 14,
+  marginTop: 10,
+  backgroundColor: COLORS.surface,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+},
+
+promoListCardSelected: {
+  borderColor: COLORS.brand,
+  backgroundColor: COLORS.surfaceSecondary,
+},
+
+promoCardHeader: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: 10,
+  marginBottom: 12,
+},
+
+promoDateText: {
+  marginTop: 4,
+  fontFamily: FONTS.mono,
+  fontSize: 11,
+  color: COLORS.onSurfaceSecondary,
+},
+
+promoStatusBadge: {
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 999,
+  minWidth: 82,
+  alignItems: 'center',
+},
+
+promoStatusActive: {
+  backgroundColor: '#1F7A3A',
+},
+
+promoStatusInactive: {
+  backgroundColor: '#6B7280',
+},
+
+promoStatusText: {
+  fontFamily: FONTS.mono,
+  fontSize: 10,
+  fontWeight: '900',
+  color: '#FFFFFF',
+  letterSpacing: 0.6,
+},
+
+promoStatsRow: {
+  flexDirection: 'row',
+  gap: 10,
+  marginBottom: 10,
+},
+
+promoStatBox: {
+  flex: 1,
+  borderRadius: 14,
+  backgroundColor: COLORS.surfaceSecondary,
+  paddingVertical: 12,
+  paddingHorizontal: 10,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+},
+
+promoStatLabel: {
+  fontFamily: FONTS.mono,
+  fontSize: 10,
+  fontWeight: '900',
+  color: COLORS.onSurfaceSecondary,
+  marginBottom: 5,
+  letterSpacing: 0.5,
+},
+
+promoStatValue: {
+  fontFamily: FONTS.display,
+  fontSize: 22,
+  fontWeight: '900',
+  color: COLORS.onSurface,
+},
+
+promoOpenText: {
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  fontWeight: '900',
+  color: COLORS.brand,
+  marginTop: 4,
+},
+
+productRow: {
+  marginTop: 10,
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  backgroundColor: COLORS.surfaceSecondary,
+  padding: 12,
+  gap: 5,
+},
+
+problemRow: {
+  marginTop: 10,
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: '#8B1E1E',
+  backgroundColor: 'rgba(139, 30, 30, 0.08)',
+  padding: 12,
+  gap: 5,
+},
+
+productTitle: {
+  fontFamily: FONTS.display,
+  color: COLORS.onSurface,
+  fontSize: 15,
+  fontWeight: '900',
+  marginBottom: 3,
+},
+
+productText: {
+  fontFamily: FONTS.mono,
+  color: COLORS.onSurfaceTertiary,
+  fontSize: 12,
+  lineHeight: 17,
+},
+
+promoPrice: {
+  marginTop: 4,
+  fontFamily: FONTS.display,
+  color: COLORS.brand,
+  fontSize: 17,
+  fontWeight: '900',
+},
+});

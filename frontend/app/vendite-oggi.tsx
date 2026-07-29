@@ -1,19 +1,22 @@
-import { Feather } from "@expo/vector-icons";
+import {
+  Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React,
+  { useCallback,
+  useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
   View,
-} from "react-native";
+} from 'react-native';
 import { useFocusEffect } from "@react-navigation/native";
 import { api } from "@/src/api";
 
+import AppButton from '@/src/components/AppButton';
 const COLORS = {
   bg: "#F4EFE6",
   card: "#EFE6D8",
@@ -108,9 +111,9 @@ export default function VenditeOggiScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <AppButton style={styles.backBtn} onPress={() => router.back()}>
           <Feather name="arrow-left" size={26} color={COLORS.text} />
-        </Pressable>
+        </AppButton>
 
         <View>
           <Text style={styles.title}>Vendite di oggi</Text>
@@ -155,12 +158,12 @@ export default function VenditeOggiScreen() {
               </View>
 
               <Text style={styles.saleTotal}>{fmtEUR(item.total)}</Text>
-              <Pressable
+              <AppButton
                 style={styles.deleteSaleBtn}
                 onPress={() => eliminaVendita(item.id)}
               >
                 <Feather name="trash-2" size={20} color="#A94438" />
-              </Pressable>
+              </AppButton>
             </View>
           )}
         />

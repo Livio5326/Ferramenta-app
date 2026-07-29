@@ -1,26 +1,176 @@
 import { Product } from './store';
+import * as SecureStore from 'expo-secure-store';
 import {
   importInvoiceXmlOffline,
   listInvoiceImportsOffline,
   getPendingInvoiceProductsOffline,
   createPendingInvoiceProductsOffline,
+  getInvoiceProductsOffline,
 } from "./local/invoiceImporter";
+import { getDb } from "./local/db";
 
 const BASE = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/api';
+const TOKEN_KEY = 'ferramenta_auth_token';
+const LOGIN_DATE_KEY = 'ferramenta_auth_login_date';
+
+export type AuthUser = {
+  id: string;
+  username: string;
+  nome: string;
+  ruolo: 'amministratore' | 'dipendente';
+  attivo: boolean;
+};
+
+export type AuthResponse = {
+  access_token: string;
+  token_type: string;
+  user: AuthUser;
+};
+
+function getLocalDate(): string {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+export async function salvaAuthToken(token: string): Promise<void> {
+  await Promise.all([
+    SecureStore.setItemAsync(TOKEN_KEY, token),
+    SecureStore.setItemAsync(LOGIN_DATE_KEY, getLocalDate()),
+  ]);
+}
+
+export async function leggiAuthToken(): Promise<string | null> {
+  return SecureStore.getItemAsync(TOKEN_KEY);
+}
+
+export async function sessioneAccessoValidaOggi(): Promise<boolean> {
+  const loginDate = await SecureStore.getItemAsync(LOGIN_DATE_KEY);
+
+  return loginDate === getLocalDate();
+}
+
+export async function eliminaAuthToken(): Promise<void> {
+  await Promise.all([
+    SecureStore.deleteItemAsync(TOKEN_KEY),
+    SecureStore.deleteItemAsync(LOGIN_DATE_KEY),
+  ]);
+}
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = await leggiAuthToken();
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...((init?.headers || {}) as Record<string, string>),
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const res = await fetch(BASE + path, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+    headers,
   });
+
   if (!res.ok) {
     const txt = await res.text();
     throw new Error(`${res.status}: ${txt}`);
   }
+
   return res.json();
 }
 
 export const api = {
+  login: async (username: string, password: string) => {
+    const response = await req<AuthResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+
+    await salvaAuthToken(response.access_token);
+    return response;
+  },
+
+  getCurrentUser: () =>
+    req<AuthUser>('/auth/me'),
+
+  logout: async () => {
+    await eliminaAuthToken();
+  },
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return req<{ message: string }>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    });
+  },
+
+  async updateProfile(
+    nome: string,
+    username: string,
+  ): Promise<AuthUser> {
+    return req<AuthUser>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify({
+        nome,
+        username,
+      }),
+    });
+  },
+
+  listUsers: () =>
+    req<AuthUser[]>('/users'),
+
+  createUser: (
+    username: string,
+    password: string,
+    nome: string,
+    ruolo: 'amministratore' | 'dipendente'
+  ) =>
+    req<AuthUser>('/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        username,
+        password,
+        nome,
+        ruolo,
+      }),
+    }),
+
+  async getUser(id: string): Promise<AuthUser> {
+    return req<AuthUser>(`/users/${id}`);
+  },
+
+  async updateUser(
+    id: string,
+    data: {
+      username: string;
+      nome: string;
+      ruolo: string;
+      attivo: boolean;
+    },
+  ): Promise<AuthUser> {
+    return req<AuthUser>(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteUser(id: string): Promise<{ message: string }> {
+    return req<{ message: string }>(`/users/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
   listProducts: (params: { q?: string; search_mode?: string; categoria?: string; marca_standard?: string; sotto_scorta?: boolean } = {}) => {
     const qs = new URLSearchParams();
     if (params.q) qs.set('q', params.q);
@@ -67,7 +217,7 @@ export const api = {
     if (params.prezzo_max !== undefined) qs.set('prezzo_max', String(params.prezzo_max));
     qs.set('limit', String(params.limit ?? 50));
     qs.set('skip', String(params.skip ?? 0));
-    return req<{ items: Product[]; total: number; limit: number; skip: number; has_more: boolean }>('/products/page?' + qs.toString());
+    return req<{ items: Product[]; total: number; limit: number; skip: number; hasMore: boolean }>('/products/page?' + qs.toString());
   },
   listProductBrands: async () => {
     return req<{ brands: string[]; total: number }>("/products/brands");
@@ -306,7 +456,73 @@ export async function importInvoiceXml(file: {
   name: string;
   mimeType?: string;
 }) {
-  return await importInvoiceXmlOffline(file);
+  const result = await importInvoiceXmlOffline(file);
+  const db = getDb();
+
+  const productsToSync = db.getAllSync<any>(`
+    SELECT *
+    FROM products
+    WHERE COALESCE(da_sincronizzare, 0) = 1
+  `);
+
+  if (!productsToSync.length) {
+    return result;
+  }
+
+  const payload = productsToSync.map((product) => ({
+    barcode: String(product.barcode || ""),
+    codice_prodotto: String(product.codice_prodotto || ""),
+    descrizione: String(product.descrizione || ""),
+    marca: String(product.marca || ""),
+    categoria: String(product.categoria || "Altro"),
+    prezzo_acquisto: Number(product.prezzo_acquisto || 0),
+    prezzo_vendita: Number(product.prezzo_vendita || 0),
+    prezzo_promo:
+      product.prezzo_promo == null
+        ? null
+        : Number(product.prezzo_promo),
+    promo_attiva: Boolean(product.promo_attiva),
+    promo_nome: String(product.promo_nome || ""),
+    promo_inizio: String(product.promo_inizio || ""),
+    promo_fine: String(product.promo_fine || ""),
+    quantita: Number(product.quantita || 0),
+    fornitore: String(product.fornitore || ""),
+    foto: String(product.foto || product.image_url || ""),
+    note: String(product.note || ""),
+    soglia_scorta: Number(product.soglia_scorta || 5),
+  }));
+
+  const syncResult = await api.bulkImportProducts(payload);
+  const syncedAt = new Date().toISOString();
+
+  db.withTransactionSync(() => {
+    for (const product of productsToSync) {
+      db.runSync(
+        `
+        UPDATE products
+        SET da_sincronizzare = 0,
+            ultimo_sync = ?
+        WHERE id = ?
+        `,
+        [syncedAt, product.id]
+      );
+    }
+  });
+
+  const synchronized =
+    Number(syncResult.inserted || 0) +
+    Number(syncResult.updated || 0);
+
+  return {
+    ...result,
+    ok: true,
+    gia_importata: false,
+    prodotti_aggiornati: Math.max(
+      Number(result?.prodotti_aggiornati || 0),
+      synchronized
+    ),
+    prodotti_sincronizzati: synchronized,
+  };
 }
 
 export async function listInvoiceImports() {
@@ -324,4 +540,10 @@ export async function getMissingInvoiceProducts(_filePath: string) {
 
 export async function createPendingInvoiceProducts(items: any[]) {
   return createPendingInvoiceProductsOffline(items);
+}
+
+export async function getInvoiceProducts(
+  chiaveImport: string
+) {
+  return getInvoiceProductsOffline(chiaveImport);
 }

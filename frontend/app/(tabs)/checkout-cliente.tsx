@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { COLORS, FONTS } from '@/src/theme';
 import { useClienteStore } from '@/src/clienteStore';
 
+import AppButton from '@/src/components/AppButton';
 type TipoConsegna = 'ritiro' | 'spedizione';
 
 export default function CheckoutClienteScreen() {
@@ -106,23 +107,23 @@ export default function CheckoutClienteScreen() {
           <Text style={styles.sectionTitle}>CONSEGNA</Text>
 
           <View style={styles.choiceRow}>
-            <Pressable
+            <AppButton
               style={[styles.choiceButton, tipoConsegna === 'ritiro' && styles.choiceButtonActive]}
               onPress={() => setTipoConsegna('ritiro')}
             >
               <Text style={[styles.choiceText, tipoConsegna === 'ritiro' && styles.choiceTextActive]}>
                 RITIRO IN NEGOZIO
               </Text>
-            </Pressable>
+            </AppButton>
 
-            <Pressable
+            <AppButton
               style={[styles.choiceButton, tipoConsegna === 'spedizione' && styles.choiceButtonActive]}
               onPress={() => setTipoConsegna('spedizione')}
             >
               <Text style={[styles.choiceText, tipoConsegna === 'spedizione' && styles.choiceTextActive]}>
                 SPEDIZIONE
               </Text>
-            </Pressable>
+            </AppButton>
           </View>
 
           {tipoConsegna === 'spedizione' && (
@@ -211,13 +212,13 @@ export default function CheckoutClienteScreen() {
           </Text>
         </View>
 
-        <Pressable style={styles.payButton} onPress={confermaPagamento}>
+        <AppButton style={styles.payButton} onPress={confermaPagamento}>
           <Text style={styles.payButtonText}>PAGA E CONFERMA ORDINE</Text>
-        </Pressable>
+        </AppButton>
 
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <AppButton style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>TORNA AL CARRELLO</Text>
-        </Pressable>
+        </AppButton>
       </ScrollView>
     </SafeAreaView>
   );

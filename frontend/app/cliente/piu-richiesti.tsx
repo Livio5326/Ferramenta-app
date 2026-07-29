@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { COLORS, FONTS } from '@/src/theme';
 
+import AppButton from '@/src/components/AppButton';
 type ProdottoRichiesto = {
   id?: string;
   descrizione?: string;
@@ -66,9 +67,9 @@ export default function PiuRichiestiScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <AppButton style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backTxt}>← INDIETRO</Text>
-        </Pressable>
+        </AppButton>
 
         <Text style={styles.kicker}>FERRAMENTA LOPERFIDO</Text>
         <Text style={styles.title}>I PIÙ RICHIESTI</Text>
@@ -88,9 +89,9 @@ export default function PiuRichiestiScreen() {
           <View style={styles.stateBox}>
             <Text style={styles.errorText}>{errore}</Text>
 
-            <Pressable style={styles.reloadBtn} onPress={caricaProdotti}>
+            <AppButton style={styles.reloadBtn} onPress={caricaProdotti}>
               <Text style={styles.reloadTxt}>RIPROVA</Text>
-            </Pressable>
+            </AppButton>
           </View>
         )}
 
@@ -107,7 +108,7 @@ export default function PiuRichiestiScreen() {
           const prezzo = prezzoDaMostrare(p);
 
           return (
-            <Pressable
+            <AppButton
   key={p.id || String(index)}
   style={styles.productCard}
   onPress={() => {
@@ -147,7 +148,7 @@ export default function PiuRichiestiScreen() {
                   )}
                 </View>
               </View>
-            </Pressable>
+            </AppButton>
           );
         })}
       </ScrollView>

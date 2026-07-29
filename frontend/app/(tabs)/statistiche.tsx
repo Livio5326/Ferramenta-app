@@ -1,18 +1,20 @@
-import { useCallback, useState } from "react";
+import {
+  useCallback,
+  useState } from "react";
 import {
   RefreshControl,
-  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
-} from "react-native";
+} from 'react-native';
 import { useFocusEffect } from "expo-router";
 import { router } from "expo-router";
 import { COLORS, FONTS, fmtEUR } from "@/src/theme";
 import { api } from "@/src/api";
 
+import AppButton from '@/src/components/AppButton';
 type StatsData = {
   valore_magazzino?: number;
   valore_vendita_potenziale?: number;
@@ -124,7 +126,7 @@ export default function Stats() {
             footer="prodotti"
           />
 
-          <Pressable
+          <AppButton
             style={styles.clickableSmallCard}
             onPress={() => router.push("/vendite-oggi")}
           >
@@ -135,7 +137,7 @@ export default function Stats() {
             <Text style={styles.clickableSmallCardFooter}>
               {stats?.numero_vendite_giorno || 0} transazioni
             </Text>
-          </Pressable>
+          </AppButton>
         </View>
 
         <View style={styles.sectionBlock}>
@@ -150,7 +152,7 @@ export default function Stats() {
             </View>
           ) : (
             (stats?.piu_venduti || []).map((item: any, index: number) => (
-              <Pressable 
+              <AppButton 
                 key={`${item.descrizione}-${index}`}
                 style={styles.productStatRow}  
                 onPress={() => {
@@ -171,7 +173,7 @@ export default function Stats() {
                 <Text style={styles.productStatValue}>
                   {fmtEUR(Number(item.totale_venduto || 0))}
                 </Text>
-              </Pressable>
+              </AppButton>
             ))
           )}
         </View>
@@ -189,7 +191,7 @@ export default function Stats() {
           ) : (
             
              (stats?.meno_venduti || []).map((item: any, index: number) => (
-                <Pressable
+                <AppButton
                   key={`${item.product_id || item.descrizione}-${index}`}
                   style={styles.productStatRow}
                   onPress={() => {
@@ -211,7 +213,7 @@ export default function Stats() {
                   <Text style={styles.productStatValue}>
                     {fmtEUR(Number(item.totale_venduto || 0))}
                   </Text>
-                </Pressable>
+                </AppButton>
               ))
 
           )}

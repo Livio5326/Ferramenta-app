@@ -1,21 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState } from "react";
 import {
   Alert,
   Modal,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
   ActivityIndicator,
-} from "react-native";
+} from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { api } from "@/src/api";
 import { COLORS, FONTS } from "@/src/theme";
 
+import AppButton from '@/src/components/AppButton';
 type TipoLista = "categorie" | "fornitori" | "marche";
 
 type ListeState = {
@@ -150,9 +153,9 @@ export default function ListeStandardScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <AppButton style={styles.backButton} onPress={() => router.back()}>
           <Feather name="arrow-left" size={20} color={COLORS.onSurface} />
-        </Pressable>
+        </AppButton>
 
         <View style={styles.headerTextBox}>
           <Text style={styles.title}>Liste standard</Text>
@@ -164,7 +167,7 @@ export default function ListeStandardScreen() {
 
       <View style={styles.tabs}>
         {TABS.map((tab) => (
-          <Pressable
+          <AppButton
             key={tab.key}
             style={[styles.tab, active === tab.key && styles.tabActive]}
             onPress={() => setActive(tab.key)}
@@ -177,7 +180,7 @@ export default function ListeStandardScreen() {
             >
               {tab.label}
             </Text>
-          </Pressable>
+          </AppButton>
         ))}
       </View>
 
@@ -187,10 +190,10 @@ export default function ListeStandardScreen() {
           <Text style={styles.count}>{items.length} voci</Text>
         </View>
 
-        <Pressable style={styles.addButton} onPress={openAdd}>
+        <AppButton style={styles.addButton} onPress={openAdd}>
           <Feather name="plus" size={17} color={COLORS.onBrandPrimary} />
           <Text style={styles.addButtonText}>AGGIUNGI</Text>
-        </Pressable>
+        </AppButton>
       </View>
 
       {loading ? (
@@ -207,19 +210,19 @@ export default function ListeStandardScreen() {
                 <Text style={styles.itemText}>{item}</Text>
 
                 <View style={styles.itemActions}>
-                  <Pressable
+                  <AppButton
                     style={styles.iconButton}
                     onPress={() => openEdit(item)}
                   >
                     <Feather name="edit-2" size={16} color={COLORS.onSurface} />
-                  </Pressable>
+                  </AppButton>
 
-                  <Pressable
+                  <AppButton
                     style={styles.iconButton}
                     onPress={() => deleteItem(item)}
                   >
                     <Feather name="trash-2" size={16} color={COLORS.error} />
-                  </Pressable>
+                  </AppButton>
                 </View>
               </View>
             ))
@@ -240,9 +243,9 @@ export default function ListeStandardScreen() {
                 {oldValue ? "Modifica voce" : "Aggiungi voce"}
               </Text>
 
-              <Pressable onPress={closeModal}>
+              <AppButton onPress={closeModal}>
                 <Text style={styles.closeText}>×</Text>
-              </Pressable>
+              </AppButton>
             </View>
 
             <Text style={styles.inputLabel}>{labelActive()}</Text>
@@ -256,7 +259,7 @@ export default function ListeStandardScreen() {
               autoCapitalize="words"
             />
 
-            <Pressable
+            <AppButton
               style={[styles.saveButton, saving && styles.disabled]}
               disabled={saving}
               onPress={saveItem}
@@ -264,7 +267,7 @@ export default function ListeStandardScreen() {
               <Text style={styles.saveButtonText}>
                 {saving ? "SALVATAGGIO..." : "SALVA"}
               </Text>
-            </Pressable>
+            </AppButton>
           </View>
         </View>
       </Modal>

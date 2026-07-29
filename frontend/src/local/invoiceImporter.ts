@@ -424,6 +424,64 @@ export async function importInvoiceXmlOffline(file: InvoiceFile) {
     );
   }
 
+const repairId = "repair_saratoga_incomplete_import_v1";
+const saratogaKey = "00719730152|V1-28643|2026-07-09";
+
+db.execSync(`
+  CREATE TABLE IF NOT EXISTS local_migrations (
+    id TEXT PRIMARY KEY NOT NULL,
+    executed_at TEXT NOT NULL
+  );
+`);
+
+const repairDone = db.getFirstSync<any>(
+  "SELECT id FROM local_migrations WHERE id = ? LIMIT 1",
+  [repairId]
+);
+
+if (!repairDone) {
+  const oldPending = db.getAllSync<any>(
+    `
+    SELECT barcode, codice_fornitore
+    FROM pending_invoice_products
+    WHERE chiave_import = ?
+      AND stato IN ('creato', 'gia_presente')
+    `,
+    [saratogaKey]
+  );
+
+  db.withTransactionSync(() => {
+    for (const item of oldPending) {
+      const barcode = String(item?.barcode || "").trim();
+      const codice = String(item?.codice_fornitore || "").trim();
+
+      db.runSync(
+        `
+        DELETE FROM products
+        WHERE (? != '' AND TRIM(CAST(barcode AS TEXT)) = ?)
+           OR (? != '' AND TRIM(CAST(codice_prodotto AS TEXT)) = ?)
+        `,
+        [barcode, barcode, codice, codice]
+      );
+    }
+
+    db.runSync(
+      "DELETE FROM pending_invoice_products WHERE chiave_import = ?",
+      [saratogaKey]
+    );
+
+    db.runSync(
+      "DELETE FROM invoice_imports WHERE chiave_import = ?",
+      [saratogaKey]
+    );
+
+    db.runSync(
+      "INSERT INTO local_migrations (id, executed_at) VALUES (?, ?)",
+      [repairId, new Date().toISOString()]
+    );
+  });
+}
+
   const alreadyImported = db.getFirstSync<any>(
     `
     SELECT *
@@ -435,17 +493,52 @@ export async function importInvoiceXmlOffline(file: InvoiceFile) {
   );
 
   if (alreadyImported) {
+  const pending = getPendingInvoiceProductsOffline(info.numero);
+
+  if (pending.length > 0) {
+    const creation = createPendingInvoiceProductsOffline(pending);
+    const remaining = getPendingInvoiceProductsOffline(info.numero);
+    const processed = creation.creati + creation.gia_presenti;
+
+    db.runSync(
+      `
+      UPDATE invoice_imports
+      SET prodotti_aggiornati =
+            COALESCE(prodotti_aggiornati, 0) + ?,
+          barcode_non_trovati = ?
+      WHERE chiave_import = ?
+      `,
+      [processed, remaining.length, info.chiaveImport]
+    );
+
     return {
-      ok: false,
-      gia_importata: true,
-      errore: "Questa fattura risulta già importata",
+      ok: true,
+      offline: true,
       fornitore: alreadyImported.denominazione || "",
       partita_iva: alreadyImported.partita_iva || "",
       numero: alreadyImported.numero || "",
       data: alreadyImported.data || "",
-      data_import: alreadyImported.data_import || "",
+      prodotti_aggiornati: processed,
+      prodotti_creati: creation.creati,
+      barcode_non_trovati: remaining.length,
+      righe_saltate: Number(alreadyImported.righe_saltate || 0),
+      report: "",
+      file_non_trovati: "",
+      non_trovati: remaining,
     };
   }
+
+  return {
+    ok: false,
+    gia_importata: true,
+    errore: "Questa fattura risulta già importata",
+    fornitore: alreadyImported.denominazione || "",
+    partita_iva: alreadyImported.partita_iva || "",
+    numero: alreadyImported.numero || "",
+    data: alreadyImported.data || "",
+    data_import: alreadyImported.data_import || "",
+  };
+}
 
   const rawLines = findAllByKey(parsed, "DettaglioLinee");
 
@@ -506,50 +599,116 @@ export async function importInvoiceXmlOffline(file: InvoiceFile) {
 
   db.withTransactionSync(() => {
     for (const line of productLines) {
-      if (!line.barcode) {
-        missing.push(line);
-        continue;
-      }
+  if (line.quantita <= 0) {
+    skipped.push({
+      linea: line.linea,
+      barcode: line.barcode,
+      quantita: line.quantita,
+      descrizione: line.descrizione,
+      motivo: "Quantità non valida",
+    });
+    continue;
+  }
 
-      if (line.quantita <= 0) {
-        skipped.push({
-          linea: line.linea,
-          barcode: line.barcode,
-          quantita: line.quantita,
-          descrizione: line.descrizione,
-          motivo: "Quantità non valida",
-        });
-        continue;
-      }
+  const barcode = String(line.barcode || "").trim();
+  const codiceProdotto = String(line.codiceFornitore || "").trim();
 
-      const product = db.getFirstSync<any>(
-        `
-        SELECT id, quantita
-        FROM products
-        WHERE TRIM(CAST(barcode AS TEXT)) = ?
-        LIMIT 1
-        `,
-        [line.barcode.trim()]
-      );
+  if (!barcode && !codiceProdotto) {
+    missing.push(line);
+    continue;
+  }
 
-      if (!product) {
-        missing.push(line);
-        continue;
-      }
+  let product: any = null;
 
-      db.runSync(
-        `
-        UPDATE products
-        SET quantita = COALESCE(quantita, 0) + ?,
-            updated_at = ?,
-            da_sincronizzare = 1
-        WHERE id = ?
-        `,
-        [line.quantita, now, product.id]
-      );
+  if (barcode) {
+    product = db.getFirstSync<any>(
+      `
+      SELECT id, quantita
+      FROM products
+      WHERE TRIM(CAST(barcode AS TEXT)) = ?
+      LIMIT 1
+      `,
+      [barcode]
+    );
+  }
 
-      updated += 1;
-    }
+  if (!product && codiceProdotto) {
+    product = db.getFirstSync<any>(
+      `
+      SELECT id, quantita
+      FROM products
+      WHERE TRIM(CAST(codice_prodotto AS TEXT)) = ?
+      LIMIT 1
+      `,
+      [codiceProdotto]
+    );
+  }
+
+  if (product) {
+    db.runSync(
+      `
+      UPDATE products
+      SET quantita = COALESCE(quantita, 0) + ?,
+          prezzo_acquisto =
+            CASE WHEN ? > 0 THEN ? ELSE prezzo_acquisto END,
+          updated_at = ?,
+          da_sincronizzare = 1
+      WHERE id = ?
+      `,
+      [
+        line.quantita,
+        line.prezzoUnitario,
+        line.prezzoUnitario,
+        now,
+        product.id,
+      ]
+    );
+  } else {
+    db.runSync(
+      `
+      INSERT INTO products (
+        id,
+        codice_prodotto,
+        barcode,
+        descrizione,
+        marca,
+        marca_standard,
+        categoria,
+        categoria_standard,
+        fornitore,
+        quantita,
+        prezzo_acquisto,
+        prezzo_vendita,
+        soglia_scorta,
+        da_sincronizzare,
+        created_at,
+        updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        createId("PRODUCT"),
+        codiceProdotto,
+        barcode,
+        line.descrizione,
+        "",
+        "",
+        "Altro",
+        "Altro",
+        info.denominazione,
+        line.quantita,
+        line.prezzoUnitario,
+        0,
+        5,
+        1,
+        now,
+        now,
+      ]
+    );
+  }
+
+  updated += 1;
+}
 
     db.runSync(
       `
@@ -620,6 +779,15 @@ export async function importInvoiceXmlOffline(file: InvoiceFile) {
       data_import: now,
       righe_fattura: productLines.length,
       righe_fattura_originali: rawLines.length,
+      prodotti_letti: productLines.map((line) => ({
+        linea: line.linea,
+        barcode: line.barcode,
+        codice_fornitore: line.codiceFornitore,
+        descrizione: line.descrizione,
+        quantita: line.quantita,
+        prezzo_unitario: line.prezzoUnitario,
+        prezzo_totale: line.prezzoTotale,
+      })),
       prodotti_aggiornati: updated,
       barcode_non_trovati: missing.length,
       righe_saltate: skipped.length,
@@ -732,6 +900,87 @@ export function listInvoiceImportsOffline() {
   };
 }
 
+export async function getInvoiceProductsOffline(
+  chiaveImport: string
+) {
+  const db = getDb();
+
+  const invoice = db.getFirstSync<any>(
+    `
+    SELECT *
+    FROM invoice_imports
+    WHERE chiave_import = ?
+    LIMIT 1
+    `,
+    [chiaveImport]
+  );
+
+  if (!invoice) {
+    throw new Error("Fattura non trovata nello storico");
+  }
+
+  let reportData: any = {};
+
+  try {
+    reportData = JSON.parse(invoice.report || "{}");
+  } catch {
+    reportData = {};
+  }
+
+  if (Array.isArray(reportData.prodotti_letti)) {
+    return reportData.prodotti_letti;
+  }
+
+  if (!invoice.file) {
+    throw new Error(
+      "Il file XML associato alla fattura non è più disponibile"
+    );
+  }
+
+  const xml = await FileSystem.readAsStringAsync(invoice.file);
+
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    removeNSPrefix: true,
+    parseTagValue: false,
+    trimValues: true,
+  });
+
+  const parsed = parser.parse(xml);
+  const rawLines = findAllByKey(parsed, "DettaglioLinee");
+  const parsedLines = rawLines.map(parseInvoiceLine);
+
+  const products = parsedLines.filter((line) => {
+    if (!line.descrizione) return false;
+    if (isInformativeLine(line.descrizione)) return false;
+    if (classifySecondaryCost(line)) return false;
+    return true;
+  });
+
+  const items = products.map((line) => ({
+    linea: line.linea,
+    barcode: line.barcode,
+    codice_fornitore: line.codiceFornitore,
+    descrizione: line.descrizione,
+    quantita: line.quantita,
+    prezzo_unitario: line.prezzoUnitario,
+    prezzo_totale: line.prezzoTotale,
+  }));
+
+  reportData.prodotti_letti = items;
+
+  db.runSync(
+    `
+    UPDATE invoice_imports
+    SET report = ?
+    WHERE chiave_import = ?
+    `,
+    [JSON.stringify(reportData), chiaveImport]
+  );
+
+  return items;
+}
+
 export function getPendingInvoiceProductsOffline(
   numeroFattura?: string
 ) {
@@ -820,23 +1069,42 @@ export function createPendingInvoiceProductsOffline(items: any[]) {
       }
 
       if (existing) {
-        gia_presenti += 1;
+  db.runSync(
+    `
+    UPDATE products
+    SET quantita = COALESCE(quantita, 0) + ?,
+        prezzo_acquisto =
+          CASE WHEN ? > 0 THEN ? ELSE prezzo_acquisto END,
+        updated_at = ?,
+        da_sincronizzare = 1
+    WHERE id = ?
+    `,
+    [
+      quantita,
+      prezzoAcquisto,
+      prezzoAcquisto,
+      now,
+      existing.id,
+    ]
+  );
 
-        if (item?.id) {
-          db.runSync(
-            `
-            UPDATE pending_invoice_products
-            SET stato = 'gia_presente',
-                selected = 0,
-                updated_at = ?
-            WHERE id = ?
-            `,
-            [now, String(item.id)]
-          );
-        }
+  gia_presenti += 1;
 
-        continue;
-      }
+  if (item?.id) {
+    db.runSync(
+      `
+      UPDATE pending_invoice_products
+      SET stato = 'creato',
+          selected = 0,
+          updated_at = ?
+      WHERE id = ?
+      `,
+      [now, String(item.id)]
+    );
+  }
+
+  continue;
+}
 
       const productId = createId("PRODUCT");
 

@@ -1,18 +1,19 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { COLORS, FONTS } from '@/src/theme';
 
+import AppButton from '@/src/components/AppButton';
 export default function MenoVendutiScreen() {
   const router = useRouter();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <AppButton style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backTxt}>← INDIETRO</Text>
-        </Pressable>
+        </AppButton>
 
         <Text style={styles.kicker}>STATISTICHE PRODOTTI</Text>
         <Text style={styles.title}>MENO VENDUTI</Text>

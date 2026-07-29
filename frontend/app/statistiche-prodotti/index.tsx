@@ -1,18 +1,19 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { COLORS, FONTS } from '@/src/theme';
 
+import AppButton from '@/src/components/AppButton';
 export default function StatisticheProdottiScreen() {
   const router = useRouter();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <AppButton style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backTxt}>← INDIETRO</Text>
-        </Pressable>
+        </AppButton>
 
         <Text style={styles.kicker}>GESTIONE MAGAZZINO</Text>
         <Text style={styles.title}>STATISTICHE PRODOTTI</Text>
@@ -22,7 +23,7 @@ export default function StatisticheProdottiScreen() {
         </Text>
 
         <View style={styles.grid}>
-          <Pressable
+          <AppButton
             style={styles.card}
             onPress={() => router.push('/statistiche-prodotti/piu-venduti')}
           >
@@ -30,9 +31,9 @@ export default function StatisticheProdottiScreen() {
             <Text style={styles.cardSub}>
               Prodotti con più vendite registrate.
             </Text>
-          </Pressable>
+          </AppButton>
 
-          <Pressable
+          <AppButton
             style={styles.card}
             onPress={() => router.push('/statistiche-prodotti/meno-venduti')}
           >
@@ -40,7 +41,7 @@ export default function StatisticheProdottiScreen() {
             <Text style={styles.cardSub}>
               Prodotti fermi o con poche vendite.
             </Text>
-          </Pressable>
+          </AppButton>
         </View>
 
         <View style={styles.noteBox}>

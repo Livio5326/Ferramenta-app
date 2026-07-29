@@ -1,5 +1,11 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Pressable, Alert } from 'react-native';
+import {
+  useState } from 'react';
+import { View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Alert,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -9,6 +15,7 @@ import { ScreenHeader } from '@/src/components/ScreenHeader';
 import { useAppStore, cartTotal } from '@/src/store';
 import { api } from '@/src/api';
 
+import AppButton from '@/src/components/AppButton';
 function prezzoFinaleProdotto(p: any): number {
   const prezzoPromo = Number(p?.prezzo_promo || 0);
   if (p?.promo_attiva && prezzoPromo > 0) return prezzoPromo;
@@ -61,9 +68,9 @@ export default function Vendita() {
         subtitle={`${cartVendibile.length} ARTICOLI`}
         right={
           cartVendibile.length > 0 ? (
-            <Pressable onPress={clearCart} testID="clear-cart">
+            <AppButton onPress={clearCart} testID="clear-cart">
               <Feather name="trash-2" size={20} color={COLORS.error} />
-            </Pressable>
+            </AppButton>
           ) : null
         }
       />
@@ -71,14 +78,14 @@ export default function Vendita() {
         <View style={styles.empty}>
           <Feather name="shopping-cart" size={64} color={COLORS.brandTertiary} />
           <Text style={styles.emptyText}>CARRELLO VUOTO</Text>
-          <Pressable style={styles.bigBtn} onPress={() => router.push('/scanner')} testID="start-scan-btn">
+          <AppButton style={styles.bigBtn} onPress={() => router.push('/scanner')} testID="start-scan-btn">
             <Feather name="maximize" size={20} color={COLORS.onBrandPrimary} />
             <Text style={styles.bigBtnTxt}>INIZIA SCANSIONE</Text>
-          </Pressable>
-          <Pressable style={[styles.bigBtn, { backgroundColor: COLORS.surfaceInverse }]} onPress={() => router.push('/catalogo-vendita')} testID="goto-catalog-btn">
+          </AppButton>
+          <AppButton style={[styles.bigBtn, { backgroundColor: COLORS.surfaceInverse }]} onPress={() => router.push('/catalogo-vendita')} testID="goto-catalog-btn">
             <Feather name="package" size={20} color={COLORS.onSurfaceInverse} />
             <Text style={styles.bigBtnTxt}>SCEGLI DAL CATALOGO</Text>
-          </Pressable>
+          </AppButton>
         </View>
       ) : (
         <>
@@ -93,18 +100,18 @@ export default function Vendita() {
                   <Text style={styles.rowMeta}>{fmtEUR(prezzoFinaleProdotto(item.product))} cad.</Text>
                 </View>
                 <View style={styles.qtyCtrl}>
-                  <Pressable style={styles.qtyBtn} onPress={() => updateCartQty(item.product.id, item.quantita - 1)} testID={`qty-minus-${item.product.id}`}>
+                  <AppButton style={styles.qtyBtn} onPress={() => updateCartQty(item.product.id, item.quantita - 1)} testID={`qty-minus-${item.product.id}`}>
                     <Feather name="minus" size={16} color={COLORS.onSurface} />
-                  </Pressable>
+                  </AppButton>
                   <Text style={styles.qtyNum}>{item.quantita}</Text>
-                  <Pressable style={styles.qtyBtn} onPress={() => updateCartQty(item.product.id, item.quantita + 1)} testID={`qty-plus-${item.product.id}`}>
+                  <AppButton style={styles.qtyBtn} onPress={() => updateCartQty(item.product.id, item.quantita + 1)} testID={`qty-plus-${item.product.id}`}>
                     <Feather name="plus" size={16} color={COLORS.onSurface} />
-                  </Pressable>
+                  </AppButton>
                 </View>
                 <Text style={styles.rowSub}>{fmtEUR(prezzoFinaleProdotto(item.product) * item.quantita)}</Text>
-                <Pressable style={styles.delBtn} onPress={() => removeFromCart(item.product.id)} testID={`remove-${item.product.id}`}>
+                <AppButton style={styles.delBtn} onPress={() => removeFromCart(item.product.id)} testID={`remove-${item.product.id}`}>
                   <Feather name="x" size={16} color={COLORS.onError} />
-                </Pressable>
+                </AppButton>
               </View>
             )}
           />
@@ -113,7 +120,7 @@ export default function Vendita() {
               <Text style={styles.totalLabel}>TOTALE</Text>
               <Text style={styles.totalValue} testID="cart-total">{fmtEUR(total)}</Text>
             </View>
-            <Pressable
+            <AppButton
               style={[styles.completeBtn, completing && { opacity: 0.5 }]}
               onPress={completa}
               disabled={completing}
@@ -121,7 +128,7 @@ export default function Vendita() {
             >
               <Feather name="check-circle" size={20} color={COLORS.onSuccess} />
               <Text style={styles.completeBtnTxt}>{completing ? 'IN CORSO...' : 'COMPLETA VENDITA'}</Text>
-            </Pressable>
+            </AppButton>
           </View>
         </>
       )}

@@ -1,23 +1,49 @@
-import { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, RefreshControl, Alert } from 'react-native';
+import {
+  useCallback,
+  useState } from 'react';
+import { View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  Alert,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-
+import { useAuth } from '@/src/auth';
 import { COLORS, FONTS, fmtEUR } from '@/src/theme';
 import { ScreenHeader } from '@/src/components/ScreenHeader';
-import { ModeToggle } from '@/src/components/ModeToggle';
 import { useAppStore } from '@/src/store';
 import { api } from '@/src/api';
 
+import AppButton from '@/src/components/AppButton';
 const WOOD_BG = require('../../assets/images/wood-bg.jpg');
 
 export default function Dashboard() {
   const router = useRouter();
+  const { user } = useAuth();
   const mode = useAppStore((s) => s.mode);
   const isCliente = mode === 'cliente';
+  const getSaluto = () => {
+  const ora = new Date().getHours();
+  const nome = user?.username || '';
 
+    if (ora < 6) {
+      return `ANCORA SVEGLIO, ${nome}?`;
+    }
+
+    if (ora < 14) {
+      return `BUONGIORNO, ${nome}`;
+    }
+
+    if (ora < 18) {
+      return `BUON POMERIGGIO, ${nome}`;
+    }
+
+    return `BUONASERA, ${nome}`;
+  };
   const [stats, setStats] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -61,13 +87,13 @@ return (
   <Image source={WOOD_BG} style={styles.banner} contentFit="cover" />
   <View style={styles.bannerOverlay} />
 
-          <Pressable
+          <AppButton
             style={styles.settingsBtn}
             onPress={() => router.push('/impostazioni' as any)}
             testID="settings-btn"
           >
             <Feather name="settings" size={22} color="#FFFFFF" />
-          </Pressable>
+          </AppButton>
 
   <View style={styles.bannerInner}>
     <Image
@@ -75,10 +101,23 @@ return (
       style={styles.bannerLogo}
       contentFit="contain"
     />
-
     <View style={styles.bannerToggle}>
-      <ModeToggle />
-    </View>
+      {isCliente ? (
+        <AppButton
+          style={styles.loginButton}
+          onPress={() => router.push('/login')}
+        >
+          <Text style={styles.loginButtonText}>ACCESSO GESTIONALE</Text>
+        </AppButton>
+      ) : (
+        <View style={styles.loginButton}>
+          <Text style={styles.loginButtonText}>
+            {getSaluto()}
+          </Text>
+        </View>
+      )}
+    </View> 
+    
   </View>
 </View>
         {/* Bento stats */}
@@ -89,39 +128,39 @@ return (
               <Text style={styles.statValue}>{fmtEUR(stats?.valore_magazzino || 0)}</Text>
               <Text style={styles.statFoot}>{stats?.total_pieces || 0} PEZZI · {stats?.total_products || 0} REF</Text>
             </View>
-            <Pressable style={[styles.bentoCard, styles.bentoCardLg, { backgroundColor: stats?.sotto_scorta_count ? COLORS.error : COLORS.surfaceSecondary }]} onPress={()=> router.push('/catalogo?sotto_scorta=true')} testID="stat-scorta">
+            <AppButton style={[styles.bentoCard, styles.bentoCardLg, { backgroundColor: stats?.sotto_scorta_count ? COLORS.error : COLORS.surfaceSecondary }]} onPress={()=> router.push('/catalogo?sotto_scorta=true')} testID="stat-scorta">
 
               <Text style={[styles.statValue, stats?.sotto_scorta_count && { color: COLORS.onError }]}>{stats?.sotto_scorta_count || 0}</Text>
               <Text style={[styles.statFoot, stats?.sotto_scorta_count && { color: COLORS.onError }]}>DA RIORDINARE</Text>
-            </Pressable>
+            </AppButton>
           </View>
         )}
 
         {/* Quick actions */}
         <View style={styles.actionsGrid}>
-          <Pressable style={styles.action} onPress={() => router.push('/scanner')} testID="action-scan">
+          <AppButton style={styles.action} onPress={() => router.push('/scanner')} testID="action-scan">
             <Feather name="maximize" size={28} color={COLORS.onBrandPrimary} />
             <Text style={styles.actionText}>SCAN BARCODE</Text>
-          </Pressable>
-          <Pressable style={[styles.action, { backgroundColor: COLORS.surfaceInverse }]} onPress={() => router.push('/catalogo')} testID="action-catalog">
+          </AppButton>
+          <AppButton style={[styles.action, { backgroundColor: COLORS.surfaceInverse }]} onPress={() => router.push('/catalogo')} testID="action-catalog">
             <Feather name="package" size={28} color={COLORS.onSurfaceInverse} />
             <Text style={styles.actionText}>CATALOGO</Text>
-          </Pressable>
+          </AppButton>
           {!isCliente && (
             <>
-              <Pressable style={[styles.action, { backgroundColor: COLORS.success }]} onPress={() => router.push('/vendita')} testID="action-vendita">
+              <AppButton style={[styles.action, { backgroundColor: COLORS.success }]} onPress={() => router.push('/vendita')} testID="action-vendita">
                 <Feather name="shopping-cart" size={28} color={COLORS.onSuccess} />
                 <Text style={styles.actionText}>VENDITA RAPIDA</Text>
-              </Pressable>
-              <Pressable style={[styles.action, { backgroundColor: COLORS.warning }]} onPress={() => router.push('/product/new')} testID="action-add">
+              </AppButton>
+              <AppButton style={[styles.action, { backgroundColor: COLORS.warning }]} onPress={() => router.push('/product/new')} testID="action-add">
                 <Feather name="plus-square" size={28} color={COLORS.onWarning} />
                 <Text style={styles.actionText}>NUOVO PRODOTTO</Text>
-              </Pressable>
-              <Pressable style={[styles.action, { backgroundColor: COLORS.brandSecondary }]} onPress={() => router.push('/import')} testID="action-import">
+              </AppButton>
+              <AppButton style={[styles.action, { backgroundColor: COLORS.brandSecondary }]} onPress={() => router.push('/import')} testID="action-import">
                 <Feather name="upload" size={28} color={COLORS.onBrandSecondary} />
                 <Text style={styles.actionText}>IMPORTA EXCEL</Text>
-              </Pressable>
-   <Pressable
+              </AppButton>
+   <AppButton
   style={[styles.action, { backgroundColor: COLORS.brandTertiary }]}
   onPress={() => router.push('/statistiche-prodotti' as any )}
   testID="action-statistiche-prodotti"
@@ -130,7 +169,7 @@ return (
   <Text style={[styles.actionText, { color: COLORS.onBrandTertiary }]}>
     STATISTICHE PRODOTTI
   </Text>
-</Pressable>
+</AppButton>
             </>
           )}
         </View>
@@ -170,35 +209,35 @@ return (
       pagina: '/cliente/idraulica',
     },
   ].map((item) => (
-    <Pressable
+    <AppButton
       key={item.titolo}
       style={styles.clientTile}
       onPress={() => router.push(item.pagina as any)}
     >
       <Text style={styles.clientTileText}>{item.titolo}</Text>
       <Text style={styles.clientTileSub}>{item.descrizione}</Text>
-    </Pressable>
+    </AppButton>
   ))}
 </View>
 
     <Text style={styles.clientSectionTitle}>SERVIZI</Text>
 
     <View style={styles.clientGrid}>
-      <Pressable
+      <AppButton
         style={[styles.clientTile, styles.clientTileWide]}
         onPress={() => router.push('/preventivo')}
       >
         <Text style={styles.clientTileText}>RICHIEDI PREVENTIVO</Text>
         <Text style={styles.clientTileSub}>Scegli i prodotti dal catalogo</Text>
-      </Pressable>
+      </AppButton>
 
-      <Pressable
+      <AppButton
         style={[styles.clientTile, styles.clientTileWide]}
         onPress={() => router.push('/catalogo')}
       >
         <Text style={styles.clientTileText}>CONTROLLA DISPONIBILITÀ</Text>
         <Text style={styles.clientTileSub}>Cerca articolo o barcode</Text>
-      </Pressable>
+      </AppButton>
     </View>
   </View>
 )}
@@ -216,8 +255,8 @@ const styles = StyleSheet.create({
 },
   safe: { flex: 1, backgroundColor: COLORS.surface },
   content: { paddingBottom: 32 },
- bannerWrap: {
-  height: 200,
+bannerWrap: {
+  height: 230,
   borderBottomWidth: 2,
   borderColor: COLORS.borderStrong,
   position: 'relative',
@@ -236,20 +275,20 @@ bannerOverlay: {
 
 bannerInner: {
   position: 'absolute',
-  left: 16,
-  right: 16,
+  left: 12,
+  right: 12,
   top: 0,
   bottom: 0,
   justifyContent: 'center',
   alignItems: 'center',
-  paddingVertical: 18,
+  paddingTop: 8,
+  paddingBottom: 54,
 },
 
 bannerLogo: {
-  width: '112%',
-  height: 180,
-  marginBottom: 12,
-  transform: [{ translateY: -5}],
+  width: '118%',
+  height: 200,
+  transform: [{ translateY: 4}],
 },
 
 bannerAddress: {
@@ -259,7 +298,9 @@ bannerAddress: {
   color: COLORS.surface,
   textAlign: 'center',
   marginBottom: 14,
-},  settingsBtn: {
+},
+
+  settingsBtn: {
     position: 'absolute',
     top: 14,
     right: 14,
@@ -277,12 +318,35 @@ bannerAddress: {
 
 bannerToggle: {
   position: 'absolute',
-  left: 0,
-  right: 0,
-  bottom: 18,
+  left: 12,
+  right: 12,
+  bottom: 16,
   alignItems: 'center',
   zIndex: 50,
 },
+
+
+loginButton: {
+  minWidth: 210,
+  backgroundColor: COLORS.brand,
+  paddingHorizontal: 20,
+  paddingVertical: 11,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: '#FFFFFF',
+  alignItems: 'center',
+},
+
+loginButtonText: {
+  color: '#FFFFFF',
+  fontFamily: FONTS.mono,
+  fontSize: 12,
+  fontWeight: '800',
+  letterSpacing: 1,
+  textAlign: 'center',
+},
+
+
   bento: { flexDirection: 'row', borderBottomWidth: 2, borderColor: COLORS.borderStrong },
   bentoCard: { flex: 1, padding: 16, backgroundColor: COLORS.surfaceSecondary, borderRightWidth: 2, borderColor: COLORS.borderStrong },
   bentoCardLg: { minHeight: 110 },

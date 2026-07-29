@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import {
   Alert,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
-} from "react-native";
+} from 'react-native';
 import * as DocumentPicker from "expo-document-picker";
-import { importInvoiceXml, listInvoiceImports, getMissingInvoiceProducts, createPendingInvoiceProducts } from "../../src/api";
+import { importInvoiceXml, listInvoiceImports, getMissingInvoiceProducts, createPendingInvoiceProducts, getInvoiceProducts, } from "../../src/api";
 import { api } from "@/src/api";
 
+import AppButton from '@/src/components/AppButton';
 export default function FornitoriScreen() {
   const [importingInvoice, setImportingInvoice] = useState(false);
   const [invoiceResult, setInvoiceResult] = useState<any>(null);
@@ -18,6 +18,12 @@ export default function FornitoriScreen() {
   const [loadingImports, setLoadingImports] = useState(false);
   const [missingProducts, setMissingProducts] = useState<any[]>([]);
   const [loadingMissing, setLoadingMissing] = useState(false);
+  const [expandedInvoiceKey, setExpandedInvoiceKey] =
+    useState<string | null>(null);
+  const [invoiceProducts, setInvoiceProducts] =
+    useState<any[]>([]);
+  const [loadingInvoiceProducts, setLoadingInvoiceProducts] =
+    useState(false);
   const handleCreateSelectedProducts = async () => {
   try {
     const selectedItems = missingProducts
@@ -110,6 +116,37 @@ const loadMissingProducts = async (invoice: any) => {
     }
   };
 
+  const loadInvoiceProducts = async (invoice: any) => {
+    const key = String(invoice?.chiave_import || "").trim();
+
+    if (!key) {
+      Alert.alert("Errore", "Chiave della fattura non disponibile.");
+      return;
+    }
+
+    if (expandedInvoiceKey === key) {
+      setExpandedInvoiceKey(null);
+      setInvoiceProducts([]);
+      return;
+    }
+
+    try {
+      setLoadingInvoiceProducts(true);
+
+      const products = await getInvoiceProducts(key);
+
+      setInvoiceProducts(Array.isArray(products) ? products : []);
+      setExpandedInvoiceKey(key);
+    } catch (e: any) {
+      Alert.alert(
+        "Dettaglio non disponibile",
+        e?.message || "Impossibile leggere i prodotti della fattura."
+      );
+    } finally {
+      setLoadingInvoiceProducts(false);
+    }
+  };
+
   const handleImportInvoiceXml = async () => {
     try {
       setImportingInvoice(true);
@@ -187,7 +224,7 @@ return (
           le quantità dei prodotti già presenti e segnalerà quelli non trovati.
         </Text>
 
-        <Pressable
+        <AppButton
           style={[styles.primaryButton, importingInvoice && styles.disabled]}
           onPress={handleImportInvoiceXml}
           disabled={importingInvoice}
@@ -195,18 +232,18 @@ return (
           <Text style={styles.primaryButtonText}>
             {importingInvoice ? "IMPORT IN CORSO..." : "IMPORTA FATTURA XML"}
           </Text>
-        </Pressable>
+        </AppButton>
       </View>
 
       <View style={styles.card}>
   <View style={styles.sectionHeader}>
     <Text style={styles.cardTitle}>Storico fatture importate</Text>
 
-    <Pressable onPress={loadInvoiceImports} disabled={loadingImports}>
+    <AppButton onPress={loadInvoiceImports} disabled={loadingImports}>
       <Text style={styles.refreshText}>
         {loadingImports ? "CARICO..." : "AGGIORNA"}
       </Text>
-    </Pressable>
+    </AppButton>
   </View>
 
   {invoiceImports.length === 0 ? (
@@ -236,8 +273,34 @@ return (
           </Text>
         </View>
 
+        <AppButton
+  style={{
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: "#EEF6F0",
+  }}
+  onPress={() => loadInvoiceProducts(item)}
+  disabled={loadingInvoiceProducts}
+>
+  <Text
+    style={{
+      color: "#176B3A",
+      fontWeight: "700",
+      textAlign: "center",
+    }}
+  >
+    {expandedInvoiceKey === item.chiave_import
+      ? "NASCONDI PRODOTTI"
+      : loadingInvoiceProducts
+      ? "CARICO..."
+      : "VEDI TUTTI I PRODOTTI"}
+  </Text>
+</AppButton>
+
        {Number(item.barcode_non_trovati ?? item.non_trovati ?? item.prodotti_non_trovati ?? item.not_found ?? 0) > 0 ? (
-  <Pressable
+  <AppButton
     style={styles.missingButton}
     onPress={() => loadMissingProducts(item)}
     disabled={loadingMissing}
@@ -245,7 +308,7 @@ return (
     <Text style={styles.missingButtonText}>
       {loadingMissing ? "CARICO..." : "VEDI PRODOTTI NON TROVATI"}
     </Text>
-  </Pressable>
+  </AppButton>
 ) : null}
 
         {item.registrata_manualmente ? (
@@ -326,7 +389,7 @@ return (
     </Text>
 
     {missingProducts.map((item, index) => (
-      <Pressable
+      <AppButton
         key={`${item.barcode}_${index}`}
         style={[
           styles.missingProductRow,
@@ -358,17 +421,17 @@ return (
             {item.quantita || "0"} · Acquisto: {item.prezzo_unitario || "0"} €
           </Text>
         </View>
-      </Pressable>
+      </AppButton>
     ))}
 
-     <Pressable
+     <AppButton
   style={styles.primaryButton}
   onPress={handleCreateSelectedProducts}
 >
   <Text style={styles.primaryButtonText}>
     CREA PRODOTTI SELEZIONATI
   </Text>
-</Pressable>
+</AppButton>
   </View>
 ) : null}
 

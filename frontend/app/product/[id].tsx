@@ -1,10 +1,21 @@
-import { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Modal, ActivityIndicator } from 'react-native';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState } from 'react';
+import { View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  Modal,
+  Animated,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-
+import AppButton from '@/src/components/AppButton';
 import { COLORS, FONTS, fmtEUR } from '@/src/theme';
 import { api } from '@/src/api';
 import { Product, useAppStore } from '@/src/store';
@@ -20,6 +31,75 @@ function prezzoFinaleProdotto(p: any): number {
 
 function haPromoProdotto(p: any): boolean {
   return Boolean(p?.promo_attiva && Number(p?.prezzo_promo || 0) > 0);
+}
+
+function ProductDetailSkeleton() {
+  const opacity = useRef(new Animated.Value(0.45)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.45,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
+  }, [opacity]);
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <Animated.View style={{ flex: 1, opacity }}>
+        <View style={styles.skeletonImage}>
+          <View style={styles.skeletonBackButton} />
+
+          <View style={styles.skeletonImageText}>
+            <View style={styles.skeletonBrand} />
+            <View style={styles.skeletonTitle} />
+            <View style={styles.skeletonTitleShort} />
+          </View>
+        </View>
+
+        <View style={styles.skeletonPriceBlock}>
+          <View style={styles.skeletonPriceCell}>
+            <View style={styles.skeletonLabel} />
+            <View style={styles.skeletonPrice} />
+          </View>
+
+          <View style={styles.skeletonPriceCell}>
+            <View style={styles.skeletonLabel} />
+            <View style={styles.skeletonPriceSmall} />
+          </View>
+        </View>
+
+        <View style={styles.skeletonSpecs}>
+          {Array.from({ length: 7 }).map((_, index) => (
+            <View key={index} style={styles.skeletonSpecRow}>
+              <View style={styles.skeletonSpecLabel} />
+              <View
+                style={[
+                  styles.skeletonSpecValue,
+                  index % 2 === 0 && styles.skeletonSpecValueShort,
+                ]}
+              />
+            </View>
+          ))}
+        </View>
+      </Animated.View>
+    </SafeAreaView>
+  );
 }
 
 export default function ProductDetail() {
@@ -53,6 +133,7 @@ const diminuisciQtaCliente = () => {
 
   const load = useCallback(async () => {
     if (!id) return;
+  
     try {
       const data = await api.getProduct(String(id));
       setP(data);
@@ -64,9 +145,7 @@ const diminuisciQtaCliente = () => {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  if (!p) {
-    return <View style={[styles.safe, styles.center]}><ActivityIndicator color={COLORS.brand} /></View>;
-  }
+  if (!p) { return <ProductDetailSkeleton />; }
 
   const adjust = async (delta: number) => {
     setBusy(true);
@@ -122,14 +201,14 @@ const diminuisciQtaCliente = () => {
             </View>
           )}
           <View style={styles.imgOverlay} />
-          <Pressable style={styles.backBtn} onPress={() => router.back()} testID="back-btn">
+          <AppButton style={styles.backBtn} onPress={() => router.back()} testID="back-btn">
             <Feather name="arrow-left" size={20} color={COLORS.onSurfaceInverse} />
-          </Pressable>
+          </AppButton>
           {!isCliente && (
-            <Pressable style={styles.editBtn} onPress={() => router.push({ pathname: '/product/new', params: { id: p.id || (p as any)._id} })} testID="edit-btn">
+            <AppButton style={styles.editBtn} onPress={() => router.push({ pathname: '/product/new', params: { id: p.id || (p as any)._id} })} testID="edit-btn">
               <Feather name="edit-2" size={16} color={COLORS.onSurfaceInverse} />
               <Text style={styles.editTxt}>MODIFICA</Text>
-            </Pressable>
+            </AppButton>
           )}
           <View style={styles.imgInner}>
             <Text style={styles.brand}>{(p.marca || '—').toUpperCase()}</Text>
@@ -177,15 +256,15 @@ const diminuisciQtaCliente = () => {
 
         <View style={styles.footer}>
           <View style={styles.stockCtrl}>
-            <Pressable style={styles.stockBtn} onPress={() => setSaleQty((q) => Math.max(1, q - 1))} disabled={busy || saleQty <= 1} testID="sale-qty-minus">
+            <AppButton style={styles.stockBtn} onPress={() => setSaleQty((q) => Math.max(1, q - 1))} disabled={busy || saleQty <= 1} preventDoublePress={false} testID="sale-qty-minus">
               <Feather name="minus" size={20} color={COLORS.onSurface} />
-            </Pressable>
+            </AppButton>
             <Text style={styles.stockNum}>{saleQty}</Text>
-              <Pressable style={styles.stockBtn} onPress={() => setSaleQty((q) => Math.min(maxVendibile, q + 1))} disabled={busy || saleQty >= maxVendibile} testID="sale-qty-plus">
+              <AppButton style={styles.stockBtn} onPress={() => setSaleQty((q) => Math.min(maxVendibile, q + 1))} disabled={busy || saleQty >= maxVendibile} preventDoublePress={false} testID="sale-qty-plus">
               <Feather name="plus" size={20} color={COLORS.onSurface} />
-            </Pressable>
+            </AppButton>
           </View>
-            <Pressable
+            <AppButton
               style={styles.addCartBtn}
               onPress={() => {
                 const disponibile = Number(p.quantita ?? 0);
@@ -202,10 +281,7 @@ const diminuisciQtaCliente = () => {
             >
             <Feather name="shopping-cart" size={18} color={COLORS.onSuccess} />
             <Text style={styles.addCartTxt}>VENDI</Text>
-          </Pressable>
-          <Pressable style={styles.delBtn} onPress={remove} testID="delete-btn">
-            <Feather name="trash-2" size={18} color={COLORS.onError} />
-          </Pressable>
+          </AppButton>
         </View>
         </>
       )}
@@ -214,7 +290,7 @@ const diminuisciQtaCliente = () => {
 
 
     <View style={styles.footer}>
-      <Pressable
+      <AppButton
         style={styles.wishlistButton}
         onPress={() => {
           aggiungiDesideri(p, qtaCliente);
@@ -227,34 +303,36 @@ const diminuisciQtaCliente = () => {
         <Text style={styles.wishlistButtonText}>
           Aggiungi alla{'\n'}Lista desideri
         </Text>
-      </Pressable>
+      </AppButton>
 
       <View style={styles.cartArea}>
       <View style={styles.qtySelector}>
-  <Pressable
+  <AppButton
     style={styles.qtyButton}
     onPress={diminuisciQtaCliente}
+    preventDoublePress={false}
     disabled={qtaCliente <= 1}
   >
     <Text style={styles.qtyButtonText}>-</Text>
-  </Pressable>
+  </AppButton>
 
-  <Pressable
+  <AppButton
     style={styles.qtyValueButton}
     onPress={() => setQtyPickerOpen(true)}
   >
     <Text style={styles.qtyValue}>{qtaCliente}</Text>
-  </Pressable>
+  </AppButton>
 
-  <Pressable
+  <AppButton
     style={styles.qtyButton}
     onPress={aumentaQtaCliente}
+    preventDoublePress={false}
     disabled={qtaCliente >= maxOrdinabileCliente}
   >
     <Text style={styles.qtyButtonText}>+</Text>
-  </Pressable>
+  </AppButton>
 </View>
-        <Pressable
+        <AppButton
           style={styles.cartButton} 
   onPress={() => {
   if (low) {
@@ -286,7 +364,7 @@ const diminuisciQtaCliente = () => {
 }}
         >
           <Text style={styles.cartIcon}>🛒</Text>
-        </Pressable>
+        </AppButton>
       </View>
     </View>
   </>
@@ -302,14 +380,14 @@ const diminuisciQtaCliente = () => {
       <View style={styles.qtyPickerHeader}>
         <Text style={styles.qtyPickerTitle}>Quantità:</Text>
 
-        <Pressable onPress={() => setQtyPickerOpen(false)}>
+        <AppButton onPress={() => setQtyPickerOpen(false)}>
           <Text style={styles.qtyPickerClose}>×</Text>
-        </Pressable>
+        </AppButton>
       </View>
 
       <ScrollView style={styles.qtyPickerList}>
         {quantitaDisponibiliCliente.map((num) => (
-          <Pressable
+          <AppButton
             key={num}
             style={[
               styles.qtyPickerOption,
@@ -321,7 +399,7 @@ const diminuisciQtaCliente = () => {
             }}
           >
             <Text style={styles.qtyPickerOptionText}>{num}</Text>
-          </Pressable>
+          </AppButton>
         ))}
       </ScrollView>
     </View>
@@ -351,6 +429,113 @@ const specStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.surface },
   center: { alignItems: 'center', justifyContent: 'center' },
+  skeletonImage: {
+    width: '100%',
+    height: 280,
+    position: 'relative',
+    backgroundColor: COLORS.surfaceTertiary,
+  },
+
+  skeletonBackButton: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    width: 40,
+    height: 40,
+    backgroundColor: COLORS.surfaceSecondary,
+  },
+
+  skeletonImageText: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 18,
+  },
+
+  skeletonBrand: {
+    width: 90,
+    height: 12,
+    backgroundColor: COLORS.surfaceSecondary,
+    marginBottom: 10,
+  },
+
+  skeletonTitle: {
+    width: '82%',
+    height: 24,
+    backgroundColor: COLORS.surfaceSecondary,
+    marginBottom: 8,
+  },
+
+  skeletonTitleShort: {
+    width: '55%', 
+    height: 24,
+    backgroundColor: COLORS.surfaceSecondary,
+  },
+
+  skeletonPriceBlock: {
+    flexDirection: 'row',
+    borderBottomWidth: 2,
+    borderColor: COLORS.borderStrong,
+    backgroundColor: COLORS.brand,
+  },
+
+  skeletonPriceCell: {
+    flex: 1,
+    padding: 16,
+    minHeight: 84,
+    borderRightWidth: 2,
+    borderColor: COLORS.borderStrong,
+  },
+
+  skeletonLabel: {
+    width: 90,
+    height: 10,
+    backgroundColor: COLORS.brandTertiary,
+    marginBottom: 12,
+  },
+
+  skeletonPrice: {
+    width: 110,
+    height: 28,
+    backgroundColor: COLORS.surfaceSecondary,
+  },
+
+  skeletonPriceSmall: {
+    width: 80,
+    height: 20,
+    backgroundColor: COLORS.surfaceSecondary,
+  },
+
+  skeletonSpecs: {
+    backgroundColor: COLORS.surface,
+  },
+
+  skeletonSpecRow: {
+    minHeight: 49,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderColor: COLORS.divider,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  skeletonSpecLabel: {
+    width: 95,
+    height: 11,
+    backgroundColor: COLORS.surfaceTertiary,
+  },
+ 
+  skeletonSpecValue: {
+    width: 150,
+    height: 13,
+    backgroundColor: COLORS.surfaceTertiary,
+  },
+
+  skeletonSpecValueShort: {
+    width: 90,
+  },
   imgWrap: { width: '100%', height: 280, position: 'relative' },
   img: { width: '100%', height: '100%' },
   imgOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(44,34,27,0.45)' },
@@ -517,6 +702,11 @@ qtyPickerHeader: {
   paddingVertical: 14,
   borderBottomWidth: 2,
   borderBottomColor: COLORS.borderStrong,
+},
+
+buttonPressed: {
+  transform: [{ scale: 0.96 }],
+  opacity: 0.88,
 },
 
 qtyPickerTitle: {

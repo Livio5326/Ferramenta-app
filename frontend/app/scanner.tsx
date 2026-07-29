@@ -1,5 +1,10 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import {
+  useState } from 'react';
+import { View,
+  Text,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -10,6 +15,7 @@ import { api } from '@/src/api';
 import type { Product } from '@/src/store';
 import { useAppStore } from '@/src/store';
 
+import AppButton from '@/src/components/AppButton';
 export default function Scanner() {
   const router = useRouter();
   const params = useLocalSearchParams<{ returnTo?: string }>();
@@ -30,12 +36,12 @@ export default function Scanner() {
         <Feather name="camera-off" size={64} color={COLORS.brandTertiary} />
         <Text style={styles.permTitle}>FOTOCAMERA RICHIESTA</Text>
         <Text style={styles.permTxt}>Concedi accesso per scansionare i barcode dei prodotti.</Text>
-        <Pressable style={styles.permBtn} onPress={requestPermission} testID="grant-camera">
+        <AppButton style={styles.permBtn} onPress={requestPermission} testID="grant-camera">
           <Text style={styles.permBtnTxt}>CONCEDI PERMESSO</Text>
-        </Pressable>
-        <Pressable onPress={() => router.back()} testID="scanner-back-perm">
+        </AppButton>
+        <AppButton onPress={() => router.back()} testID="scanner-back-perm">
           <Text style={styles.permLink}>Annulla</Text>
-        </Pressable>
+        </AppButton>
       </SafeAreaView>
     );
   }
@@ -83,9 +89,9 @@ export default function Scanner() {
       />
       <SafeAreaView style={styles.overlay} pointerEvents="box-none">
         <View style={styles.topBar}>
-          <Pressable style={styles.closeBtn} onPress={() => router.back()} testID="scanner-close">
+          <AppButton style={styles.closeBtn} onPress={() => router.back()} testID="scanner-close">
             <Feather name="x" size={24} color={COLORS.onSurfaceInverse} />
-          </Pressable>
+          </AppButton>
           <Text style={styles.topTitle}>SCANNER BARCODE</Text>
           <View style={{ width: 40 }} />
         </View>

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import {
+  useEffect,
+  useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Pressable,
   ScrollView,
   TextInput,
   Alert,
@@ -15,6 +16,7 @@ import { Feather } from '@expo/vector-icons';
 import { COLORS, FONTS } from '@/src/theme';
 import { api } from "@/src/api";
 
+import AppButton from '@/src/components/AppButton';
 type SearchSynonym = {
   termine: string;
   sinonimi: string[];
@@ -110,9 +112,9 @@ export default function SinonimiRicercaScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
+          <AppButton style={styles.backBtn} onPress={() => router.back()}>
             <Feather name="arrow-left" size={22} color={COLORS.onSurface} />
-          </Pressable>
+          </AppButton>
 
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>SINONIMI RICERCA</Text>
@@ -145,14 +147,14 @@ export default function SinonimiRicercaScreen() {
             autoCapitalize="none"
           />
 
-          <Pressable
+          <AppButton
             style={[styles.saveBtn, saving && styles.disabled]}
             onPress={save}
             disabled={saving}
           >
             <Feather name="save" size={18} color="#FFFFFF" />
             <Text style={styles.saveBtnText}>Salva sinonimo</Text>
-          </Pressable>
+          </AppButton>
         </View>
 
         <View style={styles.card}>
@@ -165,14 +167,14 @@ export default function SinonimiRicercaScreen() {
           ) : (
             items.map(item => (
               <View key={item.termine} style={styles.row}>
-                <Pressable style={{ flex: 1 }} onPress={() => edit(item)}>
+                <AppButton style={{ flex: 1 }} onPress={() => edit(item)}>
                   <Text style={styles.term}>{item.termine}</Text>
                   <Text style={styles.values}>{item.sinonimi.join(', ')}</Text>
-                </Pressable>
+                </AppButton>
 
-                <Pressable style={styles.deleteBtn} onPress={() => remove(item.termine)}>
+                <AppButton style={styles.deleteBtn} onPress={() => remove(item.termine)}>
                   <Feather name="trash-2" size={16} color="#FFFFFF" />
-                </Pressable>
+                </AppButton>
               </View>
             ))
           )}

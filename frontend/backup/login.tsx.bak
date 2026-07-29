@@ -1,0 +1,223 @@
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, AppState, Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View,} from 'react-native';
+import { router } from 'expo-router';
+import { PasswordInput } from '@/src/components/PasswordInput';
+import { useAuth } from '@/src/auth';
+import { COLORS, FONTS } from '@/src/theme';
+
+export default function LoginScreen() {
+  const { login, user, loading: authLoading } = useAuth();
+
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [keyboardKey, setKeyboardKey] = useState(0);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace('/(tabs)');
+    }
+  }, [authLoading, user]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextState => {
+      if (nextState !== 'active') {
+        Keyboard.dismiss();
+        return;
+      }
+
+      setTimeout(() => {
+        setKeyboardKey(value => value + 1);
+      }, 150);
+    });
+
+    return () => subscription.remove();
+  }, []);
+  
+  const handleLogin = async () => {
+    const usernamePulito = username.trim();
+
+    if (!usernamePulito || !password) {
+      Alert.alert('Dati mancanti', 'Inserisci username e password.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await login(usernamePulito, password);
+
+      router.replace('/(tabs)');
+    } catch (error) {
+      const messaggio =
+        error instanceof Error && error.message.includes('401')
+          ? 'Username o password errati.'
+          : 'Impossibile effettuare il login. Controlla la connessione al server.';
+
+      Alert.alert('Accesso non riuscito', messaggio);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const tornaCliente = () => {
+    router.replace('/(tabs)');
+  };
+
+  if (authLoading || user) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#D8662A" />
+      </View>
+    );
+  }
+
+  return (
+    <KeyboardAvoidingView
+      key={keyboardKey}
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <View style={styles.card}>
+        <Text style={styles.title}>Accesso gestionale</Text>
+
+        <Text style={styles.subtitle}>
+          Inserisci le credenziali per accedere alla gestione della ferramenta.
+        </Text>
+
+      
+        <TextInput
+          value={username}
+          onChangeText={setUsername}
+          placeholder="Username"
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={!loading}
+          style={styles.input}
+        />
+
+        <PasswordInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Password"
+          editable={!loading}
+          onSubmitEditing={handleLogin}
+          containerStyle={styles.passwordInput}
+        />
+
+
+        <Pressable
+          onPress={handleLogin}
+          disabled={loading}
+          style={({ pressed }) => [
+            styles.loginButton,
+            pressed && !loading && styles.buttonPressed,
+            loading && styles.buttonDisabled,
+          ]}
+        >
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.loginButtonText}>Accedi</Text>
+          )}
+        </Pressable>
+
+        <Pressable
+          onPress={tornaCliente}
+          disabled={loading}
+          style={({ pressed }) => [
+            styles.clientButton,
+            pressed && styles.buttonPressed,
+          ]}
+        >
+          <Text style={styles.clientButtonText}>Torna all’app cliente</Text>
+        </Pressable>
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: COLORS.surface,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+  },
+  card: {
+    borderRadius: 18,
+    padding: 24,
+    backgroundColor: '#FFFFFF',
+    elevation: 4,
+    shadowColor: '#000000',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+  },
+  title: {
+    fontFamily: FONTS.mono,
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#263B2B',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 21,
+    color: '#5F665F',
+    marginBottom: 24,
+  },
+  input: {
+    height: 52,
+    borderWidth: 1,
+    borderColor: '#D6D8D6',
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    marginBottom: 14,
+    fontSize: 16,
+    backgroundColor: '#FAFAFA',
+  },
+  loginButton: {
+    height: 52,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#D8662A',
+    marginTop: 4,
+  },
+  passwordInput: {
+    marginBottom: 14,
+  },
+  loginButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  clientButton: {
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  clientButtonText: {
+    color: '#263B2B',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  buttonPressed: {
+    opacity: 0.75,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+});
+
