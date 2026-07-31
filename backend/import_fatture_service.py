@@ -2,7 +2,7 @@ import csv
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
-
+from product_creator import ( crea_prodotto_da_fattura, ricava_marca_da_descrizione, ricava_categoria_da_descrizione )
 
 REPORTS_DIR = "import_fatture/report"
 
@@ -466,6 +466,7 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
 
     info_fattura = dati_fattura(root)
 
+
     if not info_fattura["numero"] or not info_fattura["data"] or not info_fattura["partita_iva"]:
         return {
             "ok": False,
@@ -515,19 +516,11 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
             })
             continue
 
+        codice_fornitore = trova_codice_fornitore(dettaglio)
+
         if barcode == "":
-            codice_fornitore = trova_codice_fornitore(dettaglio)
-    
-            non_trovati.append({
-            "linea": numero_linea,
-            "barcode": "",
-            "codice_fornitore": codice_fornitore,
-            "quantita": quantita_arrivata,
-            "prezzo_unitario_lordo": testo_figlio(dettaglio, "PrezzoUnitario"),
-            "prezzo_unitario": calcola_prezzo_acquisto_netto_da_riga(dettaglio),
-            "descrizione": descrizione_fattura,
-            })
-            continue
+            barcode = codice_fornitore
+
 
         if quantita_arrivata <= 0:
             saltati.append({
@@ -551,17 +544,50 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
 
         if not prodotto:
             codice_fornitore = trova_codice_fornitore(dettaglio)
+            prezzo_acquisto = calcola_prezzo_acquisto_netto_da_riga(dettaglio)
 
-            non_trovati.append({
-                "linea": numero_linea,
-                "barcode": barcode,
-                "codice_fornitore": codice_fornitore,
-                "quantita": quantita_arrivata,
-                "prezzo_unitario_lordo": testo_figlio(dettaglio, "PrezzoUnitario"),
-            "prezzo_unitario": calcola_prezzo_acquisto_netto_da_riga(dettaglio),
-                "descrizione": descrizione_fattura,
-            })
-            continue
+            marca_ricavata = ricava_marca_da_descrizione(descrizione_fattura)
+            categoria_ricavata = ricava_categoria_da_descrizione(descrizione_fattura)
+
+            fornitore_originale = info_fattura.get("denominazione", "")
+            fornitore = fornitore_originale
+
+            try:
+                await crea_prodotto_da_fattura(
+                    db,
+                    descrizione=descrizione_fattura,
+                    barcode=barcode,
+                    codice_prodotto=codice_fornitore or barcode,
+                    marca=marca_ricavata,
+                    marca_standard=marca_ricavata,
+                    categoria=categoria_ricavata,
+                    fornitore=fornitore,
+                    fornitore_originale=fornitore_originale,
+                    quantita=0,
+                    prezzo_acquisto=prezzo_acquisto,
+                )
+
+                prodotto = await db.products.find_one({
+                    "$or": [
+                        {"barcode": barcode},
+                        {"codice_prodotto": codice_fornitore},
+                        {"codice_prodotto": barcode},
+                    ]
+                })
+
+            except Exception as e:
+                print("ERRORE CREAZIONE PRODOTTO:", e, flush=True)
+                non_trovati.append({
+                    "linea": numero_linea,
+                    "barcode": barcode,
+                    "codice_fornitore": codice_fornitore,
+                    "quantita": quantita_arrivata,
+                    "prezzo_unitario_lordo": testo_figlio(dettaglio, "PrezzoUnitario"),
+                    "prezzo_unitario": prezzo_acquisto,
+                    "descrizione": descrizione_fattura,
+                    "errore": str(e),
+                })
+                continue
 
         quantita_attuale = numero_intero(prodotto.get("quantita", 0))
         nuova_quantita = quantita_attuale + quantita_arrivata

@@ -16,8 +16,6 @@ from import_fatture_service import importa_fattura_xml_da_file
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 from datetime import timedelta
-from bson import ObjectId
-from product_creator import ( crea_prodotto_da_fattura, ricava_marca_da_descrizione, ricava_categoria_da_descrizione )
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -2086,19 +2084,35 @@ async def create_pending_invoice_products(payload: CreatePendingProductsRequest)
             )
             continue
 
-        nuovo = await crea_prodotto_da_fattura(
-            db,
-            descrizione=descrizione,
-            barcode=barcode,
-            codice_prodotto=codice_prodotto,
-            marca=marca_ricavata,
-            marca_standard=marca_ricavata,
-            categoria=categoria_ricavata,
-            fornitore=fornitore_ricavato,
-            fornitore_originale=fornitore_originale,
-            quantita=quantita,
-            prezzo_acquisto=prezzo_acquisto,
-        )
+        nuovo = {
+            "id": str(uuid.uuid4()),
+            "codice_prodotto": codice_prodotto,
+            "barcode": barcode,
+            "descrizione": descrizione,
+            "marca": marca_ricavata,
+            "marca_standard": marca_ricavata,
+            "categoria": categoria_ricavata,
+            "fornitore": fornitore_ricavato,
+            "fornitore_originale": fornitore_originale,
+            "quantita": quantita,
+            "prezzo_acquisto": prezzo_acquisto,
+            "prezzo_vendita": 0,
+            "prezzo_promo": None,
+            "promo_attiva": False,
+            "promo_nome": "",
+            "promo_inizio": "",
+            "promo_fine": "",
+            "ultimo_aggiornamento_promo": "",
+            "soglia_scorta": 0,
+            "note": "",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "foto": "",
+            "image_url": "",
+            "immagine": "",
+            "immagine_url": "",
+
+        }
 
         await db.products.insert_one(nuovo)
 
@@ -2772,14 +2786,9 @@ async def bulk_import(products: List[ProductCreate]):
         data["categoria_standard"] = calcola_categoria_standard_import(data)
         prod = Product(**data)
 
-        if prod.barcode:
-            key = {"barcode": prod.barcode}
-        elif prod.codice_prodotto:
-            key = {"codice_prodotto": prod.codice_prodotto}
-        else:
-            key = {"descrizione": prod.descrizione}
-
+        key = {"barcode": prod.barcode} if prod.barcode else {"descrizione": prod.descrizione}
         existing = await db.products.find_one(key, {"_id": 0})
+
         if existing:
             await db.products.update_one(
                 {"id": existing["id"]},
@@ -3069,44 +3078,17 @@ async def best_sellers(limit: int = 20):
 
 @api_router.post("/sales", response_model=Sale)
 async def create_sale(input: SaleCreate):
-    print(
-        "DATI VENDITA RICEVUTI:",
-        [it.dict() for it in input.items],
-        flush=True,
-    )
     if not input.items:
         raise HTTPException(status_code=400, detail="Carrello vuoto")
     totale = sum(it.prezzo_vendita * it.quantita for it in input.items)
     sale = Sale(items=input.items, totale=round(totale, 2))
     await db.sales.insert_one(sale.dict())
-
-    # Decrementa il magazzino cercando il prodotto per id,
-    # codice prodotto oppure barcode.
+    # decrementa stock
     for it in input.items:
-        filtri = [
+        await db.products.update_one(
             {"id": it.product_id},
-            {"codice_prodotto": it.product_id},
-            {"barcode": it.product_id},
-        ]
-
-        if ObjectId.is_valid(it.product_id):
-            filtri.append({"_id": ObjectId(it.product_id)})
-
-        risultato = await db.products.update_one(
-            {"$or": filtri},
-            {
-                "$inc": {"quantita": -it.quantita},
-                "$set": {
-                    "updated_at": datetime.now(timezone.utc).isoformat()
-                },
-            },
+            {"$inc": {"quantita": -it.quantita}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}},
         )
-        if risultato.matched_count == 0:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Prodotto non trovato: {it.descrizione}",
-            )
-
     return sale
 
 
