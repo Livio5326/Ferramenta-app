@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { COLORS, FONTS } from '@/src/theme';
 
 import AppButton from '@/src/components/AppButton';
+import { leggiAuthToken } from '@/src/api';
 type ProdottoRichiesto = {
   id?: string;
   descrizione?: string;
@@ -40,7 +41,10 @@ export default function PiuRichiestiScreen() {
       setLoading(true);
       setErrore('');
 
-      const res = await fetch(`${API_BASE}/api/stats/best-sellers?limit=20`);
+      const token = await leggiAuthToken();
+      const res = await fetch(`${API_BASE}/api/stats/best-sellers?limit=20`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
 
       if (!res.ok) {
         throw new Error('Errore nel caricamento dei prodotti più richiesti');

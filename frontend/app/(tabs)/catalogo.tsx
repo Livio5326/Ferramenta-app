@@ -848,7 +848,7 @@ const loadMore = useCallback(async () => {
                   filtroDaCompletare && styles.completeToggleTextActive,
                 ]}
               >
-                "Da completare"
+                {'"Da completare"'}
               </Text>
             </AppButton>
 

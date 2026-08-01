@@ -117,7 +117,7 @@ export default function ImpostazioniScreen() {
          <View style={{ flex: 1 }}>
            <Text style={styles.optionTitle}>Liste standard</Text>
            <Text style={styles.optionText}>
-             Modifica categorie, fornitori e marche usate nell'app.
+             {"Modifica categorie, fornitori e marche usate nell'app."}
            </Text>
          </View>
 

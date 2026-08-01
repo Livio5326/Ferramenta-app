@@ -1,5 +1,5 @@
 import re
-from fastapi import FastAPI, APIRouter, HTTPException, Body, UploadFile, File, Depends, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Body, UploadFile, File, Depends, Header, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -12,6 +12,7 @@ import uuid
 import json
 from datetime import datetime, timezone, date
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from import_fatture_service import importa_fattura_xml_da_file
 from passlib.context import CryptContext
 from jose import jwt, JWTError
@@ -42,6 +43,14 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 JWT_SECRET = os.environ.get("JWT_SECRET")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = 24 * 30
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        "CORS_ORIGINS",
+        "http://localhost:8081,http://localhost:19006,http://127.0.0.1:8081,http://127.0.0.1:19006",
+    ).split(",")
+    if origin.strip()
+]
 
 if not JWT_SECRET:
     raise RuntimeError("JWT_SECRET non configurata nel file backend/.env")
@@ -84,6 +93,12 @@ class TokenResponse(BaseModel):
 
 def normalizza_username(username: str) -> str:
     return str(username or "").strip().lower()
+
+
+def object_id_utente(user_id: str) -> ObjectId:
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="ID utente non valido")
+    return ObjectId(user_id)
 
 
 def crea_password_hash(password: str) -> str:
@@ -149,7 +164,7 @@ async def get_current_user(
             detail="Token non valido o scaduto",
         )
 
-    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    user = await db.users.find_one({"_id": object_id_utente(user_id)})
 
     if not user or not user.get("attivo", True):
         raise HTTPException(
@@ -158,6 +173,31 @@ async def get_current_user(
         )
 
     return user
+
+
+@app.middleware("http")
+async def require_api_authentication(request: Request, call_next):
+    """Protegge tutte le API, eccetto gli endpoint necessari per accedere."""
+    public_paths = {
+        "/api/auth/login",
+        "/api/auth/bootstrap-admin",
+    }
+
+    if (
+        request.url.path.startswith("/api")
+        and request.url.path not in public_paths
+        and request.method != "OPTIONS"
+    ):
+        try:
+            await get_current_user(request.headers.get("authorization"))
+        except HTTPException as exc:
+            return JSONResponse(
+                status_code=exc.status_code,
+                content={"detail": exc.detail},
+                headers=exc.headers,
+            )
+
+    return await call_next(request)
 
 
 async def require_admin(
@@ -1008,7 +1048,7 @@ async def update_user(
     existing = await db.users.find_one(
         {
             "username": username,
-            "_id": {"$ne": ObjectId(user_id)},
+            "_id": {"$ne": object_id_utente(user_id)},
         }
     )
 
@@ -1019,7 +1059,7 @@ async def update_user(
         )
 
     await db.users.update_one(
-        {"_id": ObjectId(user_id)},
+        {"_id": object_id_utente(user_id)},
         {
             "$set": {
                 "username": username,
@@ -1031,7 +1071,7 @@ async def update_user(
         },
     )
 
-    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    user = await db.users.find_one({"_id": object_id_utente(user_id)})
 
     return serializza_utente(user)
 
@@ -1046,7 +1086,7 @@ async def delete_user(
             detail="Non puoi eliminare il tuo account.",
         )
 
-    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    user = await db.users.find_one({"_id": object_id_utente(user_id)})
 
     if not user:
         raise HTTPException(
@@ -1054,7 +1094,7 @@ async def delete_user(
             detail="Utente non trovato",
         )
 
-    await db.users.delete_one({"_id": ObjectId(user_id)})
+    await db.users.delete_one({"_id": object_id_utente(user_id)})
 
     return {"message": "Utente eliminato"}
 
@@ -1308,23 +1348,6 @@ async def get_standard_brands():
 
     return sorted(list(set(clean)), key=lambda x: x.lower())
 
-
-@api_router.get("/products/standard-brands")
-async def get_products_standard_brands():
-    """
-    Alias compatibile: stesso risultato di /brands/standard.
-    """
-    brands = await db.products.distinct("marca_standard")
-
-    clean = []
-    for b in brands:
-        if b is None:
-            continue
-        nome = str(b).strip()
-        if nome:
-            clean.append(nome)
-
-    return sorted(list(set(clean)), key=lambda x: x.lower())
 
 @api_router.get("/products/brands")
 async def get_product_brands():
@@ -1895,8 +1918,6 @@ class CreatePendingProductsRequest(BaseModel):
     items: list[dict] = []
 
 
-@api_router.post("/invoices/pending-products/create")
-
 async def mark_pending_item_imported_from_invoice_item(item: dict, prodotto: dict | None = None):
     """
     Marca come importata/risolta la riga pending collegata a un prodotto creato
@@ -2032,6 +2053,7 @@ async def aggiorna_conteggi_fattura_import(numero_fattura: str):
     )
 
 
+@api_router.post("/invoices/pending-products/create")
 async def create_pending_invoice_products(payload: CreatePendingProductsRequest):
     creati = 0
     saltati = 0
@@ -3069,19 +3091,18 @@ async def best_sellers(limit: int = 20):
 
 @api_router.post("/sales", response_model=Sale)
 async def create_sale(input: SaleCreate):
-    print(
-        "DATI VENDITA RICEVUTI:",
-        [it.dict() for it in input.items],
-        flush=True,
-    )
     if not input.items:
         raise HTTPException(status_code=400, detail="Carrello vuoto")
-    totale = sum(it.prezzo_vendita * it.quantita for it in input.items)
-    sale = Sale(items=input.items, totale=round(totale, 2))
-    await db.sales.insert_one(sale.dict())
 
-    # Decrementa il magazzino cercando il prodotto per id,
-    # codice prodotto oppure barcode.
+    if any(it.quantita <= 0 or it.prezzo_vendita < 0 for it in input.items):
+        raise HTTPException(
+            status_code=400,
+            detail="Quantit\u00e0 e prezzi della vendita non validi",
+        )
+
+    # Risolve e valida prima tutti i prodotti, aggregando eventuali righe
+    # duplicate. In questo modo nessuna vendita viene salvata a met\u00e0.
+    richieste_per_prodotto = {}
     for it in input.items:
         filtri = [
             {"id": it.product_id},
@@ -3092,20 +3113,63 @@ async def create_sale(input: SaleCreate):
         if ObjectId.is_valid(it.product_id):
             filtri.append({"_id": ObjectId(it.product_id)})
 
-        risultato = await db.products.update_one(
-            {"$or": filtri},
-            {
-                "$inc": {"quantita": -it.quantita},
-                "$set": {
-                    "updated_at": datetime.now(timezone.utc).isoformat()
-                },
-            },
-        )
-        if risultato.matched_count == 0:
+        prodotto = await db.products.find_one({"$or": filtri})
+        if not prodotto:
             raise HTTPException(
                 status_code=404,
                 detail=f"Prodotto non trovato: {it.descrizione}",
             )
+
+        product_key = prodotto["_id"]
+        if product_key not in richieste_per_prodotto:
+            richieste_per_prodotto[product_key] = {
+                "prodotto": prodotto,
+                "quantita": 0,
+            }
+        richieste_per_prodotto[product_key]["quantita"] += it.quantita
+
+    for richiesta in richieste_per_prodotto.values():
+        disponibile = int(richiesta["prodotto"].get("quantita", 0))
+        if disponibile < richiesta["quantita"]:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Giacenza insufficiente per: "
+                    f"{richiesta['prodotto'].get('descrizione', 'prodotto')}"
+                ),
+            )
+
+    totale = sum(it.prezzo_vendita * it.quantita for it in input.items)
+    sale = Sale(items=input.items, totale=round(totale, 2))
+
+    decrementati = []
+    try:
+        for product_id, richiesta in richieste_per_prodotto.items():
+            quantita = richiesta["quantita"]
+            risultato = await db.products.update_one(
+                {"_id": product_id, "quantita": {"$gte": quantita}},
+                {
+                    "$inc": {"quantita": -quantita},
+                    "$set": {"updated_at": datetime.now(timezone.utc).isoformat()},
+                },
+            )
+            if risultato.modified_count != 1:
+                raise HTTPException(
+                    status_code=409,
+                    detail="La giacenza \u00e8 cambiata durante la vendita. Riprova.",
+                )
+            decrementati.append((product_id, quantita))
+
+        await db.sales.insert_one(sale.dict())
+    except Exception:
+        # Compensazione per MongoDB standalone, dove le transazioni potrebbero
+        # non essere disponibili: ripristina ogni decremento gi\u00e0 eseguito.
+        for product_id, quantita in decrementati:
+            await db.products.update_one(
+                {"_id": product_id},
+                {"$inc": {"quantita": quantita}},
+            )
+        raise
 
     return sale
 
@@ -3484,7 +3548,7 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )

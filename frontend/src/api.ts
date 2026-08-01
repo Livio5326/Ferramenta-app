@@ -288,6 +288,7 @@ export const api = {
     req<{ inserted: number }>('/products/bulk', { method: 'POST', body: JSON.stringify(items) }),
   seed: () => req<{ seeded: boolean; count?: number }>('/seed', { method: 'POST' }),
   previewPromoImport: async (file: { uri: string; name?: string; mimeType?: string }, codeOverrides: Record<string, string> = {}) => {
+    const token = await leggiAuthToken();
     const form = new FormData();
     form.append('file', {
       uri: file.uri,
@@ -298,6 +299,7 @@ export const api = {
 
     const res = await fetch(BASE + '/products/import-promo-prices/preview', {
       method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       body: form,
     });
 
@@ -316,6 +318,7 @@ export const api = {
     promo_fine: string,
     codeOverrides: Record<string, string> = {}
   ) => {
+    const token = await leggiAuthToken();
     const form = new FormData();
     form.append('file', {
       uri: file.uri,
@@ -329,6 +332,7 @@ export const api = {
 
     const res = await fetch(BASE + '/products/import-promo-prices/confirm', {
       method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       body: form,
     });
 
