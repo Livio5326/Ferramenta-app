@@ -1,12 +1,13 @@
 import {
   useCallback,
+  useEffect,
+  useRef,
   useState } from 'react';
 import { View,
   Text,
   StyleSheet,
   ScrollView,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -14,7 +15,6 @@ import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useAuth } from '@/src/auth';
 import { COLORS, FONTS, fmtEUR } from '@/src/theme';
-import { ScreenHeader } from '@/src/components/ScreenHeader';
 import { useAppStore } from '@/src/store';
 import { api } from '@/src/api';
 
@@ -46,15 +46,43 @@ export default function Dashboard() {
   };
   const [stats, setStats] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [backendStatus, setBackendStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [consecutiveFailures, setConsecutiveFailures] = useState(0);
+  const requestInProgress = useRef(false);
 
   const load = useCallback(async () => {
+    if (requestInProgress.current) {
+      return;
+    }
+
+    requestInProgress.current = true;
     try {
       const data = await api.statistiche();
       setStats(data);
+      setConsecutiveFailures(0);
+      setBackendStatus('online');
     } catch (e) {
+      setConsecutiveFailures((current) => {
+        const next = current + 1;
+        setBackendStatus(next >= 2 ? 'offline' : 'checking');
+        return next;
+      });
       console.warn("Errore caricamento dashboard", e);
+    } finally {
+      requestInProgress.current = false;
     }
   }, []);
+
+  useEffect(() => {
+    if (consecutiveFailures === 0) {
+      return;
+    }
+
+    const retryDelay = consecutiveFailures === 1 ? 2_500 : 5_000;
+    const retryTimer = setTimeout(load, retryDelay);
+
+    return () => clearTimeout(retryTimer);
+  }, [consecutiveFailures, load]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -62,10 +90,6 @@ export default function Dashboard() {
     setRefreshing(true);
     await load();
     setRefreshing(false);
-  };
-
-  const handleSeed = async () => {
-    Alert.alert("Offline", "I prodotti sono già caricati nel database locale.");
   };
 
 return (
@@ -120,17 +144,38 @@ return (
     
   </View>
 </View>
+        {backendStatus === 'offline' && (
+          <View style={styles.connectionError} testID="backend-offline-banner">
+            <View style={styles.connectionErrorInfo}>
+              <Feather name="wifi-off" size={24} color={COLORS.onError} />
+              <View style={styles.connectionErrorCopy}>
+                <Text style={styles.connectionErrorTitle}>GESTIONALE NON CONNESSO</Text>
+                <Text style={styles.connectionErrorText}>
+                  Controlla che il PC, Docker e il server di sviluppo siano accesi.
+                </Text>
+              </View>
+            </View>
+            <AppButton style={styles.connectionRetry} onPress={load} testID="backend-retry-button">
+              <Feather name="refresh-cw" size={16} color={COLORS.error} />
+              <Text style={styles.connectionRetryText}>RIPROVA</Text>
+            </AppButton>
+          </View>
+        )}
         {/* Bento stats */}
         {!isCliente && (
           <View style={styles.bento}>
             <View style={[styles.bentoCard, styles.bentoCardLg]} testID="stat-valore">
               <Text style={styles.statLabel}>VALORE MAGAZZINO</Text>
-              <Text style={styles.statValue}>{fmtEUR(stats?.valore_magazzino || 0)}</Text>
-              <Text style={styles.statFoot}>{stats?.total_pieces || 0} PEZZI · {stats?.total_products || 0} REF</Text>
+              <Text style={styles.statValue}>{stats ? fmtEUR(stats.valore_magazzino || 0) : '—'}</Text>
+              <Text style={styles.statFoot}>
+                {stats ? `${stats.total_pieces || 0} PEZZI · ${stats.total_products || 0} REF` : 'DATI NON DISPONIBILI'}
+              </Text>
             </View>
             <AppButton style={[styles.bentoCard, styles.bentoCardLg, { backgroundColor: stats?.sotto_scorta_count ? COLORS.error : COLORS.surfaceSecondary }]} onPress={()=> router.push('/catalogo?sotto_scorta=true')} testID="stat-scorta">
 
-              <Text style={[styles.statValue, stats?.sotto_scorta_count && { color: COLORS.onError }]}>{stats?.sotto_scorta_count || 0}</Text>
+              <Text style={[styles.statValue, stats?.sotto_scorta_count && { color: COLORS.onError }]}>
+                {stats ? stats.sotto_scorta_count || 0 : '—'}
+              </Text>
               <Text style={[styles.statFoot, stats?.sotto_scorta_count && { color: COLORS.onError }]}>DA RIORDINARE</Text>
             </AppButton>
           </View>
@@ -255,6 +300,50 @@ const styles = StyleSheet.create({
 },
   safe: { flex: 1, backgroundColor: COLORS.surface },
   content: { paddingBottom: 32 },
+  connectionError: {
+    backgroundColor: COLORS.error,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+    borderBottomWidth: 2,
+    borderColor: COLORS.borderStrong,
+  },
+  connectionErrorInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  connectionErrorCopy: { flex: 1 },
+  connectionErrorTitle: {
+    color: COLORS.onError,
+    fontFamily: FONTS.mono,
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  connectionErrorText: {
+    color: COLORS.onError,
+    fontFamily: FONTS.display,
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 4,
+  },
+  connectionRetry: {
+    minHeight: 42,
+    borderRadius: 10,
+    backgroundColor: COLORS.onError,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  connectionRetryText: {
+    color: COLORS.error,
+    fontFamily: FONTS.mono,
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
 bannerWrap: {
   height: 230,
   borderBottomWidth: 2,

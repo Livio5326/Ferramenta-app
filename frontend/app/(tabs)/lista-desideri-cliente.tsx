@@ -1,12 +1,12 @@
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS } from '@/src/theme';
 import { useClienteStore } from '@/src/clienteStore';
 import { Image } from 'expo-image';
 
 import AppButton from '@/src/components/AppButton';
-const BACKEND_URL = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+import { BACKEND_URL } from '@/src/config/backend';
 
 function getFotoUrl(foto?: string) {
   if (!foto) return null;

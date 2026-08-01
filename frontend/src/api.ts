@@ -8,10 +8,12 @@ import {
   getInvoiceProductsOffline,
 } from "./local/invoiceImporter";
 import { getDb } from "./local/db";
+import { API_URL } from './config/backend';
 
-const BASE = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '') + '/api';
+const BASE = API_URL;
 const TOKEN_KEY = 'ferramenta_auth_token';
 const LOGIN_DATE_KEY = 'ferramenta_auth_login_date';
+const REQUEST_TIMEOUT_MS = 12_000;
 
 export type AuthUser = {
   id: string;
@@ -63,6 +65,8 @@ export async function eliminaAuthToken(): Promise<void> {
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await leggiAuthToken();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -73,17 +77,27 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(BASE + path, {
-    ...init,
-    headers,
-  });
+  try {
+    const res = await fetch(BASE + path, {
+      ...init,
+      headers,
+      signal: controller.signal,
+    });
 
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`${res.status}: ${txt}`);
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(`${res.status}: ${txt}`);
+    }
+
+    return res.json();
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Il server non risponde. Controlla la connessione e riprova.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return res.json();
 }
 
 export const api = {
@@ -286,7 +300,7 @@ export const api = {
     req<Product>(`/products/${id}/adjust-stock`, { method: 'POST', body: JSON.stringify({ delta }) }),
   bulkImport: (items: Partial<Product>[]) =>
     req<{ inserted: number }>('/products/bulk', { method: 'POST', body: JSON.stringify(items) }),
-  seed: () => req<{ seeded: boolean; count?: number }>('/seed', { method: 'POST' }),
+  seed: () => req<{ seeded: boolean; count?: number; existing?: number }>('/seed', { method: 'POST' }),
   previewPromoImport: async (file: { uri: string; name?: string; mimeType?: string }, codeOverrides: Record<string, string> = {}) => {
     const token = await leggiAuthToken();
     const form = new FormData();
@@ -347,13 +361,13 @@ export const api = {
   listActivePromos: () =>
     req<{
       totale_prodotti: number;
-      riepilogo: Array<{
+      riepilogo: {
         promo_nome: string;
         prodotti: number;
         promo_inizio?: string;
         promo_fine?: string;
-      }>;
-      prodotti: Array<{
+      }[];
+      prodotti: {
         id: string;
         codice_prodotto: string;
         barcode?: string;
@@ -368,7 +382,7 @@ export const api = {
         promo_inizio?: string;
         promo_fine?: string;
         ultimo_aggiornamento_promo?: string;
-      }>;
+      }[];
     }>('/products/promos'),
 
   activatePromoByName: (promoNome: string) =>

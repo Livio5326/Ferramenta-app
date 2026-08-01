@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { COLORS, FONTS } from '@/src/theme';
 
 import AppButton from '@/src/components/AppButton';
 import { leggiAuthToken } from '@/src/api';
+import { BACKEND_URL } from '@/src/config/backend';
 type ProdottoRichiesto = {
   id?: string;
   descrizione?: string;
@@ -22,8 +22,7 @@ type ProdottoRichiesto = {
   totale_venduto?: number;
 };
 
-const API_BASE =
-  process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
+const API_BASE = BACKEND_URL;
 
 export default function PiuRichiestiScreen() {
   const router = useRouter();
@@ -52,7 +51,7 @@ export default function PiuRichiestiScreen() {
 
       const data = await res.json();
       setProdotti(Array.isArray(data) ? data : []);
-    } catch (e) {
+    } catch {
       setErrore('Impossibile caricare i prodotti più richiesti.');
       setProdotti([]);
     } finally {

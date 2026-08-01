@@ -5,6 +5,20 @@ const { FileStore } = require('metro-cache');
 
 const config = getDefaultConfig(__dirname);
 
+// expo-sqlite usa un modulo WebAssembly nel browser.
+// Metro non include i file .wasm tra gli asset senza questa estensione.
+config.resolver.assetExts.push('wasm');
+
+// SQLite Web usa SharedArrayBuffer: questi header isolano correttamente
+// l'anteprima servita da Metro sul PC e sulla rete locale.
+config.server.enhanceMiddleware = (middleware) => {
+  return (req, res, next) => {
+    res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    return middleware(req, res, next);
+  };
+};
+
 // Use a stable on-disk store (shared across web/android)
 const root = process.env.METRO_CACHE_ROOT || path.join(__dirname, '.metro-cache');
 config.cacheStores = [

@@ -56,3 +56,7 @@ def test_api_authentication_middleware_is_registered():
         )
     }
     assert "require_api_authentication" in middleware_names
+
+
+def test_health_route_is_available():
+    assert ("get", "/health", "health_check") in _api_routes()

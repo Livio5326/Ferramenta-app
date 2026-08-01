@@ -24,7 +24,16 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
+if mongo_url.startswith("mongomock://"):
+    try:
+        from mongomock_motor import AsyncMongoMockClient
+    except ImportError as exc:
+        raise RuntimeError(
+            "MONGO_URL usa mongomock, ma mongomock-motor non e installato"
+        ) from exc
+    client = AsyncMongoMockClient()
+else:
+    client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 app = FastAPI()
@@ -181,6 +190,7 @@ async def require_api_authentication(request: Request, call_next):
     public_paths = {
         "/api/auth/login",
         "/api/auth/bootstrap-admin",
+        "/api/health",
     }
 
     if (
@@ -210,6 +220,11 @@ async def require_admin(
         )
 
     return current_user
+
+
+@api_router.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "Ferramenta Manager API"}
 
 class Product(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

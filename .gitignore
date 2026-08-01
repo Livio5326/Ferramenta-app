@@ -97,3 +97,22 @@ backend/uploads/
 backend/import_fatture/*.xml
 backend/import_fatture/report/
 backend/import_fatture/
+
+# Local preview runtime
+.preview-backend.pid
+.preview-expo.log
+.pnpm-store/
+frontend/pnpm-lock.yaml
+frontend/pnpm-workspace.yaml
+frontend/dist-preview*/
+
+# Backup e archivi locali
+backend/backups/
+backend/_archivio/
+*.backup*
+*.bak
+*.bak2
+
+# Cartelle root da escludere
+.emergent/
+test_reports/
