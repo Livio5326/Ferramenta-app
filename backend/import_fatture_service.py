@@ -1,4 +1,5 @@
 import csv
+import re
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
@@ -6,6 +7,106 @@ from product_creator import ( crea_prodotto_da_fattura, ricava_marca_da_descrizi
 from pricing import DEFAULT_MARKUPS, calculate_sale_price
 
 REPORTS_DIR = "import_fatture/report"
+
+
+def normalizza_nome_fornitore(value: str | None) -> str:
+    value = str(value or "").upper().strip()
+
+    # Toglie forme societarie e parole inutili.
+    parole_da_togliere = [
+        "S.R.L.", "SRL", "S.R.L", "S.R.L.S.", "SRLS",
+        "S.P.A.", "SPA", "SNC", "S.N.C.", "SAS", "S.A.S.",
+        "ITALIA", "NICOLA", "DI", "DEL", "DELLA", "D'", "F.LLI",
+        "FRATELLI", "AZIENDA", "COMMERCIALE",
+    ]
+
+    for parola in parole_da_togliere:
+        value = value.replace(parola, " ")
+
+    value = re.sub(r"[^A-Z0-9]+", " ", value)
+    value = re.sub(r"\s+", " ", value).strip()
+
+    return value
+
+
+async def riconduci_fornitore_standard(db, fornitore_xml: str | None) -> str:
+    """
+    Riconduce il fornitore letto dalla fattura XML a uno dei fornitori standard
+    usando parole chiave precise.
+
+    Esempi:
+    - DE SANTIS NICOLA S.R.L. -> De Santis
+    - SAIT ABRASIVI S.P.A. -> Sait abrasivi
+    - STANLEY BLACK + DECKER ITALIA S.R.L. -> Stanley Black+Decker
+    """
+    fornitore_xml = str(fornitore_xml or "").strip()
+    if not fornitore_xml:
+        return ""
+
+    xml_norm = normalizza_nome_fornitore(fornitore_xml)
+
+    # Mappa precisa: se nel nome importato compare una parola/frase chiave,
+    # assegna direttamente il fornitore standard scelto da noi.
+    keyword_map = [
+        ("DE SANTIS", "De Santis"),
+        ("SANTIS", "De Santis"),
+
+        ("SAIT", "Sait abrasivi"),
+        ("SITE", "Sait abrasivi"),  # tolleranza se viene scritto/letto male
+
+        ("STANLEY", "Stanley Black+Decker"),
+        ("BLACK DECKER", "Stanley Black+Decker"),
+        ("BLACK AND DECKER", "Stanley Black+Decker"),
+
+        ("CAPALDO", "Capaldo"),
+        ("DEODATO", "Deodato"),
+        ("DFL", "DFL"),
+        ("DUEMME", "Duemme"),
+        ("Garsport".upper(), "Garsport"),
+        ("ITALIANCOLOR", "Italiancolor"),
+        ("LIANTONIO", "Liantonio Vernici"),
+        ("MADRAs".upper(), "Madras"),
+        ("PASQUALE ROMITO", "Pasquale Romito Cataldo"),
+        ("ROMITO", "Pasquale Romito Cataldo"),
+        ("PROCHIMICA", "Prochimica"),
+        ("SARATOGA", "Saratoga"),
+        ("TASSANI", "Tassani"),
+        ("TECFI", "Tecfi"),
+        ("VIGLIETTA", "Viglietta"),
+        ("VIRIDEX", "Viridex"),
+
+        ("C C", "C&C"),
+        ("C&C", "C&C"),
+
+        ("FRATELLI VITALE", "Fratelli Vitale"),
+        ("VITALE", "Fratelli Vitale"),
+    ]
+
+    for keyword, standard in keyword_map:
+        keyword_norm = normalizza_nome_fornitore(keyword)
+
+        if keyword_norm and keyword_norm in xml_norm:
+            return standard
+
+    # Fallback più prudente:
+    # controlla se uno dei fornitori standard è contenuto nel nome importato.
+    # Lo facciamo dopo le parole chiave, non prima.
+    doc = await db.standard_lists.find_one({"tipo": "fornitori"})
+    standard_items = doc.get("items") if doc else []
+    standard_items = standard_items or []
+
+    for standard in standard_items:
+        standard = str(standard or "").strip()
+        if not standard:
+            continue
+
+        standard_norm = normalizza_nome_fornitore(standard)
+        if standard_norm and standard_norm in xml_norm:
+            return standard
+
+    # Se non riconosce nulla, usa il nome originale.
+    # Così un fornitore nuovo non viene perso.
+    return fornitore_xml
 
 
 
@@ -551,11 +652,15 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
 
         if not prodotto:
             codice_fornitore = trova_codice_fornitore(dettaglio)
-            marca_ricavata = ricava_marca_da_descrizione(descrizione_fattura)
             categoria_ricavata = ricava_categoria_da_descrizione(descrizione_fattura)
 
             fornitore_originale = info_fattura.get("denominazione", "")
-            fornitore = fornitore_originale
+            fornitore = await riconduci_fornitore_standard(db, fornitore_originale) or fornitore_originale
+
+            # Se la descrizione non permette di riconoscere una marca vera
+            # (es. linee di vernici, prodotti generici), usiamo il nome del
+            # fornitore gia' ricondotto: meglio "Tassani" che "ALTRO".
+            marca_ricavata = ricava_marca_da_descrizione(descrizione_fattura) or fornitore
 
             try:
                 await crea_prodotto_da_fattura(
