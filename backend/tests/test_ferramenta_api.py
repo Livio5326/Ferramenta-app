@@ -54,9 +54,14 @@ def s():
 
 # ---------- Health / seed ----------
 def test_root(s):
-    r = s.get(f"{API}/")
+    # Non esiste una rotta di benvenuto su /api/ (ne' mai esistita nel
+    # server attuale): l'equivalente per verificare che l'API sia viva e'
+    # /api/health, pubblica e senza autenticazione.
+    r = s.get(f"{API}/health")
     assert r.status_code == 200
-    assert "Ferramenta" in r.json().get("message", "")
+    d = r.json()
+    assert d.get("status") == "ok"
+    assert "Ferramenta" in d.get("service", "")
 
 
 def test_seed_idempotent(s):
@@ -72,44 +77,53 @@ def test_seed_idempotent(s):
 
 
 # ---------- List / search / filter ----------
+# Il vecchio endpoint piatto GET /products (senza {pid}) e' stato sostituito
+# dal catalogo paginato GET /products/page, che risponde con un oggetto
+# {"items": [...], "total", "skip", "limit", "hasMore"} invece di una lista.
 def test_list_products(s):
-    r = s.get(f"{API}/products")
+    r = s.get(f"{API}/products/page")
     assert r.status_code == 200
     data = r.json()
-    assert isinstance(data, list)
-    assert len(data) >= 1
+    items = data["items"]
+    assert isinstance(items, list)
+    assert len(items) >= 1
     # No _id leak
-    for d in data:
+    for d in items:
         assert "_id" not in d
         assert "id" in d and "descrizione" in d
 
 
 def test_search_q(s):
-    r = s.get(f"{API}/products", params={"q": "trapano"})
+    r = s.get(f"{API}/products/page", params={"q": "trapano"})
     assert r.status_code == 200
-    items = r.json()
+    items = r.json()["items"]
     assert any("Trapano" in p["descrizione"] or "trapano" in p["descrizione"].lower() for p in items)
 
 
 def test_filter_categoria(s):
-    r = s.get(f"{API}/products", params={"categoria": "Elettroutensili"})
+    r = s.get(f"{API}/products/page", params={"categoria": "Elettroutensili"})
     assert r.status_code == 200
-    items = r.json()
+    items = r.json()["items"]
     assert len(items) >= 1
     assert all(p["categoria"] == "Elettroutensili" for p in items)
 
 
 def test_filter_marca(s):
-    r = s.get(f"{API}/products", params={"marca": "Bosch"})
+    # Il filtro marca ora si chiama marca_standard e confronta la marca
+    # standardizzata del prodotto (case-insensitive).
+    r = s.get(f"{API}/products/page", params={"marca_standard": "Bosch"})
     assert r.status_code == 200
-    items = r.json()
-    assert all(p["marca"] == "Bosch" for p in items)
+    items = r.json()["items"]
+    assert len(items) >= 1
+    assert all(p.get("marca_standard", "").lower() == "bosch" for p in items)
 
 
 def test_filter_sotto_scorta(s):
-    r = s.get(f"{API}/products", params={"sotto_scorta": "true"})
+    # Non esiste piu' un filtro sotto_scorta su /products/page: la lista dei
+    # prodotti sotto scorta (fino a 20) e' esposta dentro /statistiche.
+    r = s.get(f"{API}/statistiche")
     assert r.status_code == 200
-    items = r.json()
+    items = r.json()["sotto_scorta"]
     for p in items:
         assert p["quantita"] <= p["soglia_scorta"]
 
@@ -125,7 +139,8 @@ def test_meta(s):
 
 
 def test_stats(s):
-    r = s.get(f"{API}/stats")
+    # L'endpoint si chiama /statistiche (non /stats).
+    r = s.get(f"{API}/statistiche")
     assert r.status_code == 200
     d = r.json()
     for k in ("total_products", "total_pieces", "valore_magazzino",
