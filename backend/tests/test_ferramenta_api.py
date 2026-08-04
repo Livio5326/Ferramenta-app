@@ -6,19 +6,62 @@ import requests
 BASE = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://mobile-forge-492.preview.emergentagent.com").rstrip("/")
 API = f"{BASE}/api"
 
+TEST_USERNAME = os.environ.get("TEST_USERNAME", "test_suite_admin")
+TEST_PASSWORD = os.environ.get("TEST_PASSWORD", "test_suite_password_123")
+
 
 @pytest.fixture(scope="session")
 def s():
+    """Sessione HTTP autenticata: dall'introduzione del middleware globale di
+    autenticazione, tutte le rotte /api (tranne login/bootstrap-admin/health)
+    richiedono un Bearer token."""
     sess = requests.Session()
     sess.headers.update({"Content-Type": "application/json"})
+
+    login = sess.post(
+        f"{API}/auth/login",
+        json={"username": TEST_USERNAME, "password": TEST_PASSWORD},
+    )
+
+    if login.status_code != 200:
+        # Nessun utente di test presente: prova a diventare il primo admin.
+        # Se fallisce (perche' un admin esiste gia'), l'account di test va
+        # creato manualmente o le credenziali vanno passate via env var.
+        sess.post(
+            f"{API}/auth/bootstrap-admin",
+            json={
+                "username": TEST_USERNAME,
+                "password": TEST_PASSWORD,
+                "nome": "Test Suite Admin",
+            },
+        )
+        login = sess.post(
+            f"{API}/auth/login",
+            json={"username": TEST_USERNAME, "password": TEST_PASSWORD},
+        )
+
+    if login.status_code != 200:
+        pytest.skip(
+            "Impossibile autenticarsi per i test API: imposta le variabili "
+            "d'ambiente TEST_USERNAME/TEST_PASSWORD con un account valido "
+            f"per {BASE} (login ha risposto {login.status_code})."
+        )
+
+    token = login.json()["access_token"]
+    sess.headers.update({"Authorization": f"Bearer {token}"})
     return sess
 
 
 # ---------- Health / seed ----------
 def test_root(s):
-    r = s.get(f"{API}/")
+    # Non esiste una rotta di benvenuto su /api/ (ne' mai esistita nel
+    # server attuale): l'equivalente per verificare che l'API sia viva e'
+    # /api/health, pubblica e senza autenticazione.
+    r = s.get(f"{API}/health")
     assert r.status_code == 200
-    assert "Ferramenta" in r.json().get("message", "")
+    d = r.json()
+    assert d.get("status") == "ok"
+    assert "Ferramenta" in d.get("service", "")
 
 
 def test_seed_idempotent(s):
@@ -34,44 +77,53 @@ def test_seed_idempotent(s):
 
 
 # ---------- List / search / filter ----------
+# Il vecchio endpoint piatto GET /products (senza {pid}) e' stato sostituito
+# dal catalogo paginato GET /products/page, che risponde con un oggetto
+# {"items": [...], "total", "skip", "limit", "hasMore"} invece di una lista.
 def test_list_products(s):
-    r = s.get(f"{API}/products")
+    r = s.get(f"{API}/products/page")
     assert r.status_code == 200
     data = r.json()
-    assert isinstance(data, list)
-    assert len(data) >= 1
+    items = data["items"]
+    assert isinstance(items, list)
+    assert len(items) >= 1
     # No _id leak
-    for d in data:
+    for d in items:
         assert "_id" not in d
         assert "id" in d and "descrizione" in d
 
 
 def test_search_q(s):
-    r = s.get(f"{API}/products", params={"q": "trapano"})
+    r = s.get(f"{API}/products/page", params={"q": "trapano"})
     assert r.status_code == 200
-    items = r.json()
+    items = r.json()["items"]
     assert any("Trapano" in p["descrizione"] or "trapano" in p["descrizione"].lower() for p in items)
 
 
 def test_filter_categoria(s):
-    r = s.get(f"{API}/products", params={"categoria": "Elettroutensili"})
+    r = s.get(f"{API}/products/page", params={"categoria": "Elettroutensili"})
     assert r.status_code == 200
-    items = r.json()
+    items = r.json()["items"]
     assert len(items) >= 1
     assert all(p["categoria"] == "Elettroutensili" for p in items)
 
 
 def test_filter_marca(s):
-    r = s.get(f"{API}/products", params={"marca": "Bosch"})
+    # Il filtro marca ora si chiama marca_standard e confronta la marca
+    # standardizzata del prodotto (case-insensitive).
+    r = s.get(f"{API}/products/page", params={"marca_standard": "Bosch"})
     assert r.status_code == 200
-    items = r.json()
-    assert all(p["marca"] == "Bosch" for p in items)
+    items = r.json()["items"]
+    assert len(items) >= 1
+    assert all(p.get("marca_standard", "").lower() == "bosch" for p in items)
 
 
 def test_filter_sotto_scorta(s):
-    r = s.get(f"{API}/products", params={"sotto_scorta": "true"})
+    # Non esiste piu' un filtro sotto_scorta su /products/page: la lista dei
+    # prodotti sotto scorta (fino a 20) e' esposta dentro /statistiche.
+    r = s.get(f"{API}/statistiche")
     assert r.status_code == 200
-    items = r.json()
+    items = r.json()["sotto_scorta"]
     for p in items:
         assert p["quantita"] <= p["soglia_scorta"]
 
@@ -87,7 +139,8 @@ def test_meta(s):
 
 
 def test_stats(s):
-    r = s.get(f"{API}/stats")
+    # L'endpoint si chiama /statistiche (non /stats).
+    r = s.get(f"{API}/statistiche")
     assert r.status_code == 200
     d = r.json()
     for k in ("total_products", "total_pieces", "valore_magazzino",
@@ -130,7 +183,7 @@ class TestCRUD:
         assert r.json()["id"] == TestCRUD.pid
 
     def test_get_by_barcode(self, s):
-        r = s.get(f"{API}/products/barcode/{self.barcode}")
+        r = s.get(f"{API}/products/{self.barcode}")
         assert r.status_code == 200
         assert r.json()["barcode"] == self.barcode
 
@@ -171,7 +224,7 @@ def test_get_missing_404(s):
 
 
 def test_barcode_missing_404(s):
-    r = s.get(f"{API}/products/barcode/NOPE_NOPE_NOPE")
+    r = s.get(f"{API}/products/NOPE_NOPE_NOPE")
     assert r.status_code == 404
 
 
@@ -208,13 +261,13 @@ def test_bulk_upsert(s):
     assert r2.status_code == 200
 
     # Verify upsert not duplicated
-    r3 = s.get(f"{API}/products/barcode/TEST_BULK_001")
+    r3 = s.get(f"{API}/products/TEST_BULK_001")
     assert r3.status_code == 200
     assert r3.json()["quantita"] == 99
 
     # Cleanup
     for bc in ("TEST_BULK_001", "TEST_BULK_002"):
-        g = s.get(f"{API}/products/barcode/{bc}")
+        g = s.get(f"{API}/products/{bc}")
         if g.status_code == 200:
             s.delete(f"{API}/products/{g.json()['id']}")
 

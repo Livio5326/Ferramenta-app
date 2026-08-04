@@ -18,7 +18,7 @@ from passlib.context import CryptContext
 from jose import jwt, JWTError
 from datetime import timedelta
 from bson import ObjectId
-from pymongo import UpdateOne
+from pymongo import UpdateOne, ReturnDocument
 from product_creator import ( crea_prodotto_da_fattura, ricava_marca_da_descrizione, ricava_categoria_da_descrizione )
 from pricing import DEFAULT_MARKUPS, calculate_sale_price
 
@@ -1521,7 +1521,7 @@ async def get_products_page(
 
     items = []
     for p in docs:
-        p["id"] = str(p.get("_id"))
+        p["id"] = str(p.get("id") or p.get("_id") or "")
         p.pop("_id", None)
         items.append(p)
 
@@ -2425,7 +2425,7 @@ async def get_product(pid: str):
     if not prodotto:
         raise HTTPException(status_code=404, detail="Prodotto non trovato")
 
-    prodotto["id"] = str(prodotto.get("_id") or prodotto.get("id") or "")
+    prodotto["id"] = str(prodotto.get("id") or prodotto.get("_id") or "")
     prodotto.pop("_id", None)
 
     return prodotto
@@ -2478,7 +2478,7 @@ async def update_product(pid: str, input: ProductUpdate):
     update_data = input.dict(exclude_unset=True)
 
     if not update_data:
-        prodotto_esistente["id"] = str(prodotto_esistente.get("_id") or prodotto_esistente.get("id") or "")
+        prodotto_esistente["id"] = str(prodotto_esistente.get("id") or prodotto_esistente.get("_id") or "")
         prodotto_esistente.pop("_id", None)
         return prodotto_esistente
 
@@ -2492,7 +2492,7 @@ async def update_product(pid: str, input: ProductUpdate):
     if not prodotto_aggiornato:
         raise HTTPException(status_code=404, detail="Prodotto non trovato dopo aggiornamento")
 
-    prodotto_aggiornato["id"] = str(prodotto_aggiornato.get("_id") or prodotto_aggiornato.get("id") or "")
+    prodotto_aggiornato["id"] = str(prodotto_aggiornato.get("id") or prodotto_aggiornato.get("_id") or "")
     prodotto_aggiornato.pop("_id", None)
 
     return prodotto_aggiornato
@@ -2533,15 +2533,25 @@ async def delete_product(pid: str):
 
 @api_router.post("/products/{pid}/adjust-stock", response_model=Product)
 async def adjust_stock(pid: str, body: StockAdjust):
-    doc = await db.products.find_one({"id": pid}, {"_id": 0})
+    # Update atomico via pipeline aggregata: legge e scrive la nuova
+    # quantita' in un'unica operazione di database, senza finestra di tempo
+    # in cui un'altra richiesta concorrente possa leggere lo stesso valore
+    # di partenza e causare un "lost update" sulla giacenza.
+    doc = await db.products.find_one_and_update(
+        {"id": pid},
+        [
+            {
+                "$set": {
+                    "quantita": {"$max": [0, {"$add": ["$quantita", body.delta]}]},
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                }
+            }
+        ],
+        projection={"_id": 0},
+        return_document=ReturnDocument.AFTER,
+    )
     if not doc:
         raise HTTPException(status_code=404, detail="Prodotto non trovato")
-    new_qty = max(0, int(doc.get("quantita", 0)) + body.delta)
-    await db.products.update_one(
-        {"id": pid},
-        {"$set": {"quantita": new_qty, "updated_at": datetime.now(timezone.utc).isoformat()}},
-    )
-    doc["quantita"] = new_qty
     return Product(**doc)
 
 
