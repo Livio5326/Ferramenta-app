@@ -7,7 +7,6 @@ import {
 } from "../pricing";
 
 const db = SQLite.openDatabaseSync("ferramenta_offline.db");
-const offlineProducts = require("../../assets/offline_products.json");
 
 export function initLocalDb() {
   db.execSync(`
@@ -270,6 +269,10 @@ export function seedProductsIfEmpty() {
     console.log("Prodotti offline già presenti:", count);
     return;
   }
+
+  // Caricato qui e non a inizio modulo: sono 7 MB di JSON, e leggerli
+  // all'avvio bloccava il thread anche quando il seed non serviva.
+  const offlineProducts = require("../../assets/offline_products.json");
 
   console.log("Import prodotti offline in corso:", offlineProducts.length);
 

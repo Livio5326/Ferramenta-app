@@ -111,8 +111,13 @@ try {
 }
 
 if (-not $ready) {
+    # --timeout-keep-alive: di default uvicorn chiude le connessioni inattive
+    # dopo 5 secondi. L'app riusa la connessione dal proprio pool e la
+    # richiesta finisce nel vuoto finche' non scatta il timeout del client
+    # ("Il server non risponde"). 75 secondi stanno oltre le pause tipiche
+    # tra una schermata e l'altra.
     $backendProcess = Start-Process -FilePath $pythonExe `
-        -ArgumentList '-m', 'uvicorn', 'server:app', '--host', '0.0.0.0', '--port', '8000' `
+        -ArgumentList '-m', 'uvicorn', 'server:app', '--host', '0.0.0.0', '--port', '8000', '--timeout-keep-alive', '75' `
         -WorkingDirectory $backendDir `
         -WindowStyle Hidden `
         -PassThru
