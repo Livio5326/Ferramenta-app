@@ -60,3 +60,18 @@ def test_api_authentication_middleware_is_registered():
 
 def test_health_route_is_available():
     assert ("get", "/health", "health_check") in _api_routes()
+
+
+def test_shared_invoice_history_routes_are_available():
+    routes = set(_api_routes())
+    assert ("post", "/invoices/sync", "sync_invoice_history") in routes
+    assert (
+        "get",
+        "/invoices/{chiave_import}/exists",
+        "invoice_history_exists",
+    ) in routes
+    assert (
+        "get",
+        "/invoices/{chiave_import}/products",
+        "get_shared_invoice_products",
+    ) in routes

@@ -1,5 +1,10 @@
 import * as SQLite from "expo-sqlite";
 import { FORNITORI_STANDARD } from "../fornitoriStandard";
+import {
+  calculateSalePrice,
+  DEFAULT_PRICING_MARKUPS,
+  PricingMarkups,
+} from "../pricing";
 
 const db = SQLite.openDatabaseSync("ferramenta_offline.db");
 const offlineProducts = require("../../assets/offline_products.json");
@@ -102,7 +107,48 @@ export function initLocalDb() {
       termine TEXT,
       sinonimi TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS app_migrations (
+      name TEXT PRIMARY KEY NOT NULL,
+      applied_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
+
+  const pricingMigration = "sale_prices_markup_v1";
+  const pricingAlreadyApplied = db.getFirstSync<{ name: string }>(
+    "SELECT name FROM app_migrations WHERE name = ?",
+    [pricingMigration]
+  );
+
+  if (!pricingAlreadyApplied) {
+    const products = db.getAllSync<{ id: string; prezzo_acquisto: number }>(
+      "SELECT id, prezzo_acquisto FROM products WHERE COALESCE(prezzo_acquisto, 0) > 0"
+    );
+
+    db.withTransactionSync(() => {
+      for (const product of products) {
+        db.runSync(
+          "UPDATE products SET prezzo_vendita = ?, updated_at = ? WHERE id = ?",
+          [
+            calculateSalePrice(Number(product.prezzo_acquisto)),
+            new Date().toISOString(),
+            product.id,
+          ]
+        );
+      }
+
+      db.runSync(
+        "INSERT INTO app_migrations (name, applied_at) VALUES (?, ?)",
+        [pricingMigration, new Date().toISOString()]
+      );
+    });
+  }
 
   try {
     const productCols = db.getAllSync<any>("PRAGMA table_info(products)");
@@ -154,6 +200,38 @@ export function initLocalDb() {
   } catch (e) {
     console.warn("Migrazione soglia_scorta fallita", e);
   }
+}
+
+export function getPricingMarkupsOffline(): PricingMarkups {
+  const row = db.getFirstSync<{ value: string }>(
+    "SELECT value FROM app_settings WHERE key = 'pricing_markups'"
+  );
+  if (!row?.value) return DEFAULT_PRICING_MARKUPS;
+  try {
+    return { ...DEFAULT_PRICING_MARKUPS, ...JSON.parse(row.value) };
+  } catch {
+    return DEFAULT_PRICING_MARKUPS;
+  }
+}
+
+export function savePricingMarkupsOffline(markups: PricingMarkups) {
+  const now = new Date().toISOString();
+  db.withTransactionSync(() => {
+    db.runSync(
+      `INSERT OR REPLACE INTO app_settings (key, value, updated_at)
+       VALUES ('pricing_markups', ?, ?)`,
+      [JSON.stringify(markups), now]
+    );
+    const products = db.getAllSync<{ id: string; prezzo_acquisto: number }>(
+      "SELECT id, prezzo_acquisto FROM products WHERE COALESCE(prezzo_acquisto, 0) > 0"
+    );
+    for (const product of products) {
+      db.runSync(
+        "UPDATE products SET prezzo_vendita = ?, updated_at = ? WHERE id = ?",
+        [calculateSalePrice(product.prezzo_acquisto, markups), now, product.id]
+      );
+    }
+  });
 }
 
 try {

@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
 from product_creator import ( crea_prodotto_da_fattura, ricava_marca_da_descrizione, ricava_categoria_da_descrizione )
+from pricing import DEFAULT_MARKUPS, calculate_sale_price
 
 REPORTS_DIR = "import_fatture/report"
 
@@ -500,6 +501,11 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
     aggiornati = 0
     non_trovati = []
     saltati = []
+    pricing_doc = await db.app_settings.find_one({"key": "pricing_markups"})
+    pricing_markups = {
+        **DEFAULT_MARKUPS,
+        **((pricing_doc or {}).get("value") or {}),
+    }
 
     for dettaglio in linee:
         numero_linea = testo_figlio(dettaglio, "NumeroLinea")
@@ -517,6 +523,7 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
             continue
 
         codice_fornitore = trova_codice_fornitore(dettaglio)
+        prezzo_acquisto = calcola_prezzo_acquisto_netto_da_riga(dettaglio)
 
         if barcode == "":
             barcode = codice_fornitore
@@ -544,8 +551,6 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
 
         if not prodotto:
             codice_fornitore = trova_codice_fornitore(dettaglio)
-            prezzo_acquisto = calcola_prezzo_acquisto_netto_da_riga(dettaglio)
-
             marca_ricavata = ricava_marca_da_descrizione(descrizione_fattura)
             categoria_ricavata = ricava_categoria_da_descrizione(descrizione_fattura)
 
@@ -597,6 +602,10 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
             {
                 "$set": {
                     "quantita": nuova_quantita,
+                    "prezzo_acquisto": prezzo_acquisto,
+                    "prezzo_vendita": calculate_sale_price(
+                        prezzo_acquisto, pricing_markups
+                    ),
                     "ultimo_carico_fattura": datetime.now().isoformat(),
                     "updated_at": datetime.now().isoformat(),
                 }

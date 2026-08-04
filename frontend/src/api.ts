@@ -6,8 +6,10 @@ import {
   getPendingInvoiceProductsOffline,
   createPendingInvoiceProductsOffline,
   getInvoiceProductsOffline,
+  getInvoiceIdentityOffline,
 } from "./local/invoiceImporter";
-import { getDb } from "./local/db";
+import { getDb, savePricingMarkupsOffline } from "./local/db";
+import { PricingMarkups } from "./pricing";
 import { API_URL } from './config/backend';
 
 const BASE = API_URL;
@@ -78,6 +80,10 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   try {
+    if (__DEV__) {
+      console.info(`[Ferramenta API] ${init?.method || 'GET'} ${BASE}${path}`);
+    }
+
     const res = await fetch(BASE + path, {
       ...init,
       headers,
@@ -205,6 +211,13 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(products),
     }),
+  getPricingSettings: () =>
+    req<{ markups: PricingMarkups }>("/settings/pricing"),
+  updatePricingSettings: (markups: PricingMarkups) =>
+    req<{ markups: PricingMarkups; updated_products: number }>(
+      "/settings/pricing",
+      { method: "PUT", body: JSON.stringify({ markups }) }
+    ),
   listStandardBrands: () => req<{ items: string[] }>('/brands/standard'),
   listProductsPage: (params: {
     q?: string;
@@ -300,6 +313,31 @@ export const api = {
     req<Product>(`/products/${id}/adjust-stock`, { method: 'POST', body: JSON.stringify({ delta }) }),
   bulkImport: (items: Partial<Product>[]) =>
     req<{ inserted: number }>('/products/bulk', { method: 'POST', body: JSON.stringify(items) }),
+  importInvoiceXml: async (file: { uri: string; name?: string; mimeType?: string }) => {
+    const form = new FormData();
+    form.append('file', {
+      uri: file.uri,
+      name: file.name || 'fattura.xml',
+      type: file.mimeType || 'application/xml',
+    } as any);
+
+    const response = await fetch(BASE + '/invoices/import-xml', {
+      method: 'POST',
+      body: form,
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`${response.status}: ${text}`);
+    }
+    return response.json() as Promise<{
+      ok: boolean;
+      numero_fattura: string;
+      fornitore: string;
+      righe_totali: number;
+      prodotti_aggiornati: number;
+      prodotti_non_trovati: number;
+    }>;
+  },
   seed: () => req<{ seeded: boolean; count?: number; existing?: number }>('/seed', { method: 'POST' }),
   previewPromoImport: async (file: { uri: string; name?: string; mimeType?: string }, codeOverrides: Record<string, string> = {}) => {
     const token = await leggiAuthToken();
@@ -474,6 +512,38 @@ export async function importInvoiceXml(file: {
   name: string;
   mimeType?: string;
 }) {
+  try {
+    const pricing = await api.getPricingSettings();
+    savePricingMarkupsOffline(pricing.markups);
+  } catch (error) {
+    console.warn("Uso le regole prezzi salvate sul telefono", error);
+  }
+
+  const identity = await getInvoiceIdentityOffline(file);
+  const duplicate = await req<{
+    exists: boolean;
+    invoice: any | null;
+  }>(`/invoices/${encodeURIComponent(identity.chiaveImport)}/exists`);
+
+  if (duplicate.exists) {
+    return {
+      ok: false,
+      gia_importata: true,
+      fornitore: duplicate.invoice?.denominazione || identity.denominazione,
+      partita_iva: duplicate.invoice?.partita_iva || identity.partitaIva,
+      numero: duplicate.invoice?.numero || identity.numero,
+      data: duplicate.invoice?.data || identity.data,
+      prodotti_aggiornati: 0,
+      barcode_non_trovati: Number(
+        duplicate.invoice?.barcode_non_trovati || 0
+      ),
+      righe_saltate: Number(duplicate.invoice?.righe_saltate || 0),
+      report: "",
+      file_non_trovati: "",
+      non_trovati: [],
+    };
+  }
+
   const result = await importInvoiceXmlOffline(file);
   const db = getDb();
 
@@ -482,10 +552,6 @@ export async function importInvoiceXml(file: {
     FROM products
     WHERE COALESCE(da_sincronizzare, 0) = 1
   `);
-
-  if (!productsToSync.length) {
-    return result;
-  }
 
   const payload = productsToSync.map((product) => ({
     barcode: String(product.barcode || ""),
@@ -510,31 +576,44 @@ export async function importInvoiceXml(file: {
     soglia_scorta: Number(product.soglia_scorta || 5),
   }));
 
-  const syncResult = await api.bulkImportProducts(payload);
-  const syncedAt = new Date().toISOString();
+  const syncResult = productsToSync.length
+    ? await api.bulkImportProducts(payload)
+    : { inserted: 0, updated: 0 };
 
-  db.withTransactionSync(() => {
-    for (const product of productsToSync) {
-      db.runSync(
-        `
-        UPDATE products
-        SET da_sincronizzare = 0,
-            ultimo_sync = ?
-        WHERE id = ?
-        `,
-        [syncedAt, product.id]
-      );
-    }
-  });
+  if (productsToSync.length) {
+    const syncedAt = new Date().toISOString();
+
+    db.withTransactionSync(() => {
+      for (const product of productsToSync) {
+        db.runSync(
+          `
+          UPDATE products
+          SET da_sincronizzare = 0,
+              ultimo_sync = ?
+          WHERE id = ?
+          `,
+          [syncedAt, product.id]
+        );
+      }
+    });
+  }
 
   const synchronized =
     Number(syncResult.inserted || 0) +
     Number(syncResult.updated || 0);
 
+  const localInvoice = listInvoiceImportsOffline().items.find(
+    (invoice) => invoice.chiave_import === identity.chiaveImport
+  );
+
+  if (localInvoice) {
+    await syncLocalInvoice(localInvoice);
+  }
+
   return {
     ...result,
-    ok: true,
-    gia_importata: false,
+    ok: Boolean(result?.ok),
+    gia_importata: Boolean(result?.gia_importata),
     prodotti_aggiornati: Math.max(
       Number(result?.prodotti_aggiornati || 0),
       synchronized
@@ -543,8 +622,52 @@ export async function importInvoiceXml(file: {
   };
 }
 
+async function syncLocalInvoice(invoice: any): Promise<void> {
+  const products = await getInvoiceProductsOffline(invoice.chiave_import);
+  const pendingProducts = getPendingInvoiceProductsOffline().filter(
+    (item) => item.chiave_import === invoice.chiave_import
+  );
+  const secondaryCosts = Array.isArray(invoice.costi_secondari_fornitori)
+    ? invoice.costi_secondari_fornitori
+    : [];
+
+  await req('/invoices/sync', {
+    method: 'POST',
+    body: JSON.stringify({
+      invoice,
+      products,
+      secondary_costs: secondaryCosts,
+      pending_products: pendingProducts,
+    }),
+  });
+}
+
+async function syncLocalInvoiceImports(): Promise<void> {
+  const localInvoices = listInvoiceImportsOffline().items;
+
+  for (const invoice of localInvoices) {
+    await syncLocalInvoice(invoice);
+  }
+}
+
 export async function listInvoiceImports() {
-  return listInvoiceImportsOffline();
+  try {
+    await syncLocalInvoiceImports();
+    return await req<{ items: any[]; total: number }>('/invoices/imports');
+  } catch (error) {
+    if (__DEV__) {
+      console.warn(
+        `[Ferramenta API] Richiesta fallita: ${BASE}/invoices/imports`,
+        error
+      );
+    }
+
+    console.warn(
+      'Archivio fatture condiviso non raggiungibile, uso lo storico locale',
+      error
+    );
+    return listInvoiceImportsOffline();
+  }
 }
 
 export async function getMissingInvoiceProducts(_filePath: string) {
@@ -563,5 +686,16 @@ export async function createPendingInvoiceProducts(items: any[]) {
 export async function getInvoiceProducts(
   chiaveImport: string
 ) {
-  return getInvoiceProductsOffline(chiaveImport);
+  try {
+    const response = await req<{ items: any[]; total: number }>(
+      `/invoices/${encodeURIComponent(chiaveImport)}/products`
+    );
+    return response.items;
+  } catch (error) {
+    console.warn(
+      'Dettaglio fattura condiviso non raggiungibile, uso i dati locali',
+      error
+    );
+    return getInvoiceProductsOffline(chiaveImport);
+  }
 }

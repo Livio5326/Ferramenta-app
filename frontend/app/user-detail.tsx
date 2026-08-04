@@ -41,12 +41,12 @@ export default function UserDetailScreen() {
   const [ruolo, setRuolo] = useState<'amministratore' | 'dipendente'>('dipendente');
 
   const salva = async () => {
-    if (!nome || !username || !password) {
+    if (!nome.trim() || !username.trim() || (!modifica && !password)) {
       Alert.alert('Attenzione', 'Compila tutti i campi.');
       return;
     }
 
-    if (password !== conferma) {
+    if (!modifica && password !== conferma) {
       Alert.alert('Attenzione', 'Le password non coincidono.');
       return;
     }
@@ -113,13 +113,25 @@ export default function UserDetailScreen() {
         onChangeText={setUsername}
       />
 
-      <Text style={styles.label}>Password</Text>
+      {!modifica ? (
+        <>
+          <Text style={styles.label}>Password</Text>
 
-      <PasswordInput
-        value={password}
-        onChangeText={setPassword}
-        containerStyle={styles.field}
-      />
+          <PasswordInput
+            value={password}
+            onChangeText={setPassword}
+            containerStyle={styles.field}
+          />
+
+          <Text style={styles.label}>Conferma password</Text>
+
+          <PasswordInput
+            value={conferma}
+            onChangeText={setConferma}
+            containerStyle={styles.field}
+          />
+        </>
+      ) : null}
 
 
       <Text style={styles.label}>Ruolo</Text>

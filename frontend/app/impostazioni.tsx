@@ -50,6 +50,24 @@ export default function ImpostazioniScreen() {
         {isAdmin && (
           <AppButton
             style={styles.optionCard}
+            onPress={() => router.push('/impostazioni/regole-prezzi' as any)}
+          >
+            <View style={styles.optionIcon}>
+              <Feather name="percent" size={22} color="#FFFFFF" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.optionTitle}>Regole prezzi</Text>
+              <Text style={styles.optionText}>
+                Modifica i ricarichi e ricalcola rapidamente i prezzi di vendita.
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
+          </AppButton>
+        )}
+
+        {isAdmin && (
+          <AppButton
+            style={styles.optionCard}
             onPress={() => router.push('/users' as any)}
           >
             <View style={styles.optionIcon}>

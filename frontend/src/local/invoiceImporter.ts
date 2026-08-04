@@ -1,6 +1,7 @@
 import * as FileSystem from "expo-file-system/legacy";
 import { XMLParser } from "fast-xml-parser";
-import { getDb } from "./db";
+import { getDb, getPricingMarkupsOffline } from "./db";
+import { calculateSalePrice } from "../pricing";
 
 type InvoiceFile = {
   uri: string;
@@ -286,7 +287,19 @@ function isInformativeLine(description: string): boolean {
 function classifySecondaryCost(line: InvoiceLine): string | null {
   const text = clean(line.descrizione).toUpperCase();
 
-  if (!text || line.prezzoTotale <= 0) {
+  if (!text) {
+    return null;
+  }
+
+  const isSupplierReference =
+    /\bNS\.?\s*RIF(?:\.|ERIMENTO)?\b/.test(text) ||
+    /\bNOSTRO\s+RIF(?:\.|ERIMENTO)?\b/.test(text);
+
+  if (isSupplierReference) {
+    return "Riferimento fornitore";
+  }
+
+  if (line.prezzoTotale <= 0) {
     return null;
   }
 
@@ -386,6 +399,45 @@ function createId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random()
     .toString(36)
     .slice(2, 10)}`;
+}
+
+export async function getInvoiceIdentityOffline(
+  file: InvoiceFile
+): Promise<InvoiceInfo> {
+  const xml = await FileSystem.readAsStringAsync(file.uri);
+
+  if (!xml.trim()) {
+    throw new Error("Il file XML è vuoto");
+  }
+
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    removeNSPrefix: true,
+    parseTagValue: false,
+    trimValues: true,
+  });
+
+  let parsed: any;
+
+  try {
+    parsed = parser.parse(xml);
+  } catch (error) {
+    throw new Error(
+      `File XML non valido: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
+
+  const info = getInvoiceInfo(parsed);
+
+  if (!info.numero || !info.data || !info.partitaIva) {
+    throw new Error(
+      "Impossibile leggere numero, data o partita IVA della fattura"
+    );
+  }
+
+  return info;
 }
 
 export async function importInvoiceXmlOffline(file: InvoiceFile) {
@@ -651,6 +703,8 @@ if (!repairDone) {
       SET quantita = COALESCE(quantita, 0) + ?,
           prezzo_acquisto =
             CASE WHEN ? > 0 THEN ? ELSE prezzo_acquisto END,
+          prezzo_vendita =
+            CASE WHEN ? > 0 THEN ? ELSE prezzo_vendita END,
           updated_at = ?,
           da_sincronizzare = 1
       WHERE id = ?
@@ -659,6 +713,8 @@ if (!repairDone) {
         line.quantita,
         line.prezzoUnitario,
         line.prezzoUnitario,
+        line.prezzoUnitario,
+        calculateSalePrice(line.prezzoUnitario, getPricingMarkupsOffline()),
         now,
         product.id,
       ]
@@ -698,7 +754,7 @@ if (!repairDone) {
         info.denominazione,
         line.quantita,
         line.prezzoUnitario,
-        0,
+        calculateSalePrice(line.prezzoUnitario, getPricingMarkupsOffline()),
         5,
         1,
         now,
@@ -928,7 +984,95 @@ export async function getInvoiceProductsOffline(
   }
 
   if (Array.isArray(reportData.prodotti_letti)) {
-    return reportData.prodotti_letti;
+    let secondaryCosts: SecondaryCost[] = Array.isArray(
+      reportData.costi_secondari_fornitori
+    )
+      ? [...reportData.costi_secondari_fornitori]
+      : [];
+
+    if (secondaryCosts.length === 0) {
+      try {
+        const storedCosts = JSON.parse(
+          invoice.costi_secondari_fornitori || "[]"
+        );
+        secondaryCosts = Array.isArray(storedCosts) ? storedCosts : [];
+      } catch {
+        secondaryCosts = [];
+      }
+    }
+
+    const products: any[] = [];
+    let reportChanged = false;
+
+    for (const product of reportData.prodotti_letti) {
+      const line: InvoiceLine = {
+        linea: clean(product?.linea),
+        barcode: clean(product?.barcode),
+        codiceFornitore: clean(product?.codice_fornitore),
+        descrizione: clean(product?.descrizione),
+        quantita: toInteger(product?.quantita),
+        prezzoUnitario: toNumber(product?.prezzo_unitario, 0),
+        prezzoTotale: toNumber(product?.prezzo_totale, 0),
+      };
+      const secondaryType = classifySecondaryCost(line);
+
+      if (!secondaryType) {
+        products.push(product);
+        continue;
+      }
+
+      reportChanged = true;
+
+      const alreadyStored = secondaryCosts.some(
+        (cost) =>
+          clean(cost.tipo) === secondaryType &&
+          clean(cost.descrizione) === line.descrizione
+      );
+
+      if (!alreadyStored) {
+        secondaryCosts.push({
+          tipo: secondaryType,
+          descrizione: line.descrizione,
+          importo: round(line.prezzoTotale, 2),
+          quantita: line.quantita,
+          prezzo_unitario: line.prezzoUnitario,
+          codice_fornitore: line.codiceFornitore,
+          barcode: line.barcode,
+        });
+      }
+    }
+
+    if (reportChanged) {
+      const totalSecondaryCosts = round(
+        secondaryCosts.reduce(
+          (sum, cost) => sum + Number(cost.importo || 0),
+          0
+        ),
+        2
+      );
+
+      reportData.prodotti_letti = products;
+      reportData.costi_secondari_fornitori = secondaryCosts;
+      reportData.totale_costi_secondari_fornitori = totalSecondaryCosts;
+
+      db.runSync(
+        `
+        UPDATE invoice_imports
+        SET report = ?,
+            costi_secondari_fornitori = ?,
+            totale_costi_secondari_fornitori = ?
+        WHERE chiave_import = ?
+        `,
+        [
+          JSON.stringify(reportData),
+          JSON.stringify(secondaryCosts),
+          totalSecondaryCosts,
+          chiaveImport,
+        ]
+      );
+    }
+
+    return products;
   }
 
   if (!invoice.file) {
@@ -1075,6 +1219,8 @@ export function createPendingInvoiceProductsOffline(items: any[]) {
     SET quantita = COALESCE(quantita, 0) + ?,
         prezzo_acquisto =
           CASE WHEN ? > 0 THEN ? ELSE prezzo_acquisto END,
+        prezzo_vendita =
+          CASE WHEN ? > 0 THEN ? ELSE prezzo_vendita END,
         updated_at = ?,
         da_sincronizzare = 1
     WHERE id = ?
@@ -1083,6 +1229,8 @@ export function createPendingInvoiceProductsOffline(items: any[]) {
       quantita,
       prezzoAcquisto,
       prezzoAcquisto,
+      prezzoAcquisto,
+      calculateSalePrice(prezzoAcquisto, getPricingMarkupsOffline()),
       now,
       existing.id,
     ]
@@ -1142,7 +1290,7 @@ export function createPendingInvoiceProductsOffline(items: any[]) {
           String(item?.fornitore || ""),
           quantita,
           prezzoAcquisto,
-          0,
+          calculateSalePrice(prezzoAcquisto, getPricingMarkupsOffline()),
           5,
           1,
           now,

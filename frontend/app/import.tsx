@@ -26,6 +26,43 @@ export default function ImportScreen() {
   const [preview, setPreview] = useState<any[]>([]);
   const [log, setLog] = useState<string>('');
 
+  const pickInvoiceXml = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/xml', 'text/xml', '*/*'],
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+
+      const file = result.assets[0];
+      if (!file.name?.toLowerCase().endsWith('.xml')) {
+        Alert.alert('File non valido', 'Seleziona una fattura in formato XML.');
+        return;
+      }
+
+      setBusy(true);
+      setLog('Lettura e importazione fattura XML...');
+      const imported = await api.importInvoiceXml(file);
+      const summary = [
+        `Fattura ${imported.numero_fattura}`,
+        imported.fornitore ? `Fornitore: ${imported.fornitore}` : '',
+        `Prodotti aggiornati: ${imported.prodotti_aggiornati}`,
+        `Prodotti da creare: ${imported.prodotti_non_trovati}`,
+      ].filter(Boolean).join('\n');
+      setLog(summary);
+      Alert.alert('Fattura importata', summary);
+    } catch (error: any) {
+      const message = String(error?.message || error);
+      const duplicate = message.startsWith('409:');
+      Alert.alert(
+        duplicate ? 'Fattura gia importata' : 'Errore importazione XML',
+        duplicate ? 'Questa fattura risulta gia elaborata.' : message,
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const pickAndParse = async () => {
     try {
       const res = await DocumentPicker.getDocumentAsync({
@@ -229,6 +266,18 @@ export default function ImportScreen() {
       </View>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
         <View style={styles.infoBlock}>
+          <Text style={styles.infoLabel}>{"// FATTURA ELETTRONICA"}</Text>
+          <Text style={styles.infoTxt}>
+            Importa un file XML FatturaPA per aggiornare prezzi di acquisto e giacenze.
+          </Text>
+        </View>
+
+        <AppButton style={styles.invoiceBtn} onPress={pickInvoiceXml} disabled={busy} testID="pick-invoice-xml">
+          <Feather name="file-text" size={24} color={COLORS.onBrandPrimary} />
+          <Text style={styles.pickBtnTxt}>{busy ? 'ATTENDI...' : 'IMPORTA FATTURA XML'}</Text>
+        </AppButton>
+
+        <View style={styles.infoBlock}>
           <Text style={styles.infoLabel}>{"// FORMATO ATTESO"}</Text>
           <Text style={styles.infoTxt}>Il file deve contenere le colonne:</Text>
           <View style={styles.colList}>
@@ -277,6 +326,7 @@ const styles = StyleSheet.create({
   colList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
   colTag: { fontFamily: FONTS.mono, fontSize: 10, paddingHorizontal: 6, paddingVertical: 3, backgroundColor: COLORS.brand, color: COLORS.onBrandPrimary, letterSpacing: 0.5 },
   pickBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: COLORS.brand, padding: 18, borderWidth: 2, borderColor: COLORS.borderStrong },
+  invoiceBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: COLORS.brand, padding: 18, borderWidth: 2, borderColor: COLORS.borderStrong },
   pickBtnTxt: { fontFamily: FONTS.mono, fontSize: 14, fontWeight: '900', color: COLORS.onBrandPrimary, letterSpacing: 1.5 },
   log: { fontFamily: FONTS.mono, fontSize: 12, color: COLORS.onSurfaceSecondary },
   preview: { borderWidth: 2, borderColor: COLORS.borderStrong, padding: 12, gap: 8, backgroundColor: COLORS.surfaceSecondary },

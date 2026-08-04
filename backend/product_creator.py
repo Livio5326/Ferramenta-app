@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import uuid
+from pricing import calculate_sale_price
 
 
 def ricava_marca_da_descrizione(descrizione):
@@ -181,7 +182,7 @@ async def crea_prodotto_da_fattura(
         "fornitore_originale": fornitore_originale,
         "quantita": quantita,
         "prezzo_acquisto": prezzo_acquisto,
-        "prezzo_vendita": 0,
+        "prezzo_vendita": calculate_sale_price(prezzo_acquisto),
         "prezzo_promo": None,
         "promo_attiva": False,
         "promo_nome": "",

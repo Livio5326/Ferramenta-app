@@ -7,9 +7,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/src/auth';
 import { useIconFonts } from '@/src/hooks/use-icon-fonts';
+import { initLocalDb } from '@/src/local/db';
 import { COLORS } from '@/src/theme';
 
 SplashScreen.preventAutoHideAsync();
+initLocalDb();
 
 function AppNavigator() {
   const { loading: authLoading } = useAuth();

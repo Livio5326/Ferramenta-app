@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -7,10 +7,18 @@ import {
   View,
 } from 'react-native';
 import * as DocumentPicker from "expo-document-picker";
-import { importInvoiceXml, listInvoiceImports, getMissingInvoiceProducts, createPendingInvoiceProducts, getInvoiceProducts, } from "../../src/api";
-import { api } from "@/src/api";
+import {
+  api,
+  createPendingInvoiceProducts,
+  getInvoiceProducts,
+  importInvoiceXml,
+  listInvoiceImports,
+} from "../../src/api";
 
 import AppButton from '@/src/components/AppButton';
+
+const INVOICES_PER_PAGE = 10;
+
 export default function FornitoriScreen() {
   const [importingInvoice, setImportingInvoice] = useState(false);
   const [invoiceResult, setInvoiceResult] = useState<any>(null);
@@ -24,6 +32,7 @@ export default function FornitoriScreen() {
     useState<any[]>([]);
   const [loadingInvoiceProducts, setLoadingInvoiceProducts] =
     useState(false);
+  const [invoicePage, setInvoicePage] = useState(1);
   const handleCreateSelectedProducts = async () => {
   try {
     const selectedItems = missingProducts
@@ -76,7 +85,7 @@ export default function FornitoriScreen() {
 };
 
 
-const loadInvoiceImports = async () => {
+const loadInvoiceImports = useCallback(async () => {
   try {
     setLoadingImports(true);
 
@@ -91,7 +100,70 @@ const loadInvoiceImports = async () => {
   } finally {
     setLoadingImports(false);
   }
+}, []);
+
+useEffect(() => {
+  void loadInvoiceImports();
+}, [loadInvoiceImports]);
+
+const totalInvoicePages = Math.max(
+  1,
+  Math.ceil(invoiceImports.length / INVOICES_PER_PAGE)
+);
+const currentInvoicePage = Math.min(invoicePage, totalInvoicePages);
+const paginatedInvoiceImports = invoiceImports.slice(
+  (currentInvoicePage - 1) * INVOICES_PER_PAGE,
+  currentInvoicePage * INVOICES_PER_PAGE
+);
+
+useEffect(() => {
+  if (invoicePage > totalInvoicePages) {
+    setInvoicePage(totalInvoicePages);
+  }
+}, [invoicePage, totalInvoicePages]);
+
+const changeInvoicePage = (nextPage: number) => {
+  const safePage = Math.max(1, Math.min(nextPage, totalInvoicePages));
+
+  if (safePage === currentInvoicePage) {
+    return;
+  }
+
+  setInvoicePage(safePage);
+  setExpandedInvoiceKey(null);
+  setInvoiceProducts([]);
 };
+
+const renderInvoicePagination = () => (
+  <View style={styles.pagination}>
+    <AppButton
+      style={[
+        styles.paginationButton,
+        currentInvoicePage === 1 && styles.paginationButtonDisabled,
+      ]}
+      onPress={() => changeInvoicePage(currentInvoicePage - 1)}
+      disabled={currentInvoicePage === 1}
+    >
+      <Text style={styles.paginationButtonText}>PRECEDENTE</Text>
+    </AppButton>
+
+    <Text style={styles.paginationLabel}>
+      Pagina {currentInvoicePage} di {totalInvoicePages}
+    </Text>
+
+    <AppButton
+      style={[
+        styles.paginationButton,
+        currentInvoicePage === totalInvoicePages &&
+          styles.paginationButtonDisabled,
+      ]}
+      onPress={() => changeInvoicePage(currentInvoicePage + 1)}
+      disabled={currentInvoicePage === totalInvoicePages}
+    >
+      <Text style={styles.paginationButtonText}>SUCCESSIVA</Text>
+    </AppButton>
+  </View>
+);
 
 const loadMissingProducts = async (invoice: any) => {
     const numeroFattura = String(
@@ -137,6 +209,7 @@ const loadMissingProducts = async (invoice: any) => {
 
       setInvoiceProducts(Array.isArray(products) ? products : []);
       setExpandedInvoiceKey(key);
+      await loadInvoiceImports();
     } catch (e: any) {
       Alert.alert(
         "Dettaglio non disponibile",
@@ -251,7 +324,10 @@ return (
       Nessuna fattura importata trovata.
     </Text>
   ) : (
-    invoiceImports.map((item) => (
+    <>
+      {renderInvoicePagination()}
+
+      {paginatedInvoiceImports.map((item) => (
       <View key={item.chiave_import} style={styles.invoiceRow}>
         <Text style={styles.invoiceTitle}>
           {item.denominazione || "Fornitore non indicato"}
@@ -299,6 +375,69 @@ return (
   </Text>
 </AppButton>
 
+        {expandedInvoiceKey === item.chiave_import ? (
+          <View style={styles.invoiceProductsList}>
+            {invoiceProducts.length > 0 ? (
+              invoiceProducts.map((product, index) => (
+                <View
+                  key={`${product.linea || product.barcode || product.codice_fornitore || "prodotto"}_${index}`}
+                  style={styles.invoiceProductRow}
+                >
+                  <Text style={styles.invoiceProductTitle}>
+                    {product.descrizione || "Prodotto senza descrizione"}
+                  </Text>
+
+                  <Text style={styles.invoiceProductMeta}>
+                    {product.barcode
+                      ? `EAN: ${product.barcode}`
+                      : `Codice: ${product.codice_fornitore || "N/D"}`}
+                  </Text>
+
+                  <Text style={styles.invoiceProductMeta}>
+                    Qta: {Number(product.quantita || 0)} · Unitario: {Number(product.prezzo_unitario || 0).toFixed(2)} €
+                    {product.prezzo_totale != null
+                      ? ` · Totale: ${Number(product.prezzo_totale || 0).toFixed(2)} €`
+                      : ""}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.invoiceProductsEmpty}>
+                Nessun prodotto leggibile trovato nella fattura.
+              </Text>
+            )}
+          </View>
+        ) : null}
+
+        {expandedInvoiceKey === item.chiave_import &&
+        Array.isArray(item.costi_secondari_fornitori) &&
+        item.costi_secondari_fornitori.length > 0 ? (
+          <View style={styles.secondaryCostsBox}>
+            <Text style={styles.secondaryCostsTitle}>
+              COSTI SECONDARI FORNITORE
+            </Text>
+
+            {item.costi_secondari_fornitori.map((cost: any, index: number) => (
+              <View
+                key={`${cost.tipo || "costo"}_${cost.descrizione || index}`}
+                style={styles.secondaryCostRow}
+              >
+                <View style={styles.secondaryCostInfo}>
+                  <Text style={styles.secondaryCostType}>
+                    {cost.tipo || "Altro costo secondario"}
+                  </Text>
+                  <Text style={styles.secondaryCostDescription}>
+                    {cost.descrizione || "Senza descrizione"}
+                  </Text>
+                </View>
+                <Text style={styles.secondaryCostAmount}>
+                  {Number(cost.importo || 0).toFixed(2)} €
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
        {Number(item.barcode_non_trovati ?? item.non_trovati ?? item.prodotti_non_trovati ?? item.not_found ?? 0) > 0 ? (
   <AppButton
     style={styles.missingButton}
@@ -315,7 +454,10 @@ return (
           <Text style={styles.manualBadge}>REGISTRATA MANUALMENTE</Text>
         ) : null}
       </View>
-    ))
+      ))}
+
+      {renderInvoicePagination()}
+    </>
   )}
 </View>
       {invoiceResult && (
@@ -653,6 +795,86 @@ invoiceStat: {
   borderRadius: 999,
 },
 
+invoiceProductsList: {
+  marginTop: 10,
+  gap: 8,
+},
+
+invoiceProductRow: {
+  backgroundColor: "#FFFFFF",
+  borderWidth: 1,
+  borderColor: "#D7C7AF",
+  borderRadius: 12,
+  paddingHorizontal: 12,
+  paddingVertical: 10,
+},
+
+invoiceProductTitle: {
+  fontSize: 13,
+  fontWeight: "800",
+  color: "#2F2A22",
+  marginBottom: 4,
+},
+
+invoiceProductMeta: {
+  fontSize: 11,
+  color: "#6F6252",
+  lineHeight: 16,
+},
+
+invoiceProductsEmpty: {
+  paddingVertical: 10,
+  textAlign: "center",
+  fontSize: 12,
+  color: "#6F6252",
+},
+
+secondaryCostsBox: {
+  marginTop: 10,
+  borderWidth: 1,
+  borderColor: "#D4A373",
+  backgroundColor: "#F7E8D0",
+  borderRadius: 12,
+  padding: 12,
+  gap: 8,
+},
+
+secondaryCostsTitle: {
+  fontSize: 11,
+  fontWeight: "900",
+  color: "#8B5A2B",
+  letterSpacing: 0.7,
+},
+
+secondaryCostRow: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+  justifyContent: "space-between",
+  gap: 10,
+},
+
+secondaryCostInfo: {
+  flex: 1,
+},
+
+secondaryCostType: {
+  fontSize: 12,
+  fontWeight: "800",
+  color: "#4A4033",
+},
+
+secondaryCostDescription: {
+  marginTop: 2,
+  fontSize: 11,
+  color: "#6F6252",
+},
+
+secondaryCostAmount: {
+  fontSize: 12,
+  fontWeight: "900",
+  color: "#8B5A2B",
+},
+
 manualBadge: {
   marginTop: 8,
   fontSize: 10,
@@ -725,5 +947,42 @@ missingProductText: {
   fontSize: 11,
   color: "#6F6252",
   marginBottom: 3,
+},
+
+pagination: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 8,
+  marginVertical: 10,
+},
+
+paginationButton: {
+  flex: 1,
+  minHeight: 38,
+  borderRadius: 10,
+  backgroundColor: "#315C3A",
+  alignItems: "center",
+  justifyContent: "center",
+  paddingHorizontal: 8,
+},
+
+paginationButtonDisabled: {
+  opacity: 0.4,
+},
+
+paginationButtonText: {
+  color: "#FFFFFF",
+  fontSize: 10,
+  fontWeight: "900",
+  letterSpacing: 0.4,
+},
+
+paginationLabel: {
+  minWidth: 86,
+  textAlign: "center",
+  color: "#4A4033",
+  fontSize: 12,
+  fontWeight: "800",
 },
 });

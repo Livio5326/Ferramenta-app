@@ -26,7 +26,7 @@ const automaticallyDiscoveredBackendUrl =
 
 /** Un solo indirizzo backend per tutte le schermate dell'app. */
 export const BACKEND_URL = removeTrailingSlash(
-  configuredBackendUrl || automaticallyDiscoveredBackendUrl || 'http://localhost:8000',
+  automaticallyDiscoveredBackendUrl || configuredBackendUrl || 'http://localhost:8000',
 );
 
 export const API_URL = `${BACKEND_URL}/api`;

@@ -8,6 +8,8 @@ $runtimeRoot = Join-Path $env:USERPROFILE '.cache\codex-runtimes\codex-primary-r
 $nodeBin = Join-Path $runtimeRoot 'node\bin'
 $pythonExe = Join-Path $backendDir '.venv\Scripts\python.exe'
 $expoCmd = Join-Path $frontendDir 'node_modules\.bin\expo.cmd'
+$dockerDesktop = 'C:\Program Files\Docker\Docker\Docker Desktop.exe'
+$mongoContainer = 'ferramenta-mongo'
 
 if (-not (Test-Path -LiteralPath $pythonExe)) {
     throw 'Backend locale non configurato: manca backend\.venv.'
@@ -17,6 +19,74 @@ if (-not (Test-Path -LiteralPath $backendEnv)) {
 }
 if (-not (Test-Path -LiteralPath $expoCmd)) {
     throw 'Frontend non configurato: manca frontend\node_modules.'
+}
+
+function Test-LocalPort {
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$Port
+    )
+
+    $client = [System.Net.Sockets.TcpClient]::new()
+    try {
+        $connection = $client.ConnectAsync('127.0.0.1', $Port)
+        return $connection.Wait(700) -and $client.Connected
+    } catch {
+        return $false
+    } finally {
+        $client.Dispose()
+    }
+}
+
+if (-not (Test-LocalPort -Port 27017)) {
+    $dockerReady = $false
+    try {
+        docker info --format '{{.ServerVersion}}' 2>$null | Out-Null
+        $dockerReady = $LASTEXITCODE -eq 0
+    } catch {
+        $dockerReady = $false
+    }
+
+    if (-not $dockerReady) {
+        if (-not (Test-Path -LiteralPath $dockerDesktop)) {
+            throw 'MongoDB non e attivo e Docker Desktop non e installato nel percorso previsto.'
+        }
+
+        Start-Process -FilePath $dockerDesktop -WindowStyle Hidden
+        for ($attempt = 0; $attempt -lt 30; $attempt++) {
+            try {
+                docker info --format '{{.ServerVersion}}' 2>$null | Out-Null
+                if ($LASTEXITCODE -eq 0) {
+                    $dockerReady = $true
+                    break
+                }
+            } catch {
+                $dockerReady = $false
+            }
+            Start-Sleep -Seconds 2
+        }
+    }
+
+    if (-not $dockerReady) {
+        throw 'Docker Desktop non si e avviato correttamente.'
+    }
+
+    $containerExists = docker container inspect $mongoContainer 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Manca il container MongoDB '$mongoContainer'."
+    }
+
+    docker start $mongoContainer | Out-Null
+    for ($attempt = 0; $attempt -lt 20; $attempt++) {
+        if (Test-LocalPort -Port 27017) {
+            break
+        }
+        Start-Sleep -Seconds 1
+    }
+}
+
+if (-not (Test-LocalPort -Port 27017)) {
+    throw 'MongoDB non risponde sulla porta locale 27017.'
 }
 
 $localIp = [System.Net.Dns]::GetHostAddresses([System.Net.Dns]::GetHostName()) |
@@ -91,9 +161,10 @@ if ($existingExpo) {
 $env:Path = $nodeBin + ';' + $env:Path
 $env:EXPO_NO_TELEMETRY = '1'
 $env:EXPO_LOCAL_PREVIEW = '1'
+$env:REACT_NATIVE_PACKAGER_HOSTNAME = $localIp
 Remove-Item Env:EXPO_OFFLINE -ErrorAction SilentlyContinue
 $env:EXPO_PUBLIC_BACKEND_URL = "http://${localIp}:8000"
-$expoCommand = "& '$expoCmd' start --lan --clear"
+$expoCommand = "& '$expoCmd' start --dev-client --lan --clear"
 Start-Process -FilePath 'powershell.exe' `
     -ArgumentList '-NoExit', '-ExecutionPolicy', 'Bypass', '-Command', $expoCommand `
     -WorkingDirectory $frontendDir
@@ -101,4 +172,4 @@ Start-Process -FilePath 'powershell.exe' `
 Write-Host ''
 Write-Host 'Expo avviato. Attendi il QR nella nuova finestra.' -ForegroundColor Green
 Write-Host "Backend telefono: http://${localIp}:8000"
-Write-Host 'Scansiona il QR nella finestra Expo con Expo Go.'
+Write-Host 'Scansiona il QR nella finestra Expo con il Development Build.'

@@ -18,7 +18,9 @@ from passlib.context import CryptContext
 from jose import jwt, JWTError
 from datetime import timedelta
 from bson import ObjectId
+from pymongo import UpdateOne
 from product_creator import ( crea_prodotto_da_fattura, ricava_marca_da_descrizione, ricava_categoria_da_descrizione )
+from pricing import DEFAULT_MARKUPS, calculate_sale_price
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -99,6 +101,13 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+
+class InvoiceHistorySyncRequest(BaseModel):
+    invoice: Dict[str, Any]
+    products: List[Dict[str, Any]] = Field(default_factory=list)
+    secondary_costs: List[Dict[str, Any]] = Field(default_factory=list)
+    pending_products: List[Dict[str, Any]] = Field(default_factory=list)
 
 def normalizza_username(username: str) -> str:
     return str(username or "").strip().lower()
@@ -224,7 +233,20 @@ async def require_admin(
 
 @api_router.get("/health")
 async def health_check():
-    return {"status": "ok", "service": "Ferramenta Manager API"}
+    try:
+        await client.admin.command("ping")
+    except Exception as exc:
+        logging.error("MongoDB non disponibile durante health check: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="Database MongoDB non disponibile",
+        ) from exc
+
+    return {
+        "status": "ok",
+        "service": "Ferramenta Manager API",
+        "database": "connected",
+    }
 
 class Product(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -1752,6 +1774,198 @@ async def add_fornitore_standard_if_missing(fornitore: str | None):
     return fornitore_standard
 
 
+def parse_invoice_report(value: Any) -> Dict[str, Any]:
+    if isinstance(value, dict):
+        return dict(value)
+
+    if isinstance(value, str) and value.strip():
+        try:
+            parsed = json.loads(value)
+            return parsed if isinstance(parsed, dict) else {}
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return {}
+
+    return {}
+
+
+def serialize_invoice_history(item: Dict[str, Any]) -> Dict[str, Any]:
+    report = parse_invoice_report(item.get("report"))
+    secondary_costs = item.get("costi_secondari_fornitori")
+
+    if isinstance(secondary_costs, str):
+        try:
+            secondary_costs = json.loads(secondary_costs)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            secondary_costs = []
+
+    if not isinstance(secondary_costs, list):
+        secondary_costs = report.get("costi_secondari_fornitori", [])
+
+    return {
+        "chiave_import": str(item.get("chiave_import", "")),
+        "numero": str(item.get("numero", "")),
+        "data": str(item.get("data", "")),
+        "partita_iva": str(item.get("partita_iva", "")),
+        "denominazione": str(item.get("denominazione", "")),
+        "data_import": str(item.get("data_import", "")),
+        "righe_fattura": int(item.get("righe_fattura", 0) or 0),
+        "righe_fattura_originali": int(
+            item.get("righe_fattura_originali", 0) or 0
+        ),
+        "prodotti_aggiornati": int(item.get("prodotti_aggiornati", 0) or 0),
+        "barcode_non_trovati": int(item.get("barcode_non_trovati", 0) or 0),
+        "righe_saltate": int(item.get("righe_saltate", 0) or 0),
+        "costi_secondari_fornitori": secondary_costs,
+        "totale_costi_secondari_fornitori": float(
+            item.get("totale_costi_secondari_fornitori", 0) or 0
+        ),
+        "registrata_manualmente": bool(item.get("registrata_manualmente", False)),
+        "sincronizzata": True,
+    }
+
+
+@api_router.post("/invoices/sync")
+async def sync_invoice_history(
+    payload: InvoiceHistorySyncRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    invoice = payload.invoice
+    import_key = str(invoice.get("chiave_import") or "").strip()
+
+    if not import_key:
+        raise HTTPException(status_code=400, detail="Chiave fattura mancante")
+
+    if len(payload.products) > 5000 or len(payload.pending_products) > 5000:
+        raise HTTPException(status_code=400, detail="Troppe righe nella fattura")
+
+    existing = await db.invoice_imports.find_one({"chiave_import": import_key})
+    existing_report = parse_invoice_report((existing or {}).get("report"))
+    report = parse_invoice_report(invoice.get("report"))
+
+    existing_products = existing_report.get("prodotti_letti", [])
+    products = payload.products
+    if isinstance(existing_products, list) and len(existing_products) > len(products):
+        products = existing_products
+
+    existing_costs = (existing or {}).get("costi_secondari_fornitori")
+    if not isinstance(existing_costs, list):
+        existing_costs = existing_report.get("costi_secondari_fornitori", [])
+    secondary_costs = payload.secondary_costs or (
+        existing_costs if isinstance(existing_costs, list) else []
+    )
+
+    report["prodotti_letti"] = products
+    report["costi_secondari_fornitori"] = secondary_costs
+    report["non_trovati"] = payload.pending_products
+
+    total_secondary_costs = round(
+        sum(float(cost.get("importo", 0) or 0) for cost in secondary_costs),
+        2,
+    )
+    now = datetime.now(timezone.utc).isoformat()
+
+    history = {
+        "chiave_import": import_key,
+        "numero": str(invoice.get("numero") or "").strip(),
+        "data": str(invoice.get("data") or "").strip(),
+        "partita_iva": str(invoice.get("partita_iva") or "").strip(),
+        "denominazione": str(invoice.get("denominazione") or "").strip(),
+        "data_import": str(
+            (existing or {}).get("data_import") or invoice.get("data_import") or now
+        ),
+        "righe_fattura": max(
+            int((existing or {}).get("righe_fattura", 0) or 0),
+            int(invoice.get("righe_fattura", len(products)) or 0),
+        ),
+        "righe_fattura_originali": int(
+            invoice.get("righe_fattura_originali", len(products)) or 0
+        ),
+        "prodotti_aggiornati": max(
+            int((existing or {}).get("prodotti_aggiornati", 0) or 0),
+            int(invoice.get("prodotti_aggiornati", 0) or 0),
+        ),
+        "barcode_non_trovati": int(invoice.get("barcode_non_trovati", 0) or 0),
+        "righe_saltate": int(invoice.get("righe_saltate", 0) or 0),
+        "costi_secondari_fornitori": secondary_costs,
+        "totale_costi_secondari_fornitori": total_secondary_costs,
+        "report": json.dumps(report, ensure_ascii=False),
+        "source": "app_sync",
+        "updated_at": now,
+        "ultimo_sync_da": {
+            "user_id": str(current_user.get("_id", "")),
+            "username": str(current_user.get("username", "")),
+        },
+    }
+
+    await db.invoice_imports.update_one(
+        {"chiave_import": import_key},
+        {
+            "$set": history,
+            "$setOnInsert": {
+                "created_at": now,
+                "imported_by": history["ultimo_sync_da"],
+            },
+        },
+        upsert=True,
+    )
+
+    await db.pending_invoice_products.delete_many({"chiave_import": import_key})
+
+    for pending in payload.pending_products:
+        pending_line = {
+            **pending,
+            "chiave_import": import_key,
+            "numero_fattura": history["numero"],
+            "fornitore": history["denominazione"],
+            "partita_iva": history["partita_iva"],
+            "updated_at": now,
+        }
+        await db.pending_invoice_products.update_one(
+            {
+                "chiave_import": import_key,
+                "linea": str(pending.get("linea") or ""),
+                "barcode": str(pending.get("barcode") or ""),
+                "codice_fornitore": str(pending.get("codice_fornitore") or ""),
+            },
+            {
+                "$set": pending_line,
+                "$setOnInsert": {"created_at": now},
+            },
+            upsert=True,
+        )
+
+    stored = await db.invoice_imports.find_one({"chiave_import": import_key})
+    return {
+        "ok": True,
+        "created": existing is None,
+        "invoice": serialize_invoice_history(stored or history),
+    }
+
+
+@api_router.get("/invoices/{chiave_import}/exists")
+async def invoice_history_exists(chiave_import: str):
+    item = await db.invoice_imports.find_one({"chiave_import": chiave_import})
+    return {
+        "exists": item is not None,
+        "invoice": serialize_invoice_history(item) if item else None,
+    }
+
+
+@api_router.get("/invoices/{chiave_import}/products")
+async def get_shared_invoice_products(chiave_import: str):
+    item = await db.invoice_imports.find_one({"chiave_import": chiave_import})
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Fattura non trovata")
+
+    report = parse_invoice_report(item.get("report"))
+    products = report.get("prodotti_letti", [])
+    return {
+        "items": products if isinstance(products, list) else [],
+        "total": len(products) if isinstance(products, list) else 0,
+    }
+
+
 @api_router.post("/invoices/import-xml")
 async def import_invoice_xml(file: UploadFile = File(...)):
     if not file.filename:
@@ -1842,21 +2056,7 @@ async def list_invoice_imports():
     ).sort("data_import", -1).limit(50)
 
     async for item in cursor:
-        items.append({
-            "chiave_import": item.get("chiave_import", ""),
-            "numero": item.get("numero", ""),
-            "data": item.get("data", ""),
-            "partita_iva": item.get("partita_iva", ""),
-            "denominazione": item.get("denominazione", ""),
-            "data_import": item.get("data_import", ""),
-            "righe_fattura": item.get("righe_fattura", 0),
-            "prodotti_aggiornati": item.get("prodotti_aggiornati", 0),
-            "barcode_non_trovati": item.get("barcode_non_trovati", 0),
-            "righe_saltate": item.get("righe_saltate", 0),
-            "report": item.get("report", ""),
-            "file_non_trovati": item.get("file_non_trovati", ""),
-            "registrata_manualmente": item.get("registrata_manualmente", False),
-        })
+        items.append(serialize_invoice_history(item))
 
     return {
         "items": items,
@@ -3557,6 +3757,74 @@ async def delete_standard_list_item(tipo: str, payload: dict):
     }
 
 
+@api_router.get("/settings/pricing")
+async def get_pricing_settings():
+    doc = await db.app_settings.find_one({"key": "pricing_markups"})
+    return {"markups": {**DEFAULT_MARKUPS, **((doc or {}).get("value") or {})}}
+
+
+@api_router.put("/settings/pricing")
+async def update_pricing_settings(payload: dict, _: dict = Depends(require_admin)):
+    incoming = payload.get("markups") or {}
+    markups = {}
+    for key in DEFAULT_MARKUPS:
+        try:
+            value = float(incoming.get(key, DEFAULT_MARKUPS[key]))
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail=f"Ricarico non valido: {key}")
+        if value < 0 or value > 500:
+            raise HTTPException(status_code=400, detail="I ricarichi devono essere tra 0% e 500%")
+        markups[key] = value
+
+    now = datetime.now(timezone.utc).isoformat()
+    products = await db.products.find(
+        {"prezzo_acquisto": {"$gt": 0}},
+        {"id": 1, "barcode": 1, "prezzo_acquisto": 1, "prezzo_vendita": 1},
+    ).to_list(length=None)
+    if products:
+        backup_dir = ROOT_DIR / "backups"
+        backup_dir.mkdir(exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        backup_path = backup_dir / f"prezzi_vendita_prima_modifica_regole_{timestamp}.json"
+        backup_path.write_text(
+            json.dumps(
+                [
+                    {
+                        "id": product.get("id"),
+                        "barcode": product.get("barcode"),
+                        "prezzo_acquisto": product.get("prezzo_acquisto"),
+                        "prezzo_vendita": product.get("prezzo_vendita"),
+                    }
+                    for product in products
+                ],
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+    operations = [
+        UpdateOne(
+            {"_id": product["_id"]},
+            {"$set": {
+                "prezzo_vendita": calculate_sale_price(
+                    float(product.get("prezzo_acquisto") or 0), markups
+                ),
+                "updated_at": now,
+            }},
+        )
+        for product in products
+    ]
+    if operations:
+        await db.products.bulk_write(operations, ordered=False)
+
+    await db.app_settings.update_one(
+        {"key": "pricing_markups"},
+        {"$set": {"value": markups, "updated_at": now}},
+        upsert=True,
+    )
+    return {"markups": markups, "updated_products": len(operations)}
+
+
 
 app.include_router(api_router)
 
@@ -3573,6 +3841,72 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+@app.on_event("startup")
+async def apply_sale_price_migration():
+    """Applica una sola volta le nuove fasce ai prodotti gia presenti."""
+    migration_name = "sale_prices_markup_v1"
+
+    try:
+        applied = await db.app_migrations.find_one({"name": migration_name})
+        if applied:
+            return
+
+        settings = await db.app_settings.find_one({"key": "pricing_markups"})
+        markups = {**DEFAULT_MARKUPS, **((settings or {}).get("value") or {})}
+        products = await db.products.find(
+            {"prezzo_acquisto": {"$gt": 0}},
+            {"id": 1, "barcode": 1, "prezzo_acquisto": 1, "prezzo_vendita": 1},
+        ).to_list(length=None)
+        now = datetime.now(timezone.utc).isoformat()
+        changes = []
+
+        for product in products:
+            purchase_price = float(product.get("prezzo_acquisto") or 0)
+            sale_price = calculate_sale_price(purchase_price, markups)
+            current_sale_price = float(product.get("prezzo_vendita") or 0)
+            if abs(current_sale_price - sale_price) > 0.001:
+                changes.append((product, sale_price))
+
+        if changes:
+            backup_dir = ROOT_DIR / "backups"
+            backup_dir.mkdir(exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            backup_path = backup_dir / f"prezzi_vendita_prima_ricarichi_{timestamp}.json"
+            backup_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "id": product.get("id"),
+                            "barcode": product.get("barcode"),
+                            "prezzo_acquisto": product.get("prezzo_acquisto"),
+                            "prezzo_vendita": product.get("prezzo_vendita"),
+                        }
+                        for product, _ in changes
+                    ],
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            await db.products.bulk_write(
+                [
+                    UpdateOne(
+                        {"_id": product["_id"]},
+                        {"$set": {"prezzo_vendita": sale_price, "updated_at": now}},
+                    )
+                    for product, sale_price in changes
+                ],
+                ordered=False,
+            )
+
+        await db.app_migrations.insert_one(
+            {"name": migration_name, "applied_at": now, "updated_products": len(changes)}
+        )
+        logger.info("Migrazione prezzi vendita: %s prodotti aggiornati", len(changes))
+    except Exception:
+        logger.exception("Migrazione prezzi vendita rinviata: database non disponibile")
 
 
 @app.on_event("shutdown")
