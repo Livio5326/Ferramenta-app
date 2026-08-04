@@ -219,7 +219,15 @@ const diminuisciQtaCliente = () => {
         <View style={styles.priceBlock}>
           <View style={styles.priceCell}>
             <Text style={styles.priceLabel}>PREZZO VENDITA</Text>
-            <Text style={styles.priceValue}>{fmtEUR(prezzoFinaleProdotto(p))}</Text>
+            <Text style={[styles.priceValue, haPromoProdotto(p) && styles.priceValuePromo]}>
+              {fmtEUR(prezzoFinaleProdotto(p))}
+            </Text>
+            {haPromoProdotto(p) ? (
+              <View style={styles.promoRow}>
+                <Text style={styles.priceOriginal}>{fmtEUR(p.prezzo_vendita)}</Text>
+                <Text style={styles.promoBadge}>PROMO</Text>
+              </View>
+            ) : null}
           </View>
           {!isCliente && (
             <View style={[styles.priceCell, { borderRightWidth: 0 }]}>
@@ -549,6 +557,10 @@ const styles = StyleSheet.create({
   priceCell: { flex: 1, padding: 16, borderRightWidth: 2, borderColor: COLORS.borderStrong },
   priceLabel: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.brandTertiary, letterSpacing: 1.5 },
   priceValue: { fontFamily: FONTS.display, fontSize: 28, fontWeight: '900', color: COLORS.onBrandPrimary, marginTop: 4 },
+  priceValuePromo: { color: COLORS.warning },
+  promoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
+  priceOriginal: { fontFamily: FONTS.mono, fontSize: 13, color: COLORS.brandTertiary, textDecorationLine: 'line-through' },
+  promoBadge: { fontFamily: FONTS.mono, fontSize: 10, fontWeight: '900', color: COLORS.warning },
   priceValueSm: { fontFamily: FONTS.mono, fontSize: 18, fontWeight: '900', color: COLORS.onBrandPrimary, marginTop: 4 },
   specs: { backgroundColor: COLORS.surface },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', gap: 0, backgroundColor: COLORS.surfaceInverse, borderTopWidth: 2, borderColor: COLORS.borderStrong, padding: 12 },

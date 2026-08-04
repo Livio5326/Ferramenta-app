@@ -97,7 +97,12 @@ export default function Vendita() {
               <View style={styles.row} testID={`cart-row-${item.product.id}`}>
                 <View style={{ flex: 1, gap: 4 }}>
                   <Text style={styles.rowTitle} numberOfLines={2}>{item.product.descrizione}</Text>
-                  <Text style={styles.rowMeta}>{fmtEUR(prezzoFinaleProdotto(item.product))} cad.</Text>
+                  <Text style={[styles.rowMeta, haPromoProdotto(item.product) && styles.rowMetaPromo]}>
+                    {fmtEUR(prezzoFinaleProdotto(item.product))} cad.
+                  </Text>
+                  {haPromoProdotto(item.product) ? (
+                    <Text style={styles.promoBadge}>PROMO</Text>
+                  ) : null}
                 </View>
                 <View style={styles.qtyCtrl}>
                   <AppButton style={styles.qtyBtn} onPress={() => updateCartQty(item.product.id, item.quantita - 1)} testID={`qty-minus-${item.product.id}`}>
@@ -145,6 +150,8 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderBottomWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surfaceSecondary },
   rowTitle: { fontFamily: FONTS.display, fontSize: 14, fontWeight: '700', color: COLORS.onSurface },
   rowMeta: { fontFamily: FONTS.mono, fontSize: 11, color: COLORS.onSurfaceSecondary },
+  rowMetaPromo: { color: COLORS.error, fontWeight: '700' },
+  promoBadge: { fontFamily: FONTS.mono, fontSize: 9, fontWeight: '900', color: COLORS.error },
   qtyCtrl: { flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surface },
   qtyBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   qtyNum: { fontFamily: FONTS.mono, fontSize: 14, fontWeight: '900', color: COLORS.onSurface, width: 28, textAlign: 'center' },
