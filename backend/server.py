@@ -3232,7 +3232,23 @@ async def stats():
         "costi_secondari_fornitori_per_tipo": costi_secondari_fornitori_per_tipo_list,
         "valore_vendita_potenziale": round(valore_vendita, 2),
         "sotto_scorta_count": len(sotto_scorta),
-        "sotto_scorta": [Product(**d).dict() for d in sotto_scorta[:20]],
+        # Solo i campi utili a identificare l'articolo: la dashboard legge
+        # sotto_scorta_count, e spedire i prodotti interi significava
+        # allegare anche le foto in base64 (oltre 180 KB per una risposta
+        # che ne usa meno di 10).
+        "sotto_scorta": [
+            {
+                "id": d.get("id"),
+                "codice_prodotto": d.get("codice_prodotto", ""),
+                "barcode": d.get("barcode", ""),
+                "descrizione": d.get("descrizione", ""),
+                "marca": d.get("marca", ""),
+                "categoria": d.get("categoria", ""),
+                "quantita": int(d.get("quantita", 0) or 0),
+                "soglia_scorta": int(d.get("soglia_scorta", 5) or 0),
+            }
+            for d in sotto_scorta[:20]
+        ],
         "categorie": [{"nome": k, "count": v} for k, v in sorted(cat_counts.items(), key=lambda x: -x[1])],
         "vendite_totali": round(totale_vendite, 2),
         "numero_vendite": len(sales_docs),
