@@ -29,6 +29,13 @@ def normalizza_nome_fornitore(value: str | None) -> str:
     return value
 
 
+# Fornitori che vendono solo vernici/pitture: per questi la categoria si
+# imposta sempre su "Vernici", a prescindere dal fatto che la descrizione
+# contenga una parola chiave riconoscibile (i nomi di linea prodotto come
+# CEMENTITE o TASSOFLOOR non lo sono).
+FORNITORI_SOLO_VERNICI = {"tassani", "italiancolor", "liantonio vernici"}
+
+
 async def riconduci_fornitore_standard(db, fornitore_xml: str | None) -> str:
     """
     Riconduce il fornitore letto dalla fattura XML a uno dei fornitori standard
@@ -652,7 +659,6 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
 
         if not prodotto:
             codice_fornitore = trova_codice_fornitore(dettaglio)
-            categoria_ricavata = ricava_categoria_da_descrizione(descrizione_fattura)
 
             fornitore_originale = info_fattura.get("denominazione", "")
             fornitore = await riconduci_fornitore_standard(db, fornitore_originale) or fornitore_originale
@@ -661,6 +667,11 @@ async def importa_fattura_xml_da_file(db, percorso_xml):
             # (es. linee di vernici, prodotti generici), usiamo il nome del
             # fornitore gia' ricondotto: meglio "Tassani" che "ALTRO".
             marca_ricavata = ricava_marca_da_descrizione(descrizione_fattura) or fornitore
+
+            if fornitore.strip().lower() in FORNITORI_SOLO_VERNICI:
+                categoria_ricavata = "Vernici"
+            else:
+                categoria_ricavata = ricava_categoria_da_descrizione(descrizione_fattura)
 
             try:
                 await crea_prodotto_da_fattura(

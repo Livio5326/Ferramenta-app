@@ -17,6 +17,7 @@ from import_fatture_service import (
     importa_fattura_xml_da_file,
     normalizza_nome_fornitore,
     riconduci_fornitore_standard,
+    FORNITORI_SOLO_VERNICI,
 )
 from passlib.context import CryptContext
 from jose import jwt, JWTError
@@ -2185,8 +2186,6 @@ async def create_pending_invoice_products(payload: CreatePendingProductsRequest)
         codice_fornitore = str(item.get("codice_fornitore", "")).strip()
         quantita = int(float(str(item.get("quantita", 0) or 0).replace(",", ".")))
         prezzo_acquisto = float(str(item.get("prezzo_unitario", 0) or 0).replace(",", "."))
-        marca_ricavata = ricava_marca_da_descrizione(descrizione)
-        categoria_ricavata = ricava_categoria_da_descrizione(descrizione)
         fornitore_originale = str(
             item.get("fornitore")
             or item.get("denominazione")
@@ -2197,6 +2196,15 @@ async def create_pending_invoice_products(payload: CreatePendingProductsRequest)
         ).strip()
 
         fornitore_ricavato = await riconduci_fornitore_standard(db, fornitore_originale)
+
+        # Stessa logica dell'import automatico: se la descrizione non fa
+        # riconoscere una marca vera, usa il fornitore gia' ricondotto; per
+        # i fornitori che vendono solo vernici, la categoria e' sempre Vernici.
+        marca_ricavata = ricava_marca_da_descrizione(descrizione) or fornitore_ricavato
+        if fornitore_ricavato.strip().lower() in FORNITORI_SOLO_VERNICI:
+            categoria_ricavata = "Vernici"
+        else:
+            categoria_ricavata = ricava_categoria_da_descrizione(descrizione)
 
         if not descrizione:
             saltati += 1

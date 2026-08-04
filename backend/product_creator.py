@@ -108,6 +108,10 @@ def ricava_categoria_da_descrizione(descrizione):
             [
                 "vernice", "smalto", "pittura", "pennello",
                 "rullo", "stucco", "diluente", "impregnante",
+                # Nomi commerciali di linee prodotto (non parole generiche,
+                # quindi vanno elencati singolarmente): fornitore Tassani.
+                "cementite", "tassofloor", "nivolin", "panama supermarine",
+                "linea blu",
             ],
         ),
         (
