@@ -10,6 +10,7 @@ $pythonExe = Join-Path $backendDir '.venv\Scripts\python.exe'
 $expoCmd = Join-Path $frontendDir 'node_modules\.bin\expo.cmd'
 $dockerDesktop = 'C:\Program Files\Docker\Docker\Docker Desktop.exe'
 $mongoContainer = 'ferramenta-mongo'
+$adbExe = Join-Path $env:LOCALAPPDATA 'Android\Sdk\platform-tools\adb.exe'
 
 if (-not (Test-Path -LiteralPath $pythonExe)) {
     throw 'Backend locale non configurato: manca backend\.venv.'
@@ -100,6 +101,19 @@ if (-not $localIp) {
     throw 'Impossibile trovare l’indirizzo IPv4 della rete locale.'
 }
 
+# Preferisci il cavo USB (adb reverse) al WiFi: il bundle JS pesa ~20 MB e su
+# reti WiFi domestiche instabili il download si blocca a meta' (bundling
+# fermo a una percentuale fissa). Via USB il traffico non passa dal WiFi.
+$useUsb = $false
+if (Test-Path -LiteralPath $adbExe) {
+    $adbDevices = & $adbExe devices 2>$null |
+        Select-Object -Skip 1 |
+        Where-Object { $_ -match '\bdevice$' }
+    if ($adbDevices) {
+        $useUsb = $true
+    }
+}
+
 # Il backend carica MONGO_URL, DB_NAME e JWT_SECRET dal proprio file .env.
 # Non impostarli qui: l'anteprima deve usare gli stessi utenti e dati reali.
 $ready = $false
@@ -166,15 +180,32 @@ if ($existingExpo) {
 $env:Path = $nodeBin + ';' + $env:Path
 $env:EXPO_NO_TELEMETRY = '1'
 $env:EXPO_LOCAL_PREVIEW = '1'
-$env:REACT_NATIVE_PACKAGER_HOSTNAME = $localIp
 Remove-Item Env:EXPO_OFFLINE -ErrorAction SilentlyContinue
-$env:EXPO_PUBLIC_BACKEND_URL = "http://${localIp}:8000"
-$expoCommand = "& '$expoCmd' start --dev-client --lan --clear"
+
+if ($useUsb) {
+    & $adbExe reverse tcp:8081 tcp:8081 | Out-Null
+    & $adbExe reverse tcp:8000 tcp:8000 | Out-Null
+    Remove-Item Env:REACT_NATIVE_PACKAGER_HOSTNAME -ErrorAction SilentlyContinue
+    $env:EXPO_PUBLIC_BACKEND_URL = 'http://localhost:8000'
+    $expoCommand = "& '$expoCmd' start --dev-client --localhost --clear"
+} else {
+    $env:REACT_NATIVE_PACKAGER_HOSTNAME = $localIp
+    $env:EXPO_PUBLIC_BACKEND_URL = "http://${localIp}:8000"
+    $expoCommand = "& '$expoCmd' start --dev-client --lan --clear"
+}
+
 Start-Process -FilePath 'powershell.exe' `
     -ArgumentList '-NoExit', '-ExecutionPolicy', 'Bypass', '-Command', $expoCommand `
     -WorkingDirectory $frontendDir
 
 Write-Host ''
-Write-Host 'Expo avviato. Attendi il QR nella nuova finestra.' -ForegroundColor Green
-Write-Host "Backend telefono: http://${localIp}:8000"
-Write-Host 'Scansiona il QR nella finestra Expo con il Development Build.'
+if ($useUsb) {
+    Write-Host 'Expo avviato in modalita USB (adb reverse): il telefono e collegato via cavo.' -ForegroundColor Green
+    Write-Host 'Apri la Development Build sul telefono: si connette da sola, non serve scansionare il QR.'
+    Write-Host 'Se non si connette, premi "a" nella finestra Expo per lanciarla sul device Android.'
+} else {
+    Write-Host 'Nessun device Android su USB rilevato: uso il WiFi (meno affidabile per bundle grandi).' -ForegroundColor Yellow
+    Write-Host 'Consiglio: collega il telefono al PC via cavo USB con il debug USB attivo e riavvia per usare adb reverse.'
+    Write-Host "Backend telefono: http://${localIp}:8000"
+    Write-Host 'Scansiona il QR nella finestra Expo con il Development Build.'
+}
