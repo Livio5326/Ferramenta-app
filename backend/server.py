@@ -3186,53 +3186,43 @@ async def stats():
 
     piu_venduti = await db.sales.aggregate(pipeline_best).to_list(5)
 
-    # Meno venduti
-    pipeline_least = [
-        {
-            "$lookup": {
-                "from": "sales",
-                "pipeline": [
-                    {"$unwind": "$items"},
-                    {
-                        "$group": {
-                            "_id": "$items.product_id",
-                            "pezzi_venduti": {"$sum": "$items.quantita"},
-                            "totale_venduto": {
-                                "$sum": {
-                                    "$multiply": ["$items.prezzo_vendita", "$items.quantita"]
-                                }
-                            },
+    # Meno venduti: le vendite vengono aggregate una sola volta e poi
+    # accostate ai prodotti tramite product_id. In precedenza un $lookup
+    # non correlato assegnava a ogni prodotto le vendite di un altro.
+    vendite_per_prodotto = {
+        str(v.get("_id")): v
+        for v in await db.sales.aggregate([
+            {"$unwind": "$items"},
+            {
+                "$group": {
+                    "_id": "$items.product_id",
+                    "pezzi_venduti": {"$sum": "$items.quantita"},
+                    "totale_venduto": {
+                        "$sum": {
+                            "$multiply": ["$items.prezzo_vendita", "$items.quantita"]
                         }
                     },
-                ],
-                "as": "vendite",
-            }
-        },
-        {
-            "$addFields": {
-                "vendita": {"$arrayElemAt": ["$vendite", 0]}
-            }
-        },
-        {
-            "$project": {
-                "_id": 0,
-                "product_id": "$id",
-                "descrizione": 1,
-                "pezzi_venduti": {"$ifNull": ["$vendita.pezzi_venduti", 0]},
-                "totale_venduto": {"$ifNull": ["$vendita.totale_venduto", 0]},
-                "quantita_magazzino": "$quantita",
-            }
-        },
-        {
-            "$sort": {
-                "pezzi_venduti": 1,
-                "quantita_magazzino": -1,
-            }
-        },
-        {"$limit": 5},
-    ]
+                }
+            },
+        ]).to_list(length=None)
+    }
 
-    meno_venduti = await db.products.aggregate(pipeline_least).to_list(5)
+    riepilogo_venduti = []
+    for d in docs:
+        vendita = vendite_per_prodotto.get(str(d.get("id"))) or {}
+
+        riepilogo_venduti.append({
+            "product_id": d.get("id"),
+            "descrizione": d.get("descrizione"),
+            "pezzi_venduti": int(vendita.get("pezzi_venduti", 0) or 0),
+            "totale_venduto": round(float(vendita.get("totale_venduto", 0) or 0), 2),
+            "quantita_magazzino": int(d.get("quantita", 0) or 0),
+        })
+
+    meno_venduti = sorted(
+        riepilogo_venduti,
+        key=lambda r: (r["pezzi_venduti"], -r["quantita_magazzino"]),
+    )[:5]
 
     return {
         "total_products": total_products,
