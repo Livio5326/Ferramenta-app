@@ -63,15 +63,18 @@ def test_health_route_is_available():
 
 
 def test_shared_invoice_history_routes_are_available():
+    # chiave_import viaggia come query string, non come segmento di path:
+    # essendo composta da piu' campi separati da "|" (partita IVA, numero,
+    # data), come path param finiva per collidere con /invoices/{altro}.
     routes = set(_api_routes())
     assert ("post", "/invoices/sync", "sync_invoice_history") in routes
     assert (
         "get",
-        "/invoices/{chiave_import}/exists",
+        "/invoices/exists",
         "invoice_history_exists",
     ) in routes
     assert (
         "get",
-        "/invoices/{chiave_import}/products",
+        "/invoices/products",
         "get_shared_invoice_products",
     ) in routes
