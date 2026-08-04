@@ -120,34 +120,38 @@ export function initLocalDb() {
     );
   `);
 
-  const pricingMigration = "sale_prices_markup_v1";
-  const pricingAlreadyApplied = db.getFirstSync<{ name: string }>(
-    "SELECT name FROM app_migrations WHERE name = ?",
-    [pricingMigration]
-  );
-
-  if (!pricingAlreadyApplied) {
-    const products = db.getAllSync<{ id: string; prezzo_acquisto: number }>(
-      "SELECT id, prezzo_acquisto FROM products WHERE COALESCE(prezzo_acquisto, 0) > 0"
+  try {
+    const pricingMigration = "sale_prices_markup_v1";
+    const pricingAlreadyApplied = db.getFirstSync<{ name: string }>(
+      "SELECT name FROM app_migrations WHERE name = ?",
+      [pricingMigration]
     );
 
-    db.withTransactionSync(() => {
-      for (const product of products) {
-        db.runSync(
-          "UPDATE products SET prezzo_vendita = ?, updated_at = ? WHERE id = ?",
-          [
-            calculateSalePrice(Number(product.prezzo_acquisto)),
-            new Date().toISOString(),
-            product.id,
-          ]
-        );
-      }
-
-      db.runSync(
-        "INSERT INTO app_migrations (name, applied_at) VALUES (?, ?)",
-        [pricingMigration, new Date().toISOString()]
+    if (!pricingAlreadyApplied) {
+      const products = db.getAllSync<{ id: string; prezzo_acquisto: number }>(
+        "SELECT id, prezzo_acquisto FROM products WHERE COALESCE(prezzo_acquisto, 0) > 0"
       );
-    });
+
+      db.withTransactionSync(() => {
+        for (const product of products) {
+          db.runSync(
+            "UPDATE products SET prezzo_vendita = ?, updated_at = ? WHERE id = ?",
+            [
+              calculateSalePrice(Number(product.prezzo_acquisto)),
+              new Date().toISOString(),
+              product.id,
+            ]
+          );
+        }
+
+        db.runSync(
+          "INSERT INTO app_migrations (name, applied_at) VALUES (?, ?)",
+          [pricingMigration, new Date().toISOString()]
+        );
+      });
+    }
+  } catch (e) {
+    console.warn("Migrazione sale_prices_markup_v1 fallita", e);
   }
 
   try {
