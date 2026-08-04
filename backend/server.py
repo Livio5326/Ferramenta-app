@@ -1942,7 +1942,7 @@ async def sync_invoice_history(
     }
 
 
-@api_router.get("/invoices/{chiave_import}/exists")
+@api_router.get("/invoices/exists")
 async def invoice_history_exists(chiave_import: str):
     item = await db.invoice_imports.find_one({"chiave_import": chiave_import})
     return {
@@ -1951,7 +1951,7 @@ async def invoice_history_exists(chiave_import: str):
     }
 
 
-@api_router.get("/invoices/{chiave_import}/products")
+@api_router.get("/invoices/products")
 async def get_shared_invoice_products(chiave_import: str):
     item = await db.invoice_imports.find_one({"chiave_import": chiave_import})
 
@@ -2375,7 +2375,7 @@ async def create_pending_invoice_products(payload: CreatePendingProductsRequest)
 
     reconcile_results = []
     for numero_fattura in numeri_fattura:
-        reconcile_results.append(await reconcile_invoice_import(numero_fattura))
+        reconcile_results.append(await aggiorna_conteggi_fattura_import(numero_fattura))
 
 
     return {

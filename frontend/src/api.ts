@@ -523,7 +523,7 @@ export async function importInvoiceXml(file: {
   const duplicate = await req<{
     exists: boolean;
     invoice: any | null;
-  }>(`/invoices/${encodeURIComponent(identity.chiaveImport)}/exists`);
+  }>(`/invoices/exists?chiave_import=${encodeURIComponent(identity.chiaveImport)}`);
 
   if (duplicate.exists) {
     return {
@@ -688,7 +688,7 @@ export async function getInvoiceProducts(
 ) {
   try {
     const response = await req<{ items: any[]; total: number }>(
-      `/invoices/${encodeURIComponent(chiaveImport)}/products`
+      `/invoices/products?chiave_import=${encodeURIComponent(chiaveImport)}`
     );
     return response.items;
   } catch (error) {

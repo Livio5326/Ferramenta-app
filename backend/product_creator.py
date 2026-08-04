@@ -3,6 +3,10 @@ import uuid
 from pricing import calculate_sale_price
 
 
+def normalizza_testo(testo):
+    return str(testo or "").strip().lower()
+
+
 def ricava_marca_da_descrizione(descrizione):
     testo = normalizza_testo(descrizione)
 
