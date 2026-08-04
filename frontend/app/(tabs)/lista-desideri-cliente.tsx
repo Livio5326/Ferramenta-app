@@ -12,7 +12,8 @@ function getFotoUrl(foto?: string) {
   if (!foto) return null;
 
   if (foto.startsWith('http')) {
-    return foto;
+    const filename = foto.split('/uploads/').pop() || '';
+    return filename ? `${BACKEND_URL}/uploads/${filename}` : foto;
   }
 
   const nomeFile = foto.replace(/^\/+/, '');
@@ -21,7 +22,7 @@ function getFotoUrl(foto?: string) {
     return `${BACKEND_URL}/${nomeFile}`;
   }
 
-  return `${BACKEND_URL}/uploads/cropped/${nomeFile}`;
+  return `${BACKEND_URL}/uploads/${nomeFile}`;
 }
 
 export default function ListaDesideriClienteScreen() {

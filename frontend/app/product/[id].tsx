@@ -20,6 +20,7 @@ import { COLORS, FONTS, fmtEUR } from '@/src/theme';
 import { api } from '@/src/api';
 import { Product, useAppStore } from '@/src/store';
 import { useClienteStore } from '@/src/clienteStore';
+import { BACKEND_URL } from '@/src/config/backend';
 
 
 
@@ -181,6 +182,15 @@ const diminuisciQtaCliente = () => {
       value.startsWith('content://')
     ) {
       return value;
+    }
+
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      const filename = value.split('/uploads/').pop() || '';
+      return filename ? `${BACKEND_URL}/uploads/${filename}` : value;
+    }
+
+    if (value) {
+      return `${BACKEND_URL}/uploads/${value.replace(/^\/+/, '')}`;
     }
 
     return '';

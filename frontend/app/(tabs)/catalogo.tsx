@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useAppStore } from "../../src/store";
+import { BACKEND_URL } from "../../src/config/backend";
 
 import AppButton from '@/src/components/AppButton';
 const PAGE_SIZE = 30;
@@ -164,6 +165,15 @@ function buildImageUri(foto: string) {
     value.startsWith("content://")
   ) {
     return value;
+  }
+
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    const filename = value.split("/uploads/").pop() || "";
+    return filename ? `${BACKEND_URL}/uploads/${filename}` : value;
+  }
+
+  if (value) {
+    return `${BACKEND_URL}/uploads/${value.replace(/^\/+/, "")}`;
   }
 
   return "";
