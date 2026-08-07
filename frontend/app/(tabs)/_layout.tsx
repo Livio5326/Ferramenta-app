@@ -14,9 +14,11 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
 
-        // Legno luce (5.19:1) invece di ottone (4.26:1 sotto soglia)
-        tabBarActiveTintColor: PALETTE.legnoLuce,
-        tabBarInactiveTintColor: PALETTE.carta3,
+        // Carta (9.00:1) vs Verde Scuro, Verde Chiaro (3.35:1) vs Verde Scuro,
+        // Carta vs Verde Chiaro (2.68:1). Attiva = illuminata (carta), spenta = smorzata (verde).
+        // Distinte per luminosità e tinta: leggibili al sole e per daltonismo.
+        tabBarActiveTintColor: PALETTE.carta,
+        tabBarInactiveTintColor: PALETTE.verdeChiaro,
 
         tabBarStyle: {
           backgroundColor: PALETTE.verdeScuro,
