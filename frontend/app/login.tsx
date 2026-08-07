@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderWidth: 1.5,
-    borderColor: COLORS.acciaio,
+    borderColor: COLORS.borderStrong,
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
