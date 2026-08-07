@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Platform, View, StyleSheet } from 'react-native';
 
-import { COLORS, FONTS } from '@/src/theme';
+import { COLORS, FONTS, PALETTE } from '@/src/theme';
 import { useAppStore } from '@/src/store';
 
 export default function TabsLayout() {
@@ -14,18 +14,18 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
 
-        tabBarActiveTintColor: '#D8662A',
-        tabBarInactiveTintColor: '#E8D8BD',
+        tabBarActiveTintColor: COLORS.warning,
+        tabBarInactiveTintColor: PALETTE.carta3,
 
         tabBarStyle: {
-          backgroundColor: '#263B2B',
+          backgroundColor: PALETTE.verdeScuro,
           borderTopWidth: 2,
-          borderTopColor: '#A85E2A',
+          borderTopColor: COLORS.brandPrimary,
           height: Platform.OS === 'ios' ? 88 : 70,
           paddingTop: 3,
           paddingBottom: Platform.OS === 'ios' ? 24 : 9,
           elevation: 10,
-          shadowColor: '#18261C',
+          shadowColor: PALETTE.noce3,
           shadowOpacity: 0.16,
           shadowRadius: 8,
           shadowOffset: { width: 0, height: -3 },
@@ -36,7 +36,6 @@ export default function TabsLayout() {
           fontSize: 10,
           letterSpacing: 0.9,
           textTransform: 'uppercase',
-          fontWeight: '800',
         },
 
         tabBarIconStyle: {

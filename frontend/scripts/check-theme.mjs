@@ -18,7 +18,6 @@ const COLORE = /#[0-9a-fA-F]{3,8}\b/g;
 
 // I file non ancora migrati. Togliere una voce quando il file è a posto.
 const DA_MIGRARE = [
-  'app/(tabs)/_layout.tsx',
   'app/(tabs)/catalogo-vendita.tsx',
   'app/(tabs)/catalogo.tsx',
   'app/(tabs)/fornitori.tsx',
