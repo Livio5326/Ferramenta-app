@@ -22,8 +22,15 @@ script che fallisce se un file già migrato torna a scrivere colori a mano.
 
 - **Nessuna dipendenza nuova**, né runtime né di sviluppo. I caratteri si
   includono come file `.ttf` locali, non tramite pacchetti `@expo-google-fonts`.
-- **Nessuna schermata cambia disposizione o comportamento.** Solo colori,
-  caratteri, spaziature interne dei componenti condivisi.
+- **Nessuna schermata cambia disposizione né flusso.** Solo colori,
+  caratteri, spaziature interne dei componenti condivisi. Due eccezioni
+  approvate esplicitamente, e nessun'altra:
+  1. i bottoni alla pressione scendono di 2 pixel invece di rimpicciolire
+     (Task 5);
+  2. sotto ogni intestazione una striscia di legno alta 3 pixel sostituisce
+     il bordo di 1 pixel (Task 6).
+  Qualsiasi altro cambiamento di comportamento è un difetto, anche se
+  migliora qualcosa.
 - **Nessuna modifica sotto `backend/`.** La modifica in corso su
   `backend/server.py` resta non committata e non va toccata.
 - **Ramo di lavoro:** `estetica-gestionale`, staccato dalla punta di
