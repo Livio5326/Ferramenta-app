@@ -26,8 +26,8 @@ export function ModeToggle() {
         style={[
           styles.cursore,
           gestore
-            ? { left: 6, backgroundColor: PALETTE.noce }
-            : { right: 6, backgroundColor: PALETTE.verdeScuro },
+            ? { left: 6, right: '50%', backgroundColor: PALETTE.noce }
+            : { left: '50%', right: 6, backgroundColor: PALETTE.verdeScuro },
         ]}
         pointerEvents="none"
       />
@@ -61,7 +61,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     bottom: 6,
-    width: '50%',
     borderRadius: RADIUS.sm,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 240, 190, 0.5)',
