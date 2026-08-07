@@ -38,6 +38,9 @@ export const PALETTE = {
   acciaio: '#9AA0A6',
   acciaioBordo: '#5E6469',
   acciaioTaglio: '#3C4044',
+
+  // L'ombra sotto il bordo del bottone rosso (variante "pericolo").
+  minioOmbra: '#7D3125',
 } as const;
 
 // Le tappe della venatura dell'asse: cinque gradi dal colpo di luce in alto

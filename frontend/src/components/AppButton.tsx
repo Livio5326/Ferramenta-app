@@ -5,10 +5,12 @@ import {
   Pressable,
   PressableProps,
   StyleProp,
+  StyleSheet,
   View,
   ViewStyle,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { COLORS, FONTS, PALETTE, RADIUS } from '@/src/theme';
 
 type Props = Omit<PressableProps, 'style' | 'onPress' | 'disabled'> & {
   style?: PressableProps['style'];
@@ -22,6 +24,7 @@ type Props = Omit<PressableProps, 'style' | 'onPress' | 'disabled'> & {
   pressDelay?: number;
   autoLoading?: boolean;
   loadingColor?: string;
+  variante?: 'pieno' | 'pericolo' | 'scuro' | 'inciso';
 };
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
@@ -44,6 +47,7 @@ export default function AppButton({
   pressDelay = 700,
   autoLoading = true,
   loadingColor,
+  variante,
   ...props
 }: Props) {
   const lastPressRef = useRef(0);
@@ -98,14 +102,18 @@ export default function AppButton({
 
         return [
           { position: 'relative' },
+          variante && BASE.bottone,
+          variante && VARIANTI[variante],
           baseStyle,
           effectivelyDisabled && {
             opacity: 0.55,
           },
           state.pressed &&
             !effectivelyDisabled && {
-              transform: [{ scale: 0.96 }],
-              opacity: 0.88,
+              // Il tasto scende di due pixel e il bordo sotto si accorcia,
+              // come un interruttore vero. È il gesto del sito.
+              transform: [{ translateY: 2 }],
+              borderBottomWidth: variante && variante !== 'inciso' ? 2 : undefined,
             },
           state.pressed &&
             !effectivelyDisabled &&
@@ -144,3 +152,48 @@ export default function AppButton({
     </Pressable>
   );
 }
+
+// I quattro bottoni del sito. Il pieno è legno e non minio: nel gestionale
+// il rosso significa "attenzione, stai cancellando", e non può voler dire
+// anche "conferma".
+const VARIANTI = StyleSheet.create({
+  pieno: {
+    backgroundColor: COLORS.brandPrimary,
+    borderBottomWidth: 4,
+    borderBottomColor: PALETTE.legnoOmbra,
+  },
+  pericolo: {
+    backgroundColor: COLORS.error,
+    borderBottomWidth: 4,
+    borderBottomColor: PALETTE.minioOmbra,
+  },
+  scuro: {
+    backgroundColor: PALETTE.noce,
+    borderBottomWidth: 4,
+    borderBottomColor: PALETTE.noce3,
+  },
+  inciso: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: COLORS.borderStrong,
+  },
+});
+
+const BASE = StyleSheet.create({
+  bottone: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: RADIUS.sm,
+  },
+});
+
+export const TESTO_BOTTONE = {
+  pieno: { fontFamily: FONTS.testoForte, fontSize: 15, color: COLORS.onBrandPrimary },
+  pericolo: { fontFamily: FONTS.testoForte, fontSize: 15, color: COLORS.onError },
+  scuro: { fontFamily: FONTS.testoForte, fontSize: 15, color: COLORS.onSurfaceInverse },
+  inciso: { fontFamily: FONTS.testoForte, fontSize: 15, color: COLORS.brandPrimary },
+} as const;
