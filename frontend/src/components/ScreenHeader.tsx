@@ -99,6 +99,17 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
-  // L'asse sostituisce il filo grigio sotto l'intestazione.
-  assettina: { height: 3, width: '100%' },
+  // La striscia sotto l'intestazione e' legno, ma piatto: spegne l'ombra e
+  // il bordo di luce che Asse porta con se', pensati per la tavola da 90
+  // pixel del Task 4. Su tre pixel farebbero un gradino in rilievo invece
+  // di un filo.
+  assettina: {
+    height: 3,
+    width: '100%',
+    borderRadius: 0,
+    borderTopWidth: 0,
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
 });
