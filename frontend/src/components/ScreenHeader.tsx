@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Image, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { COLORS, FONTS } from '@/src/theme';
+import { COLORS, FONTS, TESTO } from '@/src/theme';
+import { Asse } from '@/src/components/materiale/Asse';
 
 type ScreenHeaderProps = {
   title: string;
@@ -12,35 +13,41 @@ type ScreenHeaderProps = {
 export function ScreenHeader({ title, subtitle, right, style }: ScreenHeaderProps) {
   if (title === 'FERRAMENTA') {
     return (
-      <View style={[styles.homeWrap, style]}>
-        <Image
-          source={require('../../assets/logo.png')}
-          style={styles.homeLogo}
-          resizeMode="contain"
-        />
+      <>
+        <View style={[styles.homeWrap, style]}>
+          <Image
+            source={require('../../assets/logo.png')}
+            style={styles.homeLogo}
+            resizeMode="contain"
+          />
 
-        {subtitle ? (
-          <Text style={styles.homeAddress}>{subtitle}</Text>
-        ) : null}
+          {subtitle ? (
+            <Text style={styles.homeAddress}>{subtitle}</Text>
+          ) : null}
 
-        {right ? (
-          <View style={styles.homeToggle}>
-            {right}
-          </View>
-        ) : null}
-      </View>
+          {right ? (
+            <View style={styles.homeToggle}>
+              {right}
+            </View>
+          ) : null}
+        </View>
+        <Asse style={styles.assettina} />
+      </>
     );
   }
 
   return (
-    <View style={[styles.wrap, style]}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.title} testID="screen-title">{title}</Text>
-        {subtitle ? <Text style={styles.sub}>{subtitle}</Text> : null}
-      </View>
+    <>
+      <View style={[styles.wrap, style]}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title} testID="screen-title">{title}</Text>
+          {subtitle ? <Text style={styles.sub}>{subtitle}</Text> : null}
+        </View>
 
-      {right}
-    </View>
+        {right}
+      </View>
+      <Asse style={styles.assettina} />
+    </>
   );
 }
 
@@ -50,8 +57,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderStrong,
     backgroundColor: COLORS.surface,
     gap: 12,
   },
@@ -60,49 +65,40 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 24,
     paddingBottom: 28,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderStrong,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
   },
 
-  homeLogo: {
-    width: '95%',
-    height: 90,
-    marginBottom: 18,
-  },
+  homeLogo: { width: '95%', height: 90, marginBottom: 18 },
 
   homeAddress: {
     width: '100%',
-    fontFamily: FONTS.mono,
-    fontSize: 18,
-    lineHeight: 26,
-    color: COLORS.onSurface,
+    ...TESTO.cassetto,
+    fontSize: 13,
+    lineHeight: 22,
+    color: COLORS.onSurfaceSecondary,
     textAlign: 'center',
     marginBottom: 18,
   },
 
-  homeToggle: {
-    width: '100%',
-    alignItems: 'flex-end',
-  },
+  homeToggle: { width: '100%', alignItems: 'flex-end' },
 
+  // Fraunces porta già il suo peso: niente fontWeight, su Android non
+  // funziona con i caratteri personalizzati.
   title: {
-    fontFamily: FONTS.display,
-    fontSize: 24,
-    fontWeight: '900',
+    fontFamily: FONTS.displayForte,
+    fontSize: 26,
     color: COLORS.onSurface,
-    letterSpacing: 4,
-    textTransform: 'uppercase',
+    letterSpacing: -0.4,
+    textTransform: 'none',
   },
 
   sub: {
-    fontFamily: FONTS.mono,
-    fontSize: 14,
-    color: COLORS.onSurface,
-    opacity: 0.75,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
+    ...TESTO.cassetto,
+    color: COLORS.onSurfaceSecondary,
     marginTop: 6,
   },
+
+  // L'asse sostituisce il filo grigio sotto l'intestazione.
+  assettina: { height: 3, width: '100%' },
 });
