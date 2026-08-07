@@ -36,7 +36,23 @@ export const PALETTE = {
   minio: '#A84432',
   ottone: '#C9A227',
   acciaio: '#9AA0A6',
+  acciaioBordo: '#5E6469',
+  acciaioTaglio: '#3C4044',
 } as const;
+
+// Le tappe della venatura dell'asse: cinque gradi dal colpo di luce in alto
+// all'ombra in basso. Stanno qui e non dentro Asse.tsx perche' chi vorra'
+// ritoccare il legno deve trovarli insieme al resto della tavolozza.
+// L'"as const" serve anche a expo-linear-gradient, che vuole una tupla.
+export const VENATURA = [
+  '#EAA066',
+  '#DD9457',
+  '#C9814C',
+  '#B06D3F',
+  PALETTE.legnoScuro,
+] as const;
+
+export const VENATURA_TAPPE = [0, 0.26, 0.58, 0.85, 1] as const;
 
 // --- I token semantici ---------------------------------------------------
 // I nomi sono quelli che le schermate già usano: cambiano solo i valori.
