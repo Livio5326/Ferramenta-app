@@ -99,8 +99,11 @@ export default function RootLayout() {
   const [fontsLoaded, fontsError] = useIconFonts();
   // Caratteri del restyling (Fraunces, Archivo, IBM Plex Mono): usati dal
   // Task 3 nei token del tema. Attesi qui insieme alle icone perché
-  // _layout.tsx già blocca il rendering finché queste non sono pronte.
-  const [caratteriPronti] = useFonts({
+  // _layout.tsx già blocca il rendering finché queste non sono pronte, ma
+  // l'attesa ha una via d'uscita: se il caricamento fallisce (errore),
+  // l'app parte comunque e degrada al carattere di sistema, invece di
+  // restare bloccata su schermo bianco.
+  const [caratteriPronti, erroreCaratteri] = useFonts({
     Fraunces_700Bold: require('../assets/fonts/Fraunces_700Bold.ttf'),
     Fraunces_900Black: require('../assets/fonts/Fraunces_900Black.ttf'),
     Archivo_400Regular: require('../assets/fonts/Archivo_400Regular.ttf'),
@@ -109,7 +112,7 @@ export default function RootLayout() {
     IBMPlexMono_500Medium: require('../assets/fonts/IBMPlexMono_500Medium.ttf'),
   });
 
-  if ((!fontsLoaded && !fontsError) || !caratteriPronti) {
+  if ((!fontsLoaded && !fontsError) || (!caratteriPronti && !erroreCaratteri)) {
     return null;
   }
 
