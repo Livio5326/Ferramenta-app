@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from "expo-router";
 import { router } from "expo-router";
-import { COLORS, FONTS, fmtEUR } from "@/src/theme";
+import { COLORS, FONTS, TESTO, fmtEUR } from "@/src/theme";
 import { api } from "@/src/api";
 
 import AppButton from '@/src/components/AppButton';
@@ -86,7 +86,7 @@ export default function Stats() {
       >
         <View style={styles.heroCard}>
           <Text style={styles.heroLabel}>VALORE VENDITA POTENZIALE</Text>
-          <Text style={styles.heroValue}>
+          <Text style={[styles.heroValue, TESTO.cifra]}>
             {fmtEUR(stats?.valore_vendita_potenziale || 0)}
           </Text>
           <Text style={styles.heroSub}>
@@ -131,10 +131,10 @@ export default function Stats() {
             onPress={() => router.push("/vendite-oggi")}
           >
             <Text style={styles.clickableSmallCardLabel}>VENDITE DEL GIORNO</Text>
-            <Text style={styles.clickableSmallCardValue}>
+            <Text style={[styles.clickableSmallCardValue, TESTO.cifra]}>
               {fmtEUR(stats?.vendite_giorno || 0)}
             </Text>
-            <Text style={styles.clickableSmallCardFooter}>
+            <Text style={[styles.clickableSmallCardFooter, TESTO.cifra]}>
               {stats?.numero_vendite_giorno || 0} transazioni
             </Text>
           </AppButton>
@@ -364,9 +364,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     justifyContent: "center",
-    backgroundColor: "#1F4D36",
+    backgroundColor: COLORS.success,
     borderWidth: 2,
-    borderColor: "#1F4D36",
+    borderColor: COLORS.success,
   },
 
   smallCardLabel: {
@@ -395,23 +395,25 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 12,
     letterSpacing: 2,
-    color: "#FFFFFF",
+    color: COLORS.onSuccess,
     textTransform: "uppercase",
     marginBottom: 12,
   },
 
+  // fontWeight tolto: con TESTO.cifra applicato in JSX la fontFamily diventa
+  // il monospace del tema, e su Android i pesi non si sintetizzano insieme
+  // a una fontFamily esplicita (vedi il commento in src/theme.ts).
   clickableSmallCardValue: {
     fontSize: 30,
-    fontWeight: "900",
-    color: "#FFFFFF",
+    color: COLORS.onSuccess,
   },
 
   clickableSmallCardFooter: {
     marginTop: 10,
     fontFamily: FONTS.mono,
     fontSize: 13,
-    color: "#FFFFFF",
-  },  
+    color: COLORS.onSuccess,
+  },
 
   header: {
     paddingHorizontal: 18,
@@ -422,14 +424,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "900",
-    color: "#2F2A22",
+    color: COLORS.onSurface,
     letterSpacing: 0.5,
   },
 
   subtitle: {
     marginTop: 6,
     fontSize: 14,
-    color: "#6F6252",
+    color: COLORS.onSurfaceSecondary,
     lineHeight: 20,
   },
 
@@ -455,10 +457,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
+  // fontFamily e fontWeight tolti: TESTO.cifra applicato in JSX porta la
+  // propria fontFamily monospace, e su Android i pesi non si sintetizzano
+  // insieme a una fontFamily esplicita (vedi il commento in src/theme.ts).
   heroValue: {
-    fontFamily: FONTS.display,
     fontSize: 30,
-    fontWeight: "900",
     color: COLORS.success,
   },
 
@@ -506,23 +509,34 @@ const styles = StyleSheet.create({
     color: COLORS.brandTertiary,
   },
 
+  // fontFamily/fontWeight tolti: StatCard.value è sempre un importo o un
+  // conteggio (mai testo libero), quindi prende TESTO.cifra qui alla radice
+  // dello stile. La fontFamily del tema arriva da lì; fontWeight va tolto
+  // perché su Android non si sintetizza insieme a una fontFamily esplicita
+  // (vedi il commento in src/theme.ts).
   statValue: {
-    fontFamily: FONTS.display,
     fontSize: 23,
-    fontWeight: "900",
     color: COLORS.onSurface,
     marginTop: 10,
+    ...TESTO.cifra,
   },
 
   statValueHighlight: {
     color: COLORS.onSurfaceInverse,
   },
 
+  // statFooter è condiviso da tutte le StatCard: nella maggior parte dei
+  // casi è un'unità senza cifre ("prodotti", "unità", "fornitori"), ma per
+  // "Vendite del mese" contiene un conteggio ("N transazioni"). Non c'è un
+  // modo per distinguere i due casi senza aggiungere una prop a StatCard —
+  // fuori scope per un task di soli colori/font — quindi TESTO.cifra va
+  // sull'intero stile: sul testo senza cifre l'effetto è innocuo (cambia
+  // solo il peso del mono, da regular a medium).
   statFooter: {
-    fontFamily: FONTS.mono,
     fontSize: 10,
     color: COLORS.onSurfaceSecondary,
     marginTop: 8,
+    ...TESTO.cifra,
   },
 
   statFooterHighlight: {
@@ -671,11 +685,13 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
 
+  // fontFamily/fontWeight tolti: è sempre un importo o un conteggio, prende
+  // TESTO.cifra qui. fontWeight via perché su Android non si sintetizza
+  // insieme a una fontFamily esplicita (vedi il commento in src/theme.ts).
   categoryCount: {
-    fontFamily: FONTS.mono,
     fontSize: 12,
     color: COLORS.brand,
-    fontWeight: "900",
+    ...TESTO.cifra,
   },
 
   bar: {
@@ -727,17 +743,19 @@ const styles = StyleSheet.create({
     color: COLORS.onSurface,
   },
 
+  // Contiene sempre pezzi venduti e/o quantità a magazzino: TESTO.cifra qui.
   productStatMeta: {
     marginTop: 4,
-    fontFamily: FONTS.mono,
     fontSize: 12,
     color: COLORS.onSurfaceSecondary,
+    ...TESTO.cifra,
   },
 
+  // fontWeight tolto per lo stesso motivo di categoryCount qui sopra.
   productStatValue: {
     fontSize: 16,
-    fontWeight: "900",
     color: COLORS.brand,
+    ...TESTO.cifra,
   },
 
   emptyStatBox: {

@@ -21,11 +21,8 @@ const DA_MIGRARE = [
   'app/(tabs)/catalogo-vendita.tsx',
   'app/(tabs)/catalogo.tsx',
   'app/(tabs)/fornitori.tsx',
-  'app/(tabs)/index.tsx',
-  'app/(tabs)/statistiche.tsx',
   'app/cliente/piu-richiesti.tsx',
   'app/scanner.tsx',
-  'app/vendite-oggi.tsx',
 ];
 
 function* file(cartella) {

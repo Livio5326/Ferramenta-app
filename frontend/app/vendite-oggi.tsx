@@ -15,22 +15,16 @@ import {
 } from 'react-native';
 import { useFocusEffect } from "@react-navigation/native";
 import { api } from "@/src/api";
+import { COLORS, FONTS, TESTO } from "@/src/theme";
 
 import AppButton from '@/src/components/AppButton';
-const COLORS = {
-  bg: "#F4EFE6",
-  card: "#EFE6D8",
-  brown: "#5A341F",
-  brown2: "#9A633B",
-  green: "#2F6B45",
-  text: "#2A211B",
-  muted: "#7B6A5D",
-  border: "#A06A43",
-};
 
-const FONTS = {
-  mono: "monospace",
-};
+// La COLORS e la FONTS locali di questa schermata (bg/card/brown/green/...)
+// sono state smontate: erano una tavolozza scritta a mano che oscurava
+// quella del tema. Ora si importano i token veri da src/theme e i vecchi
+// usi sono stati ricondotti ai nomi giusti (bg->surface, card->surfaceSecondary,
+// brown->brandSecondary, green->success, text->onSurface, muted->onSurfaceSecondary,
+// border->brandPrimary). La chiave "brown2" non era mai usata ed è stata tolta.
 
 function fmtEUR(value: number) {
   return new Intl.NumberFormat("it-IT", {
@@ -112,7 +106,7 @@ export default function VenditeOggiScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <AppButton style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={26} color={COLORS.text} />
+          <Feather name="arrow-left" size={26} color={COLORS.onSurface} />
         </AppButton>
 
         <View>
@@ -123,8 +117,8 @@ export default function VenditeOggiScreen() {
 
       <View style={styles.summaryCard}>
         <Text style={styles.summaryLabel}>TOTALE GIORNATA</Text>
-        <Text style={styles.summaryValue}>{fmtEUR(totaleGiorno)}</Text>
-        <Text style={styles.summaryMeta}>
+        <Text style={[styles.summaryValue, TESTO.cifra]}>{fmtEUR(totaleGiorno)}</Text>
+        <Text style={[styles.summaryMeta, TESTO.cifra]}>
           {vendite.length} transazioni · {pezziGiorno} pezzi
         </Text>
       </View>
@@ -152,17 +146,17 @@ export default function VenditeOggiScreen() {
                 <Text style={styles.saleTime} numberOfLines={1}>
                   {item.prodotto_titolo || "Prodotto venduto"}
                 </Text>
-                <Text style={styles.saleInfo}>
+                <Text style={[styles.saleInfo, TESTO.cifra]}>
                   {fmtOra(item.created_at)} · {item.articoli} articoli · {item.pezzi} pezzi
                 </Text>
               </View>
 
-              <Text style={styles.saleTotal}>{fmtEUR(item.total)}</Text>
+              <Text style={[styles.saleTotal, TESTO.cifra]}>{fmtEUR(item.total)}</Text>
               <AppButton
                 style={styles.deleteSaleBtn}
                 onPress={() => eliminaVendita(item.id)}
               >
-                <Feather name="trash-2" size={20} color="#A94438" />
+                <Feather name="trash-2" size={20} color={COLORS.error} />
               </AppButton>
             </View>
           )}
@@ -175,7 +169,7 @@ export default function VenditeOggiScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.bg,
+    backgroundColor: COLORS.surface,
   },
   header: {
     flexDirection: "row",
@@ -191,7 +185,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#E9DDCD",
+    backgroundColor: COLORS.surfaceSecondary,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -199,13 +193,13 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 32,
     fontWeight: "900",
-    color: COLORS.text,
+    color: COLORS.onSurface,
     letterSpacing: 2,
   },
   subtitle: {
     marginTop: 4,
     fontSize: 16,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
   },
   summaryCard: {
     marginHorizontal: 24,
@@ -215,26 +209,28 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.card,
+    borderColor: COLORS.brandPrimary,
+    backgroundColor: COLORS.surfaceSecondary,
   },
   summaryLabel: {
     fontFamily: FONTS.mono,
     fontSize: 13,
     letterSpacing: 2.5,
-    color: COLORS.text,
+    color: COLORS.onSurface,
     marginBottom: 8,
   },
+  // fontWeight tolto: con TESTO.cifra applicato in JSX la fontFamily diventa
+  // il monospace del tema, e su Android i pesi non si sintetizzano insieme
+  // a una fontFamily esplicita (vedi il commento in src/theme.ts).
   summaryValue: {
     fontSize: 32,
-    fontWeight: "900",
-    color: COLORS.green,
+    color: COLORS.success,
   },
   summaryMeta: {
     marginTop: 8,
     fontFamily: FONTS.mono,
     fontSize: 13,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
   },
   deleteSaleBtn: {
     width: 36,
@@ -250,7 +246,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   saleCard: {
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 18,
     borderWidth: 2,
     borderColor: "rgba(160,106,67,0.35)",
@@ -263,25 +259,25 @@ const styles = StyleSheet.create({
   saleLeft: {
     flex: 1,
     minWidth: 0,
-    maxWidth: "71%", 
+    maxWidth: "71%",
    },
   saleTime: {
     fontSize: 18,
-    fontWeight: "700",  
-    color: COLORS.text,
+    fontWeight: "700",
+    color: COLORS.onSurface,
   },
   saleInfo: {
     marginTop: 6,
     fontFamily: FONTS.mono,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
     fontSize: 12,
   },
+  // fontWeight tolto per lo stesso motivo di summaryValue qui sopra.
   saleTotal: {
     fontSize: 18,
     width: 90,
     textAlign: "right",
-    fontWeight: "900",
-    color: COLORS.brown,
+    color: COLORS.brandSecondary,
   },
   center: {
     alignItems: "center",
@@ -290,24 +286,24 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
   },
   emptyCard: {
     margin: 24,
     padding: 24,
     borderRadius: 20,
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.surfaceSecondary,
     borderWidth: 1,
     borderColor: "rgba(160,106,67,0.35)",
   },
   emptyTitle: {
     fontSize: 22,
     fontWeight: "900",
-    color: COLORS.text,
+    color: COLORS.onSurface,
   },
   emptyText: {
     marginTop: 8,
     fontSize: 15,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
   },
 });

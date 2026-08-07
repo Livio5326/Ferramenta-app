@@ -14,11 +14,12 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useAuth } from '@/src/auth';
-import { COLORS, FONTS, fmtEUR } from '@/src/theme';
+import { COLORS, FONTS, RADIUS, TESTO, fmtEUR } from '@/src/theme';
 import { useAppStore } from '@/src/store';
 import { api } from '@/src/api';
 
 import AppButton from '@/src/components/AppButton';
+import { Asse } from '@/src/components/materiale/Asse';
 const WOOD_BG = require('../../assets/images/wood-bg.jpg');
 
 export default function Dashboard() {
@@ -116,7 +117,7 @@ return (
             onPress={() => router.push('/impostazioni' as any)}
             testID="settings-btn"
           >
-            <Feather name="settings" size={22} color="#FFFFFF" />
+            <Feather name="settings" size={22} color={COLORS.onSurfaceInverse} />
           </AppButton>
 
   <View style={styles.bannerInner}>
@@ -167,7 +168,7 @@ return (
             <View style={[styles.bentoCard, styles.bentoCardLg]} testID="stat-valore">
               <Text style={styles.statLabel}>VALORE MAGAZZINO</Text>
               <Text style={styles.statValue}>{stats ? fmtEUR(stats.valore_magazzino || 0) : '—'}</Text>
-              <Text style={styles.statFoot}>
+              <Text style={[styles.statFoot, stats && TESTO.cifra]}>
                 {stats ? `${stats.total_pieces || 0} PEZZI · ${stats.total_products || 0} REF` : 'DATI NON DISPONIBILI'}
               </Text>
             </View>
@@ -256,11 +257,15 @@ return (
   ].map((item) => (
     <AppButton
       key={item.titolo}
-      style={styles.clientTile}
+      style={styles.clientTileWrap}
       onPress={() => router.push(item.pagina as any)}
     >
-      <Text style={styles.clientTileText}>{item.titolo}</Text>
-      <Text style={styles.clientTileSub}>{item.descrizione}</Text>
+      <Asse viti style={styles.clientTileAsse}>
+        <View style={styles.clientTileCaption}>
+          <Text style={styles.clientTileCaptionText}>{item.titolo}</Text>
+          <Text style={styles.clientTileCaptionSub}>{item.descrizione}</Text>
+        </View>
+      </Asse>
     </AppButton>
   ))}
 </View>
@@ -422,12 +427,12 @@ loginButton: {
   paddingVertical: 11,
   borderRadius: 12,
   borderWidth: 1,
-  borderColor: '#FFFFFF',
+  borderColor: COLORS.onBrandPrimary,
   alignItems: 'center',
 },
 
 loginButtonText: {
-  color: '#FFFFFF',
+  color: COLORS.onBrandPrimary,
   fontFamily: FONTS.mono,
   fontSize: 12,
   fontWeight: '800',
@@ -440,7 +445,10 @@ loginButtonText: {
   bentoCard: { flex: 1, padding: 16, backgroundColor: COLORS.surfaceSecondary, borderRightWidth: 2, borderColor: COLORS.borderStrong },
   bentoCardLg: { minHeight: 110 },
   statLabel: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceSecondary, letterSpacing: 1.5 },
-  statValue: { fontFamily: FONTS.display, fontSize: 26, fontWeight: '900', color: COLORS.onSurface, marginTop: 8, letterSpacing: -0.5 },
+  // fontWeight tolto: TESTO.cifra impone la propria fontFamily (mono) e su
+  // Android i pesi non si sintetizzano insieme a una fontFamily esplicita
+  // (vedi il commento in src/theme.ts).
+  statValue: { fontSize: 26, color: COLORS.onSurface, marginTop: 8, letterSpacing: -0.5, ...TESTO.cifra },
   statFoot: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.onSurfaceSecondary, marginTop: 6, letterSpacing: 1 },
   actionsGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   action: {
@@ -506,6 +514,49 @@ clientTile: {
 clientTileWide: {
   width: '100%',
   minHeight: 82,
+},
+
+// I riquadri dei reparti (PROMO, VERNICI, GIARDINO...) sono gli ingressi ai
+// reparti: qui l'asse di legno sostituisce il fondo pieno. Il testo sta in
+// una fascia opaca in fondo (COLORS.surfaceInverse) invece che direttamente
+// sopra il legno: la venatura va dal chiaro (in alto) allo scuro (in basso)
+// e un solo colore di testo non regge il contrasto su tutta la gamma —
+// verificato: onBrandPrimary sulla tappa più chiara della venatura scende a
+// 1,89:1. La fascia opaca garantisce 11,80:1 ovunque (stesso accoppiamento
+// di Scheda variante="noce"). Le schede SERVIZI sotto restano sul fondo
+// pieno: non sono ingressi ai reparti.
+clientTileWrap: {
+  width: '48%',
+  minHeight: 105,
+},
+
+clientTileAsse: {
+  flex: 1,
+  justifyContent: 'flex-end',
+},
+
+clientTileCaption: {
+  backgroundColor: COLORS.surfaceInverse,
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+  borderBottomLeftRadius: RADIUS.md,
+  borderBottomRightRadius: RADIUS.md,
+},
+
+clientTileCaptionText: {
+  fontFamily: FONTS.mono,
+  fontSize: 15,
+  letterSpacing: 2,
+  color: COLORS.onSurfaceInverse,
+  fontWeight: '800',
+},
+
+clientTileCaptionSub: {
+  fontFamily: FONTS.mono,
+  fontSize: 11,
+  lineHeight: 16,
+  color: COLORS.onSurfaceInverse,
+  marginTop: 6,
 },
 
 clientTileText: {
