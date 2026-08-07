@@ -152,7 +152,7 @@ export default function SinonimiRicercaScreen() {
             onPress={save}
             disabled={saving}
           >
-            <Feather name="save" size={18} color="#FFFFFF" />
+            <Feather name="save" size={18} color={COLORS.onBrandPrimary} />
             <Text style={styles.saveBtnText}>Salva sinonimo</Text>
           </AppButton>
         </View>
@@ -173,7 +173,7 @@ export default function SinonimiRicercaScreen() {
                 </AppButton>
 
                 <AppButton style={styles.deleteBtn} onPress={() => remove(item.termine)}>
-                  <Feather name="trash-2" size={16} color="#FFFFFF" />
+                  <Feather name="trash-2" size={16} color={COLORS.onError} />
                 </AppButton>
               </View>
             ))
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 12,
     fontWeight: '900',
-    color: '#FFFFFF',
+    color: COLORS.onBrandPrimary,
   },
   emptyText: {
     color: COLORS.onSurfaceSecondary,
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#B3261E',
+    backgroundColor: COLORS.error,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 10,

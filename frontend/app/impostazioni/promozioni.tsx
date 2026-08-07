@@ -14,6 +14,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Feather } from '@expo/vector-icons';
 import { api } from '@/src/api';
 import { COLORS, FONTS } from '@/src/theme';
+import { Scheda } from '@/src/components/Scheda';
 import * as FileSystem from "expo-file-system/legacy";
 import * as XLSX from "xlsx";
 
@@ -475,7 +476,7 @@ export default function PromozioniScreen() {
           style={styles.importPromoToggleBtn}
           onPress={() => setImportPromoOpen(prev => !prev)}
         >
-          <Feather name={importPromoOpen ? "x-circle" : "upload-cloud"} size={18} color="#FFFFFF" />
+          <Feather name={importPromoOpen ? "x-circle" : "upload-cloud"} size={18} color={COLORS.onBrandPrimary} />
           <Text style={styles.importPromoToggleText}>
             {importPromoOpen ? 'Chiudi' : 'Importa promozione'}
           </Text>
@@ -483,7 +484,7 @@ export default function PromozioniScreen() {
 
         {importPromoOpen && (
           <>
-        <View style={styles.card}>
+        <Scheda style={styles.card}>
           <Text style={styles.cardTitle}>Importa promozione</Text>
           <Text style={styles.cardText}>
             Carica un file CSV o Excel con codice prodotto o barcode e prezzo promo.
@@ -543,10 +544,10 @@ export default function PromozioniScreen() {
           </View>
 
           {loading && <ActivityIndicator style={{ marginTop: 16 }} />}
-        </View>
+        </Scheda>
 
         {preview && (
-          <View style={styles.card}>
+          <Scheda style={styles.card}>
             <Text style={styles.cardTitle}>Risultato anteprima</Text>
 
             <View style={styles.statRow}>
@@ -569,11 +570,11 @@ export default function PromozioniScreen() {
               <Text style={styles.statLabel}>Prezzo mancante/non valido</Text>
               <Text style={styles.statValue}>{preview.prezzo_mancante_o_non_valido}</Text>
             </View>
-          </View>
+          </Scheda>
         )}
 
         {preview?.righe?.length ? (
-          <View style={styles.card}>
+          <Scheda style={styles.card}>
             <Text style={styles.cardTitle}>Prime righe aggiornabili</Text>
             {preview.righe.filter(r => r.stato === 'aggiornabile').slice(0, 10).map((r, index) => (
               <View key={`${r.riga}-${index}`} style={styles.productRow}>
@@ -584,11 +585,11 @@ export default function PromozioniScreen() {
                 <Text style={styles.promoPrice}>Promo: {fmtEUR(r.prezzo_promo)}</Text>
               </View>
             ))}
-          </View>
+          </Scheda>
         ) : null}
 
         {righeProblematiche.length > 0 && (
-          <View style={styles.card}>
+          <Scheda style={styles.card}>
             <Text style={styles.cardTitle}>Righe da controllare</Text>
             {righeProblematiche.map((r, index) => {
               const codicePromo = r.codice_prodotto || '';
@@ -637,12 +638,12 @@ export default function PromozioniScreen() {
                 </View>
               );
             })}
-          </View>
+          </Scheda>
         )}
           </>
         )}
 
-        <View style={styles.card}>
+        <Scheda style={styles.card}>
           <Text style={styles.cardTitle}>Promozioni salvate</Text>
           <Text style={styles.cardText}>
             Seleziona una promozione per vedere prodotti collegati, stato e prezzi.
@@ -699,7 +700,12 @@ export default function PromozioniScreen() {
                     p.attiva ? styles.promoStatusActive : styles.promoStatusInactive,
                   ]}
                 >
-                  <Text style={styles.promoStatusText}>
+                  <Text
+                    style={[
+                      styles.promoStatusText,
+                      p.attiva ? styles.promoStatusTextActive : styles.promoStatusTextInactive,
+                    ]}
+                  >
                     {p.attiva ? 'ATTIVA' : 'DISATTIVATA'}
                   </Text>
                 </View>
@@ -725,7 +731,7 @@ export default function PromozioniScreen() {
               })}
 
               {selectedPromoNome && (
-                <View style={styles.card}>
+                <Scheda style={styles.card}>
                   <Text style={styles.cardTitle}>{selectedPromoNome}</Text>
                   <Text style={styles.cardText}>
                     Prodotti contenuti nella promozione selezionata.
@@ -785,11 +791,11 @@ export default function PromozioniScreen() {
                         </Text>
                       </View>
                     ))}
-                </View>
+                </Scheda>
               )}
             </>
           )}
-        </View>
+        </Scheda>
 
       </ScrollView>
     </SafeAreaView>
@@ -849,7 +855,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 13,
     fontWeight: '900',
-    color: '#FFFFFF',
+    color: COLORS.onBrandPrimary,
     letterSpacing: 0.4,
   },
 
@@ -935,7 +941,7 @@ confirmButton: {
 
 dangerButton: {
   flex: 1,
-  backgroundColor: '#8B1E1E',
+  backgroundColor: COLORS.error,
   paddingVertical: 14,
   paddingHorizontal: 12,
   borderRadius: 14,
@@ -1012,19 +1018,29 @@ promoStatusBadge: {
 },
 
 promoStatusActive: {
-  backgroundColor: '#1F7A3A',
+  // Il colore che segnala una promozione in corso è l'ottone del sito:
+  // è il ruolo che COLORS.warning ha ovunque nell'app.
+  backgroundColor: COLORS.warning,
 },
 
 promoStatusInactive: {
-  backgroundColor: '#6B7280',
+  backgroundColor: COLORS.onSurfaceSecondary,
 },
 
 promoStatusText: {
   fontFamily: FONTS.mono,
   fontSize: 10,
   fontWeight: '900',
-  color: '#FFFFFF',
   letterSpacing: 0.6,
+},
+
+promoStatusTextActive: {
+  // Il bianco sull'ottone non si legge: testo scuro, come da tema.
+  color: COLORS.onWarning,
+},
+
+promoStatusTextInactive: {
+  color: COLORS.onSurfaceInverse,
 },
 
 promoStatsRow: {
@@ -1081,7 +1097,7 @@ problemRow: {
   marginTop: 10,
   borderRadius: 16,
   borderWidth: 1,
-  borderColor: '#8B1E1E',
+  borderColor: COLORS.error,
   backgroundColor: 'rgba(139, 30, 30, 0.08)',
   padding: 12,
   gap: 5,

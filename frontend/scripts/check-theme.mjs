@@ -24,10 +24,6 @@ const DA_MIGRARE = [
   'app/(tabs)/index.tsx',
   'app/(tabs)/statistiche.tsx',
   'app/cliente/piu-richiesti.tsx',
-  'app/impostazioni.tsx',
-  'app/impostazioni/promozioni.tsx',
-  'app/impostazioni/regole-prezzi.tsx',
-  'app/impostazioni/sinonimi-ricerca.tsx',
   'app/scanner.tsx',
   'app/vendite-oggi.tsx',
 ];

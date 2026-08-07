@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   title: { fontFamily: FONTS.display, fontSize: 22, fontWeight: "900", color: COLORS.onSurface },
   subtitle: { marginTop: 4, fontSize: 13, color: COLORS.onSurfaceSecondary },
-  infoBox: { padding: 14, borderRadius: 14, backgroundColor: "#EFE5D6", marginBottom: 14 },
+  infoBox: { padding: 14, borderRadius: 14, backgroundColor: COLORS.surfaceSecondary, marginBottom: 14 },
   infoText: { fontSize: 13, lineHeight: 19, color: COLORS.onSurfaceSecondary },
   loader: { marginVertical: 40 },
   card: {
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   inputWrap: { flexDirection: "row", alignItems: "center", gap: 5 },
   input: {
     width: 72, paddingVertical: 9, paddingHorizontal: 10, borderRadius: 10,
-    borderWidth: 1, borderColor: COLORS.border, backgroundColor: "#FFFFFF",
+    borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surface,
     textAlign: "right", fontSize: 16, fontWeight: "800", color: COLORS.onSurface,
   },
   percent: { fontSize: 15, fontWeight: "800", color: COLORS.onSurfaceSecondary },
@@ -192,6 +192,6 @@ const styles = StyleSheet.create({
     minHeight: 52, borderRadius: 14, backgroundColor: COLORS.brand,
     alignItems: "center", justifyContent: "center",
   },
-  saveText: { color: "#FFFFFF", fontSize: 14, fontWeight: "900", letterSpacing: 0.8 },
+  saveText: { color: COLORS.onBrandPrimary, fontSize: 14, fontWeight: "900", letterSpacing: 0.8 },
   disabled: { opacity: 0.55 },
 });

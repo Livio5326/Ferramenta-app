@@ -6,6 +6,7 @@ import { COLORS, FONTS } from '@/src/theme';
 import { useAuth } from '@/src/auth';
 
 import AppButton from '@/src/components/AppButton';
+import { Scheda } from '@/src/components/Scheda';
 export default function ImpostazioniScreen() {
   const router = useRouter();
   const { user } = useAuth();
@@ -26,58 +27,18 @@ export default function ImpostazioniScreen() {
         </View>
 
         <AppButton
-          style={styles.optionCard}
+          style={styles.cardWrap}
           onPress={() => router.push('/profile')}
         >
-          <View style={styles.optionIcon}>
-            <Feather name="user" size={22} color="#FFFFFF" />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.optionTitle}>Profilo</Text>
-            <Text style={styles.optionText}>
-              Gestisci account, password e sessione.
-            </Text>
-          </View>
-
-          <Feather
-            name="chevron-right"
-            size={22}
-            color={COLORS.onSurfaceSecondary}
-          />
-        </AppButton>
-
-        {isAdmin && (
-          <AppButton
-            style={styles.optionCard}
-            onPress={() => router.push('/impostazioni/regole-prezzi' as any)}
-          >
+          <Scheda style={styles.optionCard}>
             <View style={styles.optionIcon}>
-              <Feather name="percent" size={22} color="#FFFFFF" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.optionTitle}>Regole prezzi</Text>
-              <Text style={styles.optionText}>
-                Modifica i ricarichi e ricalcola rapidamente i prezzi di vendita.
-              </Text>
-            </View>
-            <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
-          </AppButton>
-        )}
-
-        {isAdmin && (
-          <AppButton
-            style={styles.optionCard}
-            onPress={() => router.push('/users' as any)}
-          >
-            <View style={styles.optionIcon}>
-              <Feather name="users" size={22} color="#FFFFFF" />
+              <Feather name="user" size={22} color={COLORS.onBrandPrimary} />
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text style={styles.optionTitle}>Gestione utenti</Text>
+              <Text style={styles.optionTitle}>Profilo</Text>
               <Text style={styles.optionText}>
-                Crea e gestisci gli utenti del gestionale.
+                Gestisci account, password e sessione.
               </Text>
             </View>
 
@@ -86,61 +47,113 @@ export default function ImpostazioniScreen() {
               size={22}
               color={COLORS.onSurfaceSecondary}
             />
+          </Scheda>
+        </AppButton>
+
+        {isAdmin && (
+          <AppButton
+            style={styles.cardWrap}
+            onPress={() => router.push('/impostazioni/regole-prezzi' as any)}
+          >
+            <Scheda style={styles.optionCard}>
+              <View style={styles.optionIcon}>
+                <Feather name="percent" size={22} color={COLORS.onBrandPrimary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.optionTitle}>Regole prezzi</Text>
+                <Text style={styles.optionText}>
+                  Modifica i ricarichi e ricalcola rapidamente i prezzi di vendita.
+                </Text>
+              </View>
+              <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
+            </Scheda>
+          </AppButton>
+        )}
+
+        {isAdmin && (
+          <AppButton
+            style={styles.cardWrap}
+            onPress={() => router.push('/users' as any)}
+          >
+            <Scheda style={styles.optionCard}>
+              <View style={styles.optionIcon}>
+                <Feather name="users" size={22} color={COLORS.onBrandPrimary} />
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.optionTitle}>Gestione utenti</Text>
+                <Text style={styles.optionText}>
+                  Crea e gestisci gli utenti del gestionale.
+                </Text>
+              </View>
+
+              <Feather
+                name="chevron-right"
+                size={22}
+                color={COLORS.onSurfaceSecondary}
+              />
+            </Scheda>
           </AppButton>
         )}
 
         <AppButton
-          style={styles.optionCard}
+          style={styles.cardWrap}
           onPress={() => router.push('/impostazioni/sinonimi-ricerca' as any)}
         >
-          <View style={styles.optionIcon}>
-            <Feather name="search" size={22} color="#FFFFFF" />
-          </View>
+          <Scheda style={styles.optionCard}>
+            <View style={styles.optionIcon}>
+              <Feather name="search" size={22} color={COLORS.onBrandPrimary} />
+            </View>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.optionTitle}>Sinonimi ricerca</Text>
-            <Text style={styles.optionText}>
-              Aggiungi parole alternative per trovare meglio i prodotti nel Catalogo.
-            </Text>
-          </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.optionTitle}>Sinonimi ricerca</Text>
+              <Text style={styles.optionText}>
+                Aggiungi parole alternative per trovare meglio i prodotti nel Catalogo.
+              </Text>
+            </View>
 
-          <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
+            <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
+          </Scheda>
         </AppButton>
 
         <AppButton
-          style={styles.optionCard}
+          style={styles.cardWrap}
           onPress={() => router.push('/impostazioni/promozioni' as any)}
         >
-          <View style={styles.optionIcon}>
-            <Feather name="tag" size={22} color="#FFFFFF" />
-          </View>
+          <Scheda style={styles.optionCard}>
+            <View style={styles.optionIcon}>
+              <Feather name="tag" size={22} color={COLORS.onBrandPrimary} />
+            </View>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.optionTitle}>Promozioni</Text>
-            <Text style={styles.optionText}>
-              Importa, attiva, disattiva e controlla le promozioni dei cataloghi.
-            </Text>
-          </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.optionTitle}>Promozioni</Text>
+              <Text style={styles.optionText}>
+                Importa, attiva, disattiva e controlla le promozioni dei cataloghi.
+              </Text>
+            </View>
 
-          <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
+            <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
+          </Scheda>
         </AppButton>
-       <AppButton
-         style={styles.optionCard}
-         onPress={() => router.push('/liste-standard' as any)}
-       >
-         <View style={styles.optionIcon}>
-           <Feather name="list" size={22} color="#FFFFFF" />
-         </View>
+        <AppButton
+          style={styles.cardWrap}
+          onPress={() => router.push('/liste-standard' as any)}
+        >
+          <Scheda style={styles.optionCard}>
+            <View style={styles.optionIcon}>
+              <Feather name="list" size={22} color={COLORS.onBrandPrimary} />
+            </View>
 
-         <View style={{ flex: 1 }}>
-           <Text style={styles.optionTitle}>Liste standard</Text>
-           <Text style={styles.optionText}>
-             {"Modifica categorie, fornitori e marche usate nell'app."}
-           </Text>
-         </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.optionTitle}>Liste standard</Text>
+              <Text style={styles.optionText}>
+                {"Modifica categorie, fornitori e marche usate nell'app."}
+              </Text>
+            </View>
 
-         <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
-       </AppButton>
+            <Feather name="chevron-right" size={22} color={COLORS.onSurfaceSecondary} />
+          </Scheda>
+        </AppButton>
       </ScrollView>
     </SafeAreaView>
   );
@@ -183,16 +196,14 @@ const styles = StyleSheet.create({
     color: COLORS.onSurfaceSecondary,
     fontSize: 13,
   },
-  optionCard: {
+  cardWrap: {
     marginBottom: 12,
+  },
+  optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     backgroundColor: COLORS.surfaceSecondary,
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
   },
   optionIcon: {
     width: 46,
