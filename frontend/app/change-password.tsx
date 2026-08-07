@@ -16,7 +16,7 @@ import { PasswordInput } from '@/src/components/PasswordInput';
 import { COLORS } from '@/src/theme';
 import BackButton from '@/src/components/BackButton';
 
-import AppButton from '@/src/components/AppButton';
+import AppButton, { TESTO_BOTTONE } from '@/src/components/AppButton';
 export default function ChangePasswordScreen() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
@@ -105,11 +105,12 @@ export default function ChangePasswordScreen() {
       />
 
       <AppButton
+        variante="pieno"
         style={styles.button}
         disabled={loading}
         onPress={salva}
       >
-        <Text style={styles.buttonText}>
+        <Text style={TESTO_BOTTONE.pieno}>
           AGGIORNA PASSWORD
         </Text>
       </AppButton>
@@ -137,24 +138,15 @@ const styles = StyleSheet.create({
   },
   readOnly: {
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: COLORS.border,
     borderRadius: 10,
     padding: 14,
-    backgroundColor: '#F3F3F3',
+    backgroundColor: COLORS.surface,
   },
   field: {
     marginBottom: 8,
   },
   button: {
     marginTop: 28,
-    backgroundColor: COLORS.brand,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFF',
-    fontWeight: '700',
-    fontSize: 16,
   },
 });

@@ -12,8 +12,9 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import { api, AuthUser } from '@/src/api';
 import { COLORS } from '@/src/theme';
 import BackButton from '@/src/components/BackButton';
+import { Scheda } from '@/src/components/Scheda';
 
-import AppButton from '@/src/components/AppButton';
+import AppButton, { TESTO_BOTTONE } from '@/src/components/AppButton';
 export default function UsersScreen() {
   const router = useRouter();
   const [users, setUsers] = useState<AuthUser[]>([]);
@@ -57,47 +58,53 @@ export default function UsersScreen() {
           <>
             <Text style={styles.title}>Gestione utenti</Text>
 
-            <AppButton style={styles.newButton}
-              onPress={() => router.push('/user-detail')}>
-              <Text style={styles.newButtonText}>+ Nuovo utente</Text>
+            <AppButton
+              variante="pieno"
+              style={styles.newButton}
+              onPress={() => router.push('/user-detail')}
+            >
+              <Text style={TESTO_BOTTONE.pieno}>+ Nuovo utente</Text>
             </AppButton>
           </>
         }
         renderItem={({ item }) => (
-          <AppButton style={styles.card}
+          <AppButton
+            style={styles.cardWrap}
             onPress={() =>
               router.push({
                 pathname: '/user-detail',
                 params: { id: item.id },
               })
             }
-          > 
-            <Text style={styles.name}>
-              {item.nome || item.username}
-            </Text>
-
-            <Text style={styles.username}>
-              @{item.username}
-            </Text>
-
-            <View style={styles.row}>
-              <Text style={styles.role}>
-                {item.ruolo === 'amministratore'
-                  ? 'Amministratore'
-                  : 'Dipendente'}
+          >
+            <Scheda>
+              <Text style={styles.name}>
+                {item.nome || item.username}
               </Text>
 
-              <Text
-                style={[
-                  styles.status,
-                  {
-                    color: item.attivo ? '#2E7D32' : '#C62828',
-                  },
-                ]}
-              >
-                {item.attivo ? '● Attivo' : '● Disattivato'}
+              <Text style={styles.username}>
+                @{item.username}
               </Text>
-            </View>
+
+              <View style={styles.row}>
+                <Text style={styles.role}>
+                  {item.ruolo === 'amministratore'
+                    ? 'Amministratore'
+                    : 'Dipendente'}
+                </Text>
+
+                <Text
+                  style={[
+                    styles.status,
+                    {
+                      color: item.attivo ? COLORS.success : COLORS.error,
+                    },
+                  ]}
+                >
+                  {item.attivo ? '● Attivo' : '● Disattivato'}
+                </Text>
+              </View>
+            </Scheda>
           </AppButton>
         )}
       />
@@ -125,31 +132,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   newButton: {
-    backgroundColor: COLORS.brand,
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
     marginBottom: 20,
   },
-  newButtonText: {
-    color: '#FFF',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  card: {
-    backgroundColor: '#FFF',
-    borderRadius: 14,
-    padding: 16,
+  cardWrap: {
     marginBottom: 14,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
   },
   name: {
     fontSize: 17,
     fontWeight: '700',
   },
   username: {
-    color: '#666',
+    color: COLORS.onSurfaceSecondary,
     marginTop: 2,
   },
   row: {

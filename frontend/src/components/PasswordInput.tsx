@@ -12,6 +12,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 
 import AppButton from '@/src/components/AppButton';
+import { COLORS } from '@/src/theme';
 type PasswordInputProps = TextInputProps & {
   containerStyle?: StyleProp<ViewStyle>;
 };
@@ -49,7 +50,7 @@ export function PasswordInput({
         <Feather
           name={visible ? 'eye-off' : 'eye'}
           size={21}
-          color={editable ? '#5F665F' : '#A7AAA7'}
+          color={editable ? COLORS.onSurfaceSecondary : COLORS.acciaio}
         />
       </AppButton>
     </View>
@@ -62,9 +63,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#D6D8D6',
+    borderColor: COLORS.border,
     borderRadius: 12,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: COLORS.surface,
   },
   input: {
     flex: 1,

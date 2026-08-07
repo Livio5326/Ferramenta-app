@@ -58,7 +58,7 @@ export default function ProfileScreen() {
         <Feather
           name="chevron-right"
           size={18}
-          color="#999"
+          color={COLORS.onSurfaceSecondary}
         />
       </AppButton>
 
@@ -79,7 +79,7 @@ export default function ProfileScreen() {
         <Feather
           name="chevron-right"
           size={18}
-          color="#999"
+          color={COLORS.onSurfaceSecondary}
         />
       </AppButton>
 
@@ -103,13 +103,13 @@ export default function ProfileScreen() {
         <Feather
           name="log-out"
           size={20}
-          color="#C0392B"
+          color={COLORS.error}
         />
 
         <Text
           style={[
             styles.itemText,
-            { color: '#C0392B' },
+            { color: COLORS.error },
           ]}
         >
           Esci
@@ -136,13 +136,13 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   avatarText: {
-    color: '#FFF',
+    color: COLORS.onBrandPrimary,
     fontSize: 34,
     fontWeight: '700',
   },
   realUsername: {
     textAlign: 'center',
-    color: '#666',
+    color: COLORS.onSurfaceSecondary,
     fontSize: 15,
     marginTop: 4,
   },
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   },
   role: {
     textAlign: 'center',
-    color: '#666',
+    color: COLORS.onSurfaceSecondary,
     marginBottom: 40,
     marginTop: 4,
   },
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingVertical: 18,
     borderBottomWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: COLORS.border,
   },
   itemText: {
     flex: 1,

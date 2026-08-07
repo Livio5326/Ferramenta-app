@@ -18,9 +18,9 @@ import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import { PasswordInput } from '@/src/components/PasswordInput';
 import { useAuth } from '@/src/auth';
-import { COLORS, FONTS } from '@/src/theme';
+import { COLORS, FONTS, PALETTE } from '@/src/theme';
 
-import AppButton from '@/src/components/AppButton';
+import AppButton, { TESTO_BOTTONE } from '@/src/components/AppButton';
 const CREDENTIALS_KEY = 'ferramenta_saved_credentials';
 const LAST_USERNAME_KEY = 'ferramenta_last_username';
 
@@ -280,18 +280,14 @@ export default function LoginScreen() {
           </AppButton>
 
           <AppButton
+            variante="pieno"
             onPress={handleLogin}
             disabled={loading}
-            style={({ pressed }) => [
-              styles.loginButton,
-              pressed && !loading && styles.buttonPressed,
-              loading && styles.buttonDisabled,
-            ]}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={COLORS.onBrandPrimary} />
             ) : (
-              <Text style={styles.loginButtonText}>ACCEDI</Text>
+              <Text style={TESTO_BOTTONE.pieno}>ACCEDI</Text>
             )}
           </AppButton>
 
@@ -345,9 +341,9 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 18,
     padding: 24,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     elevation: 4,
-    shadowColor: '#000000',
+    shadowColor: PALETTE.noce3,
     shadowOpacity: 0.1,
     shadowRadius: 12,
     shadowOffset: {
@@ -360,7 +356,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 24,
     fontWeight: '800',
-    color: '#263B2B',
+    color: PALETTE.verdeScuro,
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -368,7 +364,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 15,
     lineHeight: 21,
-    color: '#5F665F',
+    color: COLORS.onSurfaceSecondary,
     textAlign: 'center',
     marginBottom: 26,
   },
@@ -376,47 +372,31 @@ const styles = StyleSheet.create({
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: '#D6D8D6',
+    borderColor: COLORS.border,
     borderRadius: 12,
     paddingHorizontal: 15,
     marginBottom: 14,
     fontSize: 16,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: COLORS.surface,
   },
 
   passwordInput: {
     marginBottom: 18,
   },
 
-  loginButton: {
-    height: 54,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.brand,
-  },
-
-  loginButtonText: {
-    color: '#FFFFFF',
-    fontFamily: FONTS.mono,
-    fontSize: 15,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-
   clientButton: {
     height: 50,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#263B2B',
+    borderColor: PALETTE.verdeScuro,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
   },
 
   clientButtonText: {
-    color: '#263B2B',
+    color: PALETTE.verdeScuro,
     fontFamily: FONTS.mono,
     fontSize: 13,
     fontWeight: '700',
@@ -426,7 +406,7 @@ const styles = StyleSheet.create({
   versionText: {
     marginTop: 20,
     textAlign: 'center',
-    color: '#7B817C',
+    color: COLORS.onSurfaceSecondary,
     fontSize: 12,
   },
 
@@ -449,12 +429,12 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderWidth: 1.5,
-    borderColor: '#8A908B',
+    borderColor: COLORS.acciaio,
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
   },
 
   checkboxSelected: {
@@ -463,14 +443,14 @@ const styles = StyleSheet.create({
   },
 
   checkmark: {
-    color: '#FFFFFF',
+    color: COLORS.onBrandPrimary,
     fontSize: 15,
     fontWeight: '800',
-    lineHeight: 18, 
+    lineHeight: 18,
   },
 
   rememberText: {
-    color: '#4F5751',
+    color: COLORS.onSurfaceSecondary,
     fontSize: 14,
   },
 });

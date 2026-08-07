@@ -23,20 +23,13 @@ const DA_MIGRARE = [
   'app/(tabs)/fornitori.tsx',
   'app/(tabs)/index.tsx',
   'app/(tabs)/statistiche.tsx',
-  'app/change-password.tsx',
   'app/cliente/piu-richiesti.tsx',
-  'app/edit-profile.tsx',
   'app/impostazioni.tsx',
   'app/impostazioni/promozioni.tsx',
   'app/impostazioni/regole-prezzi.tsx',
   'app/impostazioni/sinonimi-ricerca.tsx',
-  'app/login.tsx',
-  'app/profile.tsx',
   'app/scanner.tsx',
-  'app/user-detail.tsx',
-  'app/users.tsx',
   'app/vendite-oggi.tsx',
-  'src/components/PasswordInput.tsx',
 ];
 
 function* file(cartella) {

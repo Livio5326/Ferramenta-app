@@ -15,7 +15,7 @@ import { COLORS } from '@/src/theme';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import BackButton from '@/src/components/BackButton';
 
-import AppButton from '@/src/components/AppButton';
+import AppButton, { TESTO_BOTTONE } from '@/src/components/AppButton';
 export default function UserDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const modifica = !!id;
@@ -159,22 +159,18 @@ export default function UserDetailScreen() {
       </View>
 
       <AppButton
+        variante="pieno"
         style={styles.button}
         onPress={salva}
       >
-        <Text style={styles.buttonText}>
+        <Text style={TESTO_BOTTONE.pieno}>
           {modifica ? 'SALVA MODIFICHE' : 'CREA UTENTE'}
         </Text>
       </AppButton>
       {modifica && (
         <AppButton
-          style={[
-            styles.button,
-            {
-              backgroundColor: '#C0392B',
-              marginTop: 12,
-            },
-          ]}
+          variante="pericolo"
+          style={styles.deleteButton}
           onPress={() =>
             Alert.alert(
               'Elimina utente',
@@ -209,7 +205,7 @@ export default function UserDetailScreen() {
             )
           }
         >
-          <Text style={styles.buttonText}>
+          <Text style={TESTO_BOTTONE.pericolo}>
             ELIMINA UTENTE
           </Text>
         </AppButton>
@@ -238,7 +234,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: COLORS.border,
     borderRadius: 10,
     padding: 14,
   },
@@ -255,23 +251,17 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: COLORS.border,
     alignItems: 'center',
   },
   roleSelected: {
     borderColor: COLORS.brand,
-    backgroundColor: '#EAF6EE',
+    backgroundColor: COLORS.successSurface,
   },
   button: {
     marginTop: 30,
-    backgroundColor: COLORS.brand,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
   },
-  buttonText: {
-    color: '#FFF',
-    fontWeight: '700',
-    fontSize: 16,
+  deleteButton: {
+    marginTop: 12,
   },
 });

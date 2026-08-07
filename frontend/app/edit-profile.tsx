@@ -14,7 +14,7 @@ import { useAuth } from '@/src/auth';
 import { COLORS } from '@/src/theme';
 import BackButton from '@/src/components/BackButton';
 
-import AppButton from '@/src/components/AppButton';
+import AppButton, { TESTO_BOTTONE } from '@/src/components/AppButton';
 export default function EditProfileScreen() {
   const { user, refreshUser } = useAuth();
   const insets = useSafeAreaInsets();
@@ -65,10 +65,11 @@ export default function EditProfileScreen() {
       />
 
       <AppButton
+        variante="pieno"
         style={styles.button}
         onPress={salva}
       >
-        <Text style={styles.buttonText}>
+        <Text style={TESTO_BOTTONE.pieno}>
           SALVA
         </Text>
       </AppButton>
@@ -89,24 +90,15 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: COLORS.border,
     borderRadius: 10,
     padding: 14,
   },
   button: {
     marginTop: 30,
-    backgroundColor: COLORS.brand,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
     marginBottom: 24,},
-  buttonText: {
-    color: '#FFF',
-    fontWeight: '700',
-    fontSize: 16,
-  },
 });
