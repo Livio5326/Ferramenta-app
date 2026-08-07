@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -96,8 +97,19 @@ function AppNavigator() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontsError] = useIconFonts();
+  // Caratteri del restyling (Fraunces, Archivo, IBM Plex Mono): usati dal
+  // Task 3 nei token del tema. Attesi qui insieme alle icone perché
+  // _layout.tsx già blocca il rendering finché queste non sono pronte.
+  const [caratteriPronti] = useFonts({
+    Fraunces_700Bold: require('../assets/fonts/Fraunces_700Bold.ttf'),
+    Fraunces_900Black: require('../assets/fonts/Fraunces_900Black.ttf'),
+    Archivo_400Regular: require('../assets/fonts/Archivo_400Regular.ttf'),
+    Archivo_700Bold: require('../assets/fonts/Archivo_700Bold.ttf'),
+    IBMPlexMono_400Regular: require('../assets/fonts/IBMPlexMono_400Regular.ttf'),
+    IBMPlexMono_500Medium: require('../assets/fonts/IBMPlexMono_500Medium.ttf'),
+  });
 
-  if (!fontsLoaded && !fontsError) {
+  if ((!fontsLoaded && !fontsError) || !caratteriPronti) {
     return null;
   }
 
