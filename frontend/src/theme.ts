@@ -1,38 +1,136 @@
-import { Platform } from 'react-native';
+// Il sistema visivo del gestionale.
+//
+// I colori sono gli stessi del sito ferramenta-loperfido, campionati
+// dall'insegna vera del negozio. Chi tocca questo file cambia l'aspetto di
+// tutta l'app: è voluto. Nessun colore va scritto a mano nelle schermate —
+// ci pensa scripts/check-theme.mjs a ricordarlo.
+
+import type { TextStyle } from 'react-native';
+
+// --- La tavolozza grezza -------------------------------------------------
+// Usarla solo quando serve il colore preciso. Altrimenti usare COLORS.
+
+export const PALETTE = {
+  carta: '#F5EFE4',
+  carta2: '#EBE0CF',
+  carta3: '#DDCFB8',
+
+  inchiostro: '#241C15',
+  inchiostro2: '#5B4A3A',
+  inchiostro3: '#8A7864',
+
+  legnoLuce: '#F0A878',
+  legnoChiaro: '#E0954F',
+  legno: '#C07848',
+  legnoScuro: '#96603A',
+  legnoOmbra: '#784830',
+
+  noce: '#3E2A1E',
+  noce2: '#2A1B12',
+  noce3: '#1A100A',
+
+  verde: '#4A6B48',
+  verdeScuro: '#2F4630',
+  verdeChiaro: '#7D9C6A',
+
+  minio: '#A84432',
+  ottone: '#C9A227',
+  acciaio: '#9AA0A6',
+} as const;
+
+// --- I token semantici ---------------------------------------------------
+// I nomi sono quelli che le schermate già usano: cambiano solo i valori.
 
 export const COLORS = {
-  surface: '#F4EFE6',
-  onSurface: '#2C221B',
-  surfaceSecondary: '#E8DFD1',
-  onSurfaceSecondary: '#4A3C31',
-  surfaceTertiary: '#DCD0BF',
-  onSurfaceTertiary: '#2C221B',
-  surfaceInverse: '#3E2A1E',
-  onSurfaceInverse: '#F4EFE6',
-  brand: '#8C5A35',
-  brandPrimary: '#8C5A35',
-  onBrandPrimary: '#F4EFE6',
-  brandSecondary: '#6B4423',
-  onBrandSecondary: '#F4EFE6',
-  brandTertiary: '#D5B59C',
-  onBrandTertiary: '#3E2A1E',
-  success: '#4A6B48',
+  surface: PALETTE.carta,
+  onSurface: PALETTE.inchiostro,
+  surfaceSecondary: PALETTE.carta2,
+  onSurfaceSecondary: PALETTE.inchiostro2,
+  surfaceTertiary: PALETTE.carta3,
+  onSurfaceTertiary: PALETTE.inchiostro,
+  surfaceInverse: PALETTE.noce,
+  onSurfaceInverse: PALETTE.carta,
+
+  brand: PALETTE.legnoScuro,
+  brandPrimary: PALETTE.legnoScuro,
+  onBrandPrimary: PALETTE.carta,
+  brandSecondary: PALETTE.legnoOmbra,
+  onBrandSecondary: PALETTE.carta,
+  brandTertiary: PALETTE.legnoLuce,
+  onBrandTertiary: PALETTE.inchiostro,
+
+  success: PALETTE.verde,
   onSuccess: '#FFFFFF',
-  warning: '#C27A30',
-  onWarning: '#FFFFFF',
-  error: '#A84432',
+  successSurface: '#E6EFE2',
+
+  warning: PALETTE.ottone,
+  // Bianco su ottone non si legge: il testo sopra il giallo va scuro.
+  onWarning: PALETTE.inchiostro,
+  warningSurface: '#F6EDD2',
+
+  error: PALETTE.minio,
   onError: '#FFFFFF',
-  border: '#DCD0BF',
-  borderStrong: '#8C5A35',
-  divider: '#DCD0BF',
-};
+  errorSurface: '#F3E1DD',
+
+  acciaio: PALETTE.acciaio,
+
+  border: PALETTE.carta3,
+  borderStrong: PALETTE.legnoScuro,
+  divider: PALETTE.carta3,
+} as const;
+
+// --- I caratteri ---------------------------------------------------------
+// Su Android i pesi non si sintetizzano: va indicata la famiglia esatta.
+// Non usare fontWeight insieme a fontFamily.
 
 export const FONTS = {
-  display: Platform.select({ ios: 'System', android: 'sans-serif', default: 'System' })!,
-  mono: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' })!,
-};
+  display: 'Fraunces_700Bold',
+  displayForte: 'Fraunces_900Black',
+  testo: 'Archivo_400Regular',
+  testoForte: 'Archivo_700Bold',
+  mono: 'IBMPlexMono_400Regular',
+  monoMedio: 'IBMPlexMono_500Medium',
+} as const;
 
-export const SPACING = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 };
+// --- Gli stili di testo di servizio, presi dal sito ----------------------
+
+export const TESTO = {
+  // L'etichetta da cassettiera: piccola, spaziata, in stampatello.
+  cassetto: {
+    fontFamily: FONTS.monoMedio,
+    fontSize: 11,
+    letterSpacing: 2.4,
+    textTransform: 'uppercase',
+  },
+  // Il numero da inventario: cifre a larghezza fissa, così le colonne di
+  // prezzi non ballano.
+  cifra: {
+    fontFamily: FONTS.monoMedio,
+    fontVariant: ['tabular-nums'],
+  },
+  titolo: {
+    fontFamily: FONTS.displayForte,
+    fontSize: 24,
+    letterSpacing: -0.4,
+  },
+} as const satisfies Record<string, TextStyle>;
+
+// --- Misure --------------------------------------------------------------
+
+export const SPACING = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 } as const;
+
+// Angoli quasi vivi, come le insegne smaltate del sito.
+export const RADIUS = { sm: 2, md: 4, lg: 8 } as const;
+
+export const OMBRE = {
+  scheda: {
+    shadowColor: PALETTE.noce3,
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+} as const;
 
 export const fmtEUR = (n: number) => {
   const v = Number.isFinite(n) ? n : 0;
