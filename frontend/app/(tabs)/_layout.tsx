@@ -14,7 +14,8 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
 
-        tabBarActiveTintColor: COLORS.warning,
+        // Legno luce (5.19:1) invece di ottone (4.26:1 sotto soglia)
+        tabBarActiveTintColor: PALETTE.legnoLuce,
         tabBarInactiveTintColor: PALETTE.carta3,
 
         tabBarStyle: {
