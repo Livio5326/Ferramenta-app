@@ -6,11 +6,14 @@ import {
   PressableProps,
   StyleProp,
   StyleSheet,
+  TextStyle,
   View,
   ViewStyle,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { COLORS, FONTS, PALETTE, RADIUS } from '@/src/theme';
+
+export type Variante = 'pieno' | 'pericolo' | 'scuro' | 'inciso';
 
 type Props = Omit<PressableProps, 'style' | 'onPress' | 'disabled'> & {
   style?: PressableProps['style'];
@@ -24,7 +27,7 @@ type Props = Omit<PressableProps, 'style' | 'onPress' | 'disabled'> & {
   pressDelay?: number;
   autoLoading?: boolean;
   loadingColor?: string;
-  variante?: 'pieno' | 'pericolo' | 'scuro' | 'inciso';
+  variante?: Variante;
 };
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
@@ -110,10 +113,19 @@ export default function AppButton({
           },
           state.pressed &&
             !effectivelyDisabled && {
-              // Il tasto scende di due pixel e il bordo sotto si accorcia,
-              // come un interruttore vero. È il gesto del sito.
+              // Il tasto scende di due pixel, come un interruttore vero.
               transform: [{ translateY: 2 }],
-              borderBottomWidth: variante && variante !== 'inciso' ? 2 : undefined,
+            },
+          state.pressed &&
+            !effectivelyDisabled &&
+            variante &&
+            variante !== 'inciso' && {
+              // Solo per le varianti con il bordo spesso sotto: si accorcia
+              // mentre il tasto scende. Sta in un blocco a parte perché
+              // flattenStyle di React Native copia anche le chiavi a
+              // undefined, e le sovrascriverebbe sui bottoni che il bordo
+              // se lo portano da soli (via style).
+              borderBottomWidth: 2,
             },
           state.pressed &&
             !effectivelyDisabled &&
@@ -196,4 +208,4 @@ export const TESTO_BOTTONE = {
   pericolo: { fontFamily: FONTS.testoForte, fontSize: 15, color: COLORS.onError },
   scuro: { fontFamily: FONTS.testoForte, fontSize: 15, color: COLORS.onSurfaceInverse },
   inciso: { fontFamily: FONTS.testoForte, fontSize: 15, color: COLORS.brandPrimary },
-} as const;
+} as const satisfies Record<Variante, TextStyle>;
