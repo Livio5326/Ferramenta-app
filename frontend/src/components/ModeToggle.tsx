@@ -1,57 +1,79 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-import { COLORS, FONTS } from '@/src/theme';
+import { COLORS, OMBRE, PALETTE, RADIUS, TESTO } from '@/src/theme';
 import { useAppStore } from '@/src/store';
-
+import { Asse } from '@/src/components/materiale/Asse';
+import { Vite } from '@/src/components/materiale/Vite';
 import AppButton from '@/src/components/AppButton';
+
+// La leva dei due mondi, presa dal sito. Lì cambia il terreno sotto i piedi:
+// noce dentro casa, verde fuori. Qui i due mondi sono Gestore e Cliente.
+
 export function ModeToggle() {
   const mode = useAppStore((s) => s.mode);
   const setMode = useAppStore((s) => s.setMode);
+  const gestore = mode === 'gestore';
 
   return (
-    <View style={styles.wrap} testID="mode-toggle">
-      <AppButton
-        style={[styles.btn, mode === 'gestore' && styles.btnActive]}
-        onPress={() => setMode('gestore')}
-        testID="mode-gestore-btn"
-      >
-        <Feather name="tool" size={14} color={mode === 'gestore' ? COLORS.onBrandPrimary : COLORS.onSurfaceSecondary} />
-        <Text style={[styles.txt, mode === 'gestore' && styles.txtActive]}>GESTORE</Text>
+    <Asse style={styles.asse} testID="mode-toggle">
+      <Vite style={{ top: 5, left: 5 }} />
+      <Vite style={{ top: 5, right: 5 }} />
+      <Vite style={{ bottom: 5, left: 5 }} />
+      <Vite style={{ bottom: 5, right: 5 }} />
+
+      <View
+        style={[
+          styles.cursore,
+          gestore
+            ? { left: 6, backgroundColor: PALETTE.noce }
+            : { right: 6, backgroundColor: PALETTE.verdeScuro },
+        ]}
+        pointerEvents="none"
+      />
+
+      <AppButton style={styles.meta} onPress={() => setMode('gestore')} testID="mode-gestore-btn">
+        <Feather name="tool" size={14} color={gestore ? COLORS.onSurfaceInverse : PALETTE.noce2} />
+        <Text style={[styles.txt, gestore && styles.txtAttivo]}>GESTORE</Text>
       </AppButton>
-      <AppButton
-        style={[styles.btn, mode === 'cliente' && styles.btnActive]}
-        onPress={() => setMode('cliente')}
-        testID="mode-cliente-btn"
-      >
-        <Feather name="user" size={14} color={mode === 'cliente' ? COLORS.onBrandPrimary : COLORS.onSurfaceSecondary} />
-        <Text style={[styles.txt, mode === 'cliente' && styles.txtActive]}>CLIENTE</Text>
+
+      <AppButton style={styles.meta} onPress={() => setMode('cliente')} testID="mode-cliente-btn">
+        <Feather name="user" size={14} color={!gestore ? COLORS.onSurfaceInverse : PALETTE.noce2} />
+        <Text style={[styles.txt, !gestore && styles.txtAttivo]}>CLIENTE</Text>
       </AppButton>
-    </View>
+    </Asse>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: {
+  asse: {
     flexDirection: 'row',
-    borderWidth: 2,
-    borderColor: COLORS.borderStrong,
-    backgroundColor: COLORS.surfaceSecondary,
+    padding: 6,
+    alignItems: 'center',
+    // L'ombra di serie di Asse (raggio 14, scarto 8, opacità .45) è tarata
+    // sulla tavola grande del Task 4: qui sotto è una tavoletta di ~50px,
+    // e con quell'ombra sembrava sospesa a mezz'aria. La sostituiamo con
+    // OMBRE.scheda, la stessa usata dalle schede di lista — stesso colore
+    // (noce3), ma pensata per elementi di questa taglia.
+    ...OMBRE.scheda,
   },
-  btn: {
+  cursore: {
+    position: 'absolute',
+    top: 6,
+    bottom: 6,
+    width: '50%',
+    borderRadius: RADIUS.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 240, 190, 0.5)',
+  },
+  meta: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  btnActive: { backgroundColor: COLORS.brand },
-  txt: {
-    fontFamily: FONTS.mono,
-    fontSize: 11,
-    letterSpacing: 1,
-    color: COLORS.onSurfaceSecondary,
-    fontWeight: '700',
-  },
-  txtActive: { color: COLORS.onBrandPrimary },
+  txt: { ...TESTO.cassetto, color: PALETTE.noce2 },
+  txtAttivo: { color: COLORS.onSurfaceInverse },
 });
