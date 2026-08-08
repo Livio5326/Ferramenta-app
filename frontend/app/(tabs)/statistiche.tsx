@@ -3,12 +3,12 @@ import {
   useState } from "react";
 import {
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from "expo-router";
 import { router } from "expo-router";
 import { COLORS, FONTS, TESTO, fmtEUR } from "@/src/theme";
@@ -69,7 +69,7 @@ export default function Stats() {
   const maxCategoria = categorie[0]?.count || 1;
 
   return (
-    <SafeAreaView style={styles.safe} testID="stats-screen">
+    <SafeAreaView style={styles.safe} edges={['top']} testID="stats-screen">
       <ScreenHeader title="Statistiche" subtitle="Magazzino • Vendite" />
 
       <ScrollView
@@ -129,7 +129,12 @@ export default function Stats() {
             onPress={() => router.push("/vendite-oggi")}
           >
             <Text style={styles.clickableSmallCardLabel}>VENDITE DEL GIORNO</Text>
-            <Text style={[styles.clickableSmallCardValue, TESTO.cifra]}>
+            <Text
+              style={[styles.clickableSmallCardValue, TESTO.cifra]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.5}
+            >
               {fmtEUR(stats?.vendite_giorno || 0)}
             </Text>
             <Text style={[styles.clickableSmallCardFooter, TESTO.cifra]}>
@@ -316,7 +321,12 @@ function StatCard({
         {label.toUpperCase()}
       </Text>
 
-      <Text style={[styles.statValue, highlight && styles.statValueHighlight]}>
+      <Text
+        style={[styles.statValue, highlight && styles.statValueHighlight]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.5}
+      >
         {value}
       </Text>
 
@@ -357,7 +367,11 @@ const styles = StyleSheet.create({
 
   clickableSmallCard: {
     width: "48%",
-    height: 126,
+    // minHeight invece di height fissa: il titolo "Vendite del giorno" va a
+    // capo su due righe e con l'altezza bloccata a 126 tagliava valore e
+    // "transazioni". La riga dispone in stretch, quindi la card "Sotto
+    // scorta" accanto si allunga di pari passo e le due restano uguali.
+    minHeight: 122,
     borderRadius: 22,
     paddingHorizontal: 24,
     paddingVertical: 16,
