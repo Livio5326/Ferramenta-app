@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from "@react-navigation/native";
 import { api } from "@/src/api";
-import { COLORS, FONTS, TESTO } from "@/src/theme";
+import { COLORS, FONTS, TESTO, VELI } from "@/src/theme";
 
 import AppButton from '@/src/components/AppButton';
 
@@ -25,6 +25,11 @@ import AppButton from '@/src/components/AppButton';
 // usi sono stati ricondotti ai nomi giusti (bg->surface, card->surfaceSecondary,
 // brown->brandSecondary, green->success, text->onSurface, muted->onSurfaceSecondary,
 // border->brandPrimary). La chiave "brown2" non era mai usata ed è stata tolta.
+// I quattro rgba() rimasti (velo del divisore, bordo delle schede, fondo del
+// pulsante elimina) erano anch'essi tinte della vecchia tavolozza scritte a
+// mano: la sentinella non li vede perché cerca solo #esadecimali, ma erano
+// comunque legati a bg/card/brown/border del vecchio oggetto. Ora vengono da
+// VELI in src/theme.ts, con lo stesso accoppiamento cromatico di prima.
 
 function fmtEUR(value: number) {
   return new Intl.NumberFormat("it-IT", {
@@ -179,7 +184,7 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: 18,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(90,52,31,0.25)",
+    borderBottomColor: VELI.divisorioLegno,
   },
   backBtn: {
     width: 48,
@@ -238,7 +243,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(169,68,56,0.10)",
+    backgroundColor: VELI.fondoErrore,
   },
   list: {
     paddingHorizontal: 24,
@@ -249,7 +254,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 18,
     borderWidth: 2,
-    borderColor: "rgba(160,106,67,0.35)",
+    borderColor: VELI.bordoLegno,
     paddingHorizontal: 14,
     paddingVertical: 16,
     flexDirection: "row",
@@ -294,7 +299,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: COLORS.surfaceSecondary,
     borderWidth: 1,
-    borderColor: "rgba(160,106,67,0.35)",
+    borderColor: VELI.bordoLegno,
   },
   emptyTitle: {
     fontSize: 22,

@@ -155,3 +155,13 @@ export const fmtEUR = (n: number) => {
   const v = Number.isFinite(n) ? n : 0;
   return v.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 };
+
+// I veli traslucidi. Stanno qui e non nelle schermate perche' la sentinella
+// non vede gli rgba(): senza un posto dove metterli, restano legati a tinte
+// vecchie senza che nessuno se ne accorga. I numeri sono i canali RGB dei
+// token corrispondenti.
+export const VELI = {
+  divisorioLegno: 'rgba(120, 72, 48, 0.25)', // brandSecondary al 25%
+  bordoLegno: 'rgba(150, 96, 58, 0.35)',     // brandPrimary al 35%
+  fondoErrore: 'rgba(168, 68, 50, 0.10)',    // error al 10%
+} as const;
