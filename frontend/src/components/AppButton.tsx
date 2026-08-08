@@ -115,6 +115,8 @@ export default function AppButton({
             !effectivelyDisabled && {
               // Il tasto scende di due pixel, come un interruttore vero.
               transform: [{ translateY: 2 }],
+              // Calo di opacità: unico ritorno visivo sui bottoni senza fondo.
+              opacity: 0.9,
             },
           state.pressed &&
             !effectivelyDisabled &&

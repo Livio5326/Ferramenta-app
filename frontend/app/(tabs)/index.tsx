@@ -200,7 +200,7 @@ return (
               </AppButton>
               <AppButton style={[styles.action, { backgroundColor: COLORS.warning }]} onPress={() => router.push('/product/new')} testID="action-add">
                 <Feather name="plus-square" size={28} color={COLORS.onWarning} />
-                <Text style={styles.actionText}>NUOVO PRODOTTO</Text>
+                <Text style={[styles.actionText, { color: COLORS.onWarning }]}>NUOVO PRODOTTO</Text>
               </AppButton>
               <AppButton style={[styles.action, { backgroundColor: COLORS.brandSecondary }]} onPress={() => router.push('/import')} testID="action-import">
                 <Feather name="upload" size={28} color={COLORS.onBrandSecondary} />

@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   priceCell: { flex: 1, padding: 16, borderRightWidth: 2, borderColor: COLORS.borderStrong },
   priceLabel: { fontFamily: FONTS.mono, fontSize: 10, color: COLORS.brandTertiary, letterSpacing: 1.5 },
   priceValue: { fontFamily: FONTS.display, fontSize: 28, fontWeight: '900', color: COLORS.onBrandPrimary, marginTop: 4 },
-  priceValuePromo: { color: COLORS.warning },
+  priceValuePromo: { color: COLORS.onBrandPrimary },
   promoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
   priceOriginal: { fontFamily: FONTS.mono, fontSize: 13, color: COLORS.brandTertiary, textDecorationLine: 'line-through' },
   promoBadge: { fontFamily: FONTS.mono, fontSize: 10, fontWeight: '900', color: COLORS.warning },

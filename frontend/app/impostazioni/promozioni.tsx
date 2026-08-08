@@ -13,7 +13,7 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import { Feather } from '@expo/vector-icons';
 import { api } from '@/src/api';
-import { COLORS, FONTS } from '@/src/theme';
+import { COLORS, FONTS, VELI } from '@/src/theme';
 import { Scheda } from '@/src/components/Scheda';
 import * as FileSystem from "expo-file-system/legacy";
 import * as XLSX from "xlsx";
@@ -1098,7 +1098,7 @@ problemRow: {
   borderRadius: 16,
   borderWidth: 1,
   borderColor: COLORS.error,
-  backgroundColor: 'rgba(139, 30, 30, 0.08)',
+  backgroundColor: VELI.fondoErrore,
   padding: 12,
   gap: 5,
 },
