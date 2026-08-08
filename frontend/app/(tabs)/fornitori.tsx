@@ -16,6 +16,7 @@ import {
 } from "../../src/api";
 
 import AppButton from '@/src/components/AppButton';
+import { COLORS } from '@/src/theme';
 
 const INVOICES_PER_PAGE = 10;
 
@@ -355,14 +356,14 @@ return (
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 10,
-    backgroundColor: "#EEF6F0",
+    backgroundColor: COLORS.successSurface,
   }}
   onPress={() => loadInvoiceProducts(item)}
   disabled={loadingInvoiceProducts}
 >
   <Text
     style={{
-      color: "#176B3A",
+      color: COLORS.success,
       fontWeight: "700",
       textAlign: "center",
     }}
@@ -592,7 +593,7 @@ return (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4EFE6",
+    backgroundColor: COLORS.surface,
   },
 
   content: {
@@ -608,22 +609,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "900",
-    color: "#2F2A22",
+    color: COLORS.onSurface,
     letterSpacing: 0.5,
   },
 
   subtitle: {
     marginTop: 6,
     fontSize: 14,
-    color: "#6F6252",
+    color: COLORS.onSurfaceSecondary,
     lineHeight: 20,
   },
 
   card: {
-    backgroundColor: "#FFF9EF",
+    backgroundColor: COLORS.surface,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#D7C7AF",
+    borderColor: COLORS.border,
     padding: 16,
     marginBottom: 14,
   },
@@ -631,19 +632,19 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: "900",
-    color: "#2F2A22",
+    color: COLORS.onSurface,
     marginBottom: 8,
   },
 
   cardText: {
     fontSize: 14,
-    color: "#6F6252",
+    color: COLORS.onSurfaceSecondary,
     lineHeight: 20,
     marginBottom: 14,
   },
 
   primaryButton: {
-    backgroundColor: "#315C3A",
+    backgroundColor: COLORS.success,
     borderRadius: 14,
     minHeight: 50,
     alignItems: "center",
@@ -652,7 +653,7 @@ const styles = StyleSheet.create({
   },
 
   primaryButtonText: {
-    color: "#FFFFFF",
+    color: COLORS.onSuccess,
     fontWeight: "900",
     fontSize: 14,
     letterSpacing: 1,
@@ -663,10 +664,10 @@ const styles = StyleSheet.create({
   },
 
   resultCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: COLORS.surface,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#D7C7AF",
+    borderColor: COLORS.border,
     padding: 16,
     marginBottom: 14,
   },
@@ -674,13 +675,13 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: 17,
     fontWeight: "900",
-    color: "#2F2A22",
+    color: COLORS.onSurface,
     marginBottom: 10,
   },
 
   resultText: {
     fontSize: 13,
-    color: "#4A4033",
+    color: COLORS.onSurface,
     marginBottom: 5,
   },
 
@@ -693,7 +694,7 @@ const styles = StyleSheet.create({
 
   statBox: {
     flex: 1,
-    backgroundColor: "#EFE5D6",
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 14,
     paddingVertical: 12,
     alignItems: "center",
@@ -702,47 +703,47 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     fontWeight: "900",
-    color: "#315C3A",
+    color: COLORS.success,
   },
 
   statLabel: {
     marginTop: 4,
     fontSize: 11,
     fontWeight: "800",
-    color: "#6F6252",
+    color: COLORS.onSurfaceSecondary,
   },
 
   smallText: {
     fontSize: 11,
-    color: "#6F6252",
+    color: COLORS.onSurfaceSecondary,
     marginTop: 6,
   },
 
   errorText: {
     marginTop: 10,
     fontSize: 13,
-    color: "#8B1E1E",
+    color: COLORS.error,
     fontWeight: "800",
   },
 
   noteCard: {
-    backgroundColor: "#EFE5D6",
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 18,
     padding: 14,
     borderWidth: 1,
-    borderColor: "#D7C7AF",
+    borderColor: COLORS.border,
   },
 
   noteTitle: {
     fontSize: 15,
     fontWeight: "900",
-    color: "#2F2A22",
+    color: COLORS.onSurface,
     marginBottom: 6,
   },
 
   noteText: {
     fontSize: 13,
-    color: "#6F6252",
+    color: COLORS.onSurfaceSecondary,
     lineHeight: 19,
   },
   sectionHeader: {
@@ -755,13 +756,13 @@ const styles = StyleSheet.create({
 refreshText: {
   fontSize: 12,
   fontWeight: "900",
-  color: "#315C3A",
+  color: COLORS.success,
   letterSpacing: 0.8,
 },
 
 invoiceRow: {
   borderTopWidth: 1,
-  borderTopColor: "#D7C7AF",
+  borderTopColor: COLORS.border,
   paddingTop: 12,
   marginTop: 12,
 },
@@ -769,13 +770,13 @@ invoiceRow: {
 invoiceTitle: {
   fontSize: 14,
   fontWeight: "900",
-  color: "#2F2A22",
+  color: COLORS.onSurface,
   marginBottom: 4,
 },
 
 invoiceText: {
   fontSize: 12,
-  color: "#6F6252",
+  color: COLORS.onSurfaceSecondary,
   marginBottom: 8,
 },
 
@@ -788,8 +789,8 @@ invoiceStats: {
 invoiceStat: {
   fontSize: 11,
   fontWeight: "800",
-  color: "#315C3A",
-  backgroundColor: "#EFE5D6",
+  color: COLORS.success,
+  backgroundColor: COLORS.surfaceSecondary,
   paddingHorizontal: 8,
   paddingVertical: 5,
   borderRadius: 999,
@@ -801,9 +802,9 @@ invoiceProductsList: {
 },
 
 invoiceProductRow: {
-  backgroundColor: "#FFFFFF",
+  backgroundColor: COLORS.surface,
   borderWidth: 1,
-  borderColor: "#D7C7AF",
+  borderColor: COLORS.border,
   borderRadius: 12,
   paddingHorizontal: 12,
   paddingVertical: 10,
@@ -812,13 +813,13 @@ invoiceProductRow: {
 invoiceProductTitle: {
   fontSize: 13,
   fontWeight: "800",
-  color: "#2F2A22",
+  color: COLORS.onSurface,
   marginBottom: 4,
 },
 
 invoiceProductMeta: {
   fontSize: 11,
-  color: "#6F6252",
+  color: COLORS.onSurfaceSecondary,
   lineHeight: 16,
 },
 
@@ -826,14 +827,21 @@ invoiceProductsEmpty: {
   paddingVertical: 10,
   textAlign: "center",
   fontSize: 12,
-  color: "#6F6252",
+  color: COLORS.onSurfaceSecondary,
 },
 
+// Il bordo resta sul token "tertiary" (family dell'arancio originale,
+// esadecimale D4A373), ma lo sfondo va su COLORS.surface e non su
+// COLORS.brandTertiary:
+// applicando la tabella alla lettera bordo e sfondo diventerebbero lo
+// stesso colore (contrasto 1:1, bordo invisibile), peggio dell'originale
+// (1,87:1). COLORS.surface tiene il riquadro coerente con le altre schede
+// della schermata e mantiene il bordo arancio come unico segnale distintivo.
 secondaryCostsBox: {
   marginTop: 10,
   borderWidth: 1,
-  borderColor: "#D4A373",
-  backgroundColor: "#F7E8D0",
+  borderColor: COLORS.brandTertiary,
+  backgroundColor: COLORS.surface,
   borderRadius: 12,
   padding: 12,
   gap: 8,
@@ -842,7 +850,7 @@ secondaryCostsBox: {
 secondaryCostsTitle: {
   fontSize: 11,
   fontWeight: "900",
-  color: "#8B5A2B",
+  color: COLORS.brandPrimary,
   letterSpacing: 0.7,
 },
 
@@ -860,32 +868,32 @@ secondaryCostInfo: {
 secondaryCostType: {
   fontSize: 12,
   fontWeight: "800",
-  color: "#4A4033",
+  color: COLORS.onSurface,
 },
 
 secondaryCostDescription: {
   marginTop: 2,
   fontSize: 11,
-  color: "#6F6252",
+  color: COLORS.onSurfaceSecondary,
 },
 
 secondaryCostAmount: {
   fontSize: 12,
   fontWeight: "900",
-  color: "#8B5A2B",
+  color: COLORS.brandPrimary,
 },
 
 manualBadge: {
   marginTop: 8,
   fontSize: 10,
   fontWeight: "900",
-  color: "#8B5A2B",
+  color: COLORS.brandPrimary,
   letterSpacing: 0.8,
 },
 
 missingButton: {
   marginTop: 10,
-  backgroundColor: "#EFE5D6",
+  backgroundColor: COLORS.surfaceSecondary,
   borderRadius: 12,
   paddingVertical: 10,
   paddingHorizontal: 12,
@@ -895,7 +903,7 @@ missingButton: {
 missingButtonText: {
   fontSize: 11,
   fontWeight: "900",
-  color: "#8B1E1E",
+  color: COLORS.error,
   letterSpacing: 0.7,
 },
 
@@ -903,16 +911,16 @@ missingProductRow: {
   flexDirection: "row",
   gap: 10,
   borderWidth: 1,
-  borderColor: "#D7C7AF",
-  backgroundColor: "#FFF9EF",
+  borderColor: COLORS.border,
+  backgroundColor: COLORS.surface,
   borderRadius: 14,
   padding: 12,
   marginBottom: 10,
 },
 
 missingProductSelected: {
-  borderColor: "#315C3A",
-  backgroundColor: "#F1F7EF",
+  borderColor: COLORS.success,
+  backgroundColor: COLORS.successSurface,
 },
 
 checkboxBox: {
@@ -920,14 +928,14 @@ checkboxBox: {
   height: 26,
   borderRadius: 8,
   borderWidth: 2,
-  borderColor: "#315C3A",
+  borderColor: COLORS.success,
   alignItems: "center",
   justifyContent: "center",
   marginTop: 2,
 },
 
 checkboxText: {
-  color: "#315C3A",
+  color: COLORS.success,
   fontWeight: "900",
   fontSize: 16,
 },
@@ -939,13 +947,13 @@ missingProductInfo: {
 missingProductTitle: {
   fontSize: 13,
   fontWeight: "900",
-  color: "#2F2A22",
+  color: COLORS.onSurface,
   marginBottom: 5,
 },
 
 missingProductText: {
   fontSize: 11,
-  color: "#6F6252",
+  color: COLORS.onSurfaceSecondary,
   marginBottom: 3,
 },
 
@@ -961,7 +969,7 @@ paginationButton: {
   flex: 1,
   minHeight: 38,
   borderRadius: 10,
-  backgroundColor: "#315C3A",
+  backgroundColor: COLORS.success,
   alignItems: "center",
   justifyContent: "center",
   paddingHorizontal: 8,
@@ -972,7 +980,7 @@ paginationButtonDisabled: {
 },
 
 paginationButtonText: {
-  color: "#FFFFFF",
+  color: COLORS.onSuccess,
   fontSize: 10,
   fontWeight: "900",
   letterSpacing: 0.4,
@@ -981,7 +989,7 @@ paginationButtonText: {
 paginationLabel: {
   minWidth: 86,
   textAlign: "center",
-  color: "#4A4033",
+  color: COLORS.onSurface,
   fontSize: 12,
   fontWeight: "800",
 },
