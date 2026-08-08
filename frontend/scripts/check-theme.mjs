@@ -16,7 +16,8 @@ const CARTELLE = ['app', 'src'];
 const ESTENSIONI = ['.tsx'];
 const COLORE = /#[0-9a-fA-F]{3,8}\b/g;
 
-// I file non ancora migrati. Togliere una voce quando il file è a posto.
+// La migrazione è finita: questa lista deve restare vuota. Se qualcuno
+// aggiunge un file qui, sta rimandando il lavoro invece di farlo.
 const DA_MIGRARE = [];
 
 function* file(cartella) {
