@@ -23,23 +23,25 @@ import {
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useAppStore } from "../../src/store";
 import { BACKEND_URL } from "../../src/config/backend";
+import { COLORS, PALETTE, TESTO } from "@/src/theme";
 
 import AppButton from '@/src/components/AppButton';
 const PAGE_SIZE = 30;
 
-const COLORS = {
-  surface: "#F4EFE7",
-  card: "#FFF9EF",
-  text: "#2F2A22",
-  muted: "#7A6B5B",
-  border: "#D7C7AF",
-  green: "#315C3A",
-  greenDark: "#213F28",
-  red: "#8B1E1E",
-  orange: "#9B4E18",
-  chip: "#EFE5D6",
-  white: "#FFFFFF",
-};
+// La COLORS locale di questa schermata (surface/card/text/muted/border/
+// green/greenDark/red/orange/chip/white) è stata smontata: era una
+// tavolozza scritta a mano che oscurava quella del tema. Gli usi sono
+// ricondotti ai token veri: surface e card diventano entrambi
+// COLORS.surface (erano due tonalità di carta quasi identiche, F4EFE7 e
+// FFF9EF, distinte nel disegno solo dal bordo), text->COLORS.onSurface,
+// muted->COLORS.onSurfaceSecondary, border->COLORS.border,
+// green->COLORS.success, greenDark->PALETTE.verdeScuro,
+// red->COLORS.error, orange->COLORS.brandSecondary,
+// chip->COLORS.surfaceSecondary. Il bianco (COLORS.white) copriva due
+// ruoli diversi a seconda del punto in cui stava: sfondo di un riquadro
+// (COLORS.surface) o testo sopra un bottone a tinta piena
+// (COLORS.onSuccess sul verde, COLORS.onError sul rosso) — deciso caso
+// per caso, non con una sostituzione cieca.
 
 const CATEGORIE_STANDARD = [
   "Utensili manuali",
@@ -562,7 +564,7 @@ const loadMore = useCallback(async () => {
 
             <View style={styles.cardBottom}>
               <View>
-                <Text style={[styles.price, hasPromo && styles.pricePromo]}>
+                <Text style={[styles.price, hasPromo && styles.pricePromo, TESTO.cifra]}>
                   € {prezzo.toFixed(2)}
                 </Text>
 
@@ -572,7 +574,7 @@ const loadMore = useCallback(async () => {
               </View>
 
               <View style={styles.qtyBox}>
-                <Text style={[styles.qty, low && styles.qtyLow]}>
+                <Text style={[styles.qty, low && styles.qtyLow, TESTO.cifra]}>
                   QTA {Number(item.quantita ?? 0)}
                 </Text>
               </View>
@@ -627,7 +629,7 @@ const loadMore = useCallback(async () => {
                 ? "Cerca codice"
                 : "Cerca"
           }
-          placeholderTextColor={COLORS.muted}
+          placeholderTextColor={COLORS.onSurfaceSecondary}
           style={styles.searchInput}
           autoCapitalize="none"
           autoCorrect={false}
@@ -817,7 +819,7 @@ const loadMore = useCallback(async () => {
                   value={brandSearch}
                   onChangeText={setBrandSearch}
                   placeholder="Scrivi marca..."
-                  placeholderTextColor={COLORS.muted}
+                  placeholderTextColor={COLORS.onSurfaceSecondary}
                   style={styles.brandSearch}
                 />
 
@@ -964,25 +966,27 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "900",
-    color: COLORS.text,
+    color: COLORS.onSurface,
   },
 
   subtitle: {
     marginTop: 4,
     fontSize: 14,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
     fontWeight: "700",
   },
 
   filterButton: {
-    backgroundColor: COLORS.green,
+    backgroundColor: COLORS.success,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 14,
   },
 
   filterButtonText: {
-    color: COLORS.white,
+    // Testo bianco sopra il bottone verde pieno: COLORS.onSuccess, non
+    // COLORS.surface.
+    color: COLORS.onSuccess,
     fontWeight: "900",
     fontSize: 12,
     letterSpacing: 0.6,
@@ -991,7 +995,7 @@ const styles = StyleSheet.create({
   searchBox: {
     marginHorizontal: 18,
     marginBottom: 8,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 16,
@@ -1000,7 +1004,7 @@ const styles = StyleSheet.create({
 
   searchInput: {
     height: 48,
-    color: COLORS.text,
+    color: COLORS.onSurface,
     fontSize: 15,
     fontWeight: "700",
   },
@@ -1013,7 +1017,7 @@ const styles = StyleSheet.create({
   },
 
   modeChip: {
-    backgroundColor: COLORS.chip,
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -1022,18 +1026,18 @@ const styles = StyleSheet.create({
   },
 
   modeChipActive: {
-    backgroundColor: COLORS.green,
-    borderColor: COLORS.green,
+    backgroundColor: COLORS.success,
+    borderColor: COLORS.success,
   },
 
   modeChipText: {
-    color: COLORS.text,
+    color: COLORS.onSurface,
     fontWeight: "800",
     fontSize: 11,
   },
 
   modeChipTextActive: {
-    color: COLORS.white,
+    color: COLORS.onSuccess,
   },
 
   chipsWrap: {
@@ -1046,7 +1050,7 @@ const styles = StyleSheet.create({
   },
 
   chip: {
-    backgroundColor: COLORS.chip,
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 999,
     paddingHorizontal: 13,
     paddingVertical: 9,
@@ -1055,19 +1059,19 @@ const styles = StyleSheet.create({
   },
 
   chipActive: {
-    backgroundColor: COLORS.green,
-    borderColor: COLORS.green,
+    backgroundColor: COLORS.success,
+    borderColor: COLORS.success,
   },
 
   chipTxt: {
     fontSize: 11,
     fontWeight: "900",
-    color: COLORS.text,
+    color: COLORS.onSurface,
     letterSpacing: 0.5,
   },
 
   chipTxtActive: {
-    color: COLORS.white,
+    color: COLORS.onSuccess,
   },
 
   loadingCenter: {
@@ -1078,7 +1082,7 @@ const styles = StyleSheet.create({
 
   loadingText: {
     marginTop: 10,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
     fontWeight: "700",
   },
 
@@ -1093,7 +1097,7 @@ const styles = StyleSheet.create({
 
   card: {
     flex: 1,
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 18,
@@ -1103,7 +1107,7 @@ const styles = StyleSheet.create({
 
   cardImgWrap: {
     height: 110,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     alignItems: "center",
     justifyContent: "center",
     padding: 8,
@@ -1120,11 +1124,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#EFEAE0",
+    backgroundColor: COLORS.surface,
   },
 
   placeholderText: {
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
     fontWeight: "900",
     fontSize: 11,
   },
@@ -1135,7 +1139,7 @@ const styles = StyleSheet.create({
 
   cardBrand: {
     fontSize: 10,
-    color: COLORS.orange,
+    color: COLORS.brandSecondary,
     fontWeight: "900",
     marginBottom: 4,
     textTransform: "uppercase",
@@ -1144,7 +1148,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 13,
     fontWeight: "900",
-    color: COLORS.text,
+    color: COLORS.onSurface,
     minHeight: 48,
     lineHeight: 16,
   },
@@ -1152,14 +1156,14 @@ const styles = StyleSheet.create({
   cardCode: {
     marginTop: 5,
     fontSize: 10,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
     fontWeight: "700",
   },
 
   cardCategory: {
     marginTop: 3,
     fontSize: 10,
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
     fontWeight: "700",
   },
 
@@ -1170,50 +1174,53 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 
+  // fontWeight tolto: il Text in JSX prende anche TESTO.cifra, che impone
+  // la propria fontFamily (monoMedio), e su Android i pesi non si
+  // sintetizzano insieme a una fontFamily esplicita.
   price: {
-    color: COLORS.greenDark,
+    color: PALETTE.verdeScuro,
     fontSize: 17,
-    fontWeight: "900",
   },
 
   pricePromo: {
-    color: COLORS.red,
+    color: COLORS.error,
   },
 
   promoBadge: {
     marginTop: 2,
     fontSize: 9,
-    color: COLORS.red,
+    color: COLORS.error,
     fontWeight: "900",
   },
 
   qtyBox: {
-    backgroundColor: "#EFE5D6",
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 10,
     paddingHorizontal: 7,
     paddingVertical: 5,
   },
 
+  // fontWeight tolto per lo stesso motivo di "price" qui sopra.
   qty: {
-    color: COLORS.greenDark,
+    color: PALETTE.verdeScuro,
     fontSize: 10,
-    fontWeight: "900",
   },
 
   qtyLow: {
-    color: COLORS.red,
+    color: COLORS.error,
   },
 
   addButton: {
     marginTop: 9,
-    backgroundColor: COLORS.green,
+    backgroundColor: COLORS.success,
     borderRadius: 12,
     paddingVertical: 8,
     alignItems: "center",
   },
 
   addButtonText: {
-    color: COLORS.white,
+    // Testo bianco sopra il bottone verde pieno: COLORS.onSuccess.
+    color: COLORS.onSuccess,
     fontSize: 11,
     fontWeight: "900",
   },
@@ -1225,13 +1232,13 @@ const styles = StyleSheet.create({
   },
 
   emptyTitle: {
-    color: COLORS.text,
+    color: COLORS.onSurface,
     fontSize: 18,
     fontWeight: "900",
   },
 
   emptyText: {
-    color: COLORS.muted,
+    color: COLORS.onSurfaceSecondary,
     textAlign: "center",
     marginTop: 8,
     fontWeight: "700",
@@ -1261,29 +1268,29 @@ const styles = StyleSheet.create({
   filtersTitle: {
     fontSize: 24,
     fontWeight: "900",
-    color: COLORS.text,
+    color: COLORS.onSurface,
   },
 
   closeText: {
-    color: COLORS.red,
+    color: COLORS.error,
     fontWeight: "900",
   },
 
   filterLabel: {
-    color: COLORS.text,
+    color: COLORS.onSurface,
     fontWeight: "900",
     marginBottom: 8,
     marginTop: 8,
   },
 
   brandSearch: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 14,
     paddingHorizontal: 12,
     height: 44,
-    color: COLORS.text,
+    color: COLORS.onSurface,
     fontWeight: "700",
   },
 
@@ -1299,21 +1306,21 @@ const styles = StyleSheet.create({
   },
 
   brandRowActive: {
-    backgroundColor: COLORS.green,
+    backgroundColor: COLORS.success,
   },
 
   brandText: {
     fontWeight: "800",
-    color: COLORS.text,
+    color: COLORS.onSurface,
   },
 
   brandTextActive: {
-    color: COLORS.white,
+    color: COLORS.onSuccess,
   },
   
   completeToggle: {
     marginTop: 14,
-    backgroundColor: COLORS.chip,
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 12,
@@ -1322,29 +1329,31 @@ const styles = StyleSheet.create({
   },
 
   completeToggleActive: {
-    backgroundColor: COLORS.red,
-    borderColor: COLORS.red,
+    backgroundColor: COLORS.error,
+    borderColor: COLORS.error,
   },
 
   completeToggleText: {
-    color: COLORS.text,
+    color: COLORS.onSurface,
     fontWeight: "900",
   },
 
   completeToggleTextActive: {
-    color: COLORS.white,
+    // Testo bianco sopra lo stato attivo rosso (riusato anche dai toggle
+    // marca/prezzo, non solo da "Da completare"): COLORS.onError.
+    color: COLORS.onError,
   },
 
   priceToggle: {
     marginTop: 14,
-    backgroundColor: COLORS.chip,
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 12,
   },
 
   priceToggleText: {
-    color: COLORS.text,
+    color: COLORS.onSurface,
     fontWeight: "900",
   },
 
@@ -1353,47 +1362,49 @@ const styles = StyleSheet.create({
   },
 
   priceInput: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 12,
     height: 42,
     paddingHorizontal: 12,
-    color: COLORS.text,
+    color: COLORS.onSurface,
     fontWeight: "700",
   },
 
   applyPrice: {
     marginTop: 12,
-    backgroundColor: COLORS.chip,
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 12,
     alignItems: "center",
     paddingVertical: 10,
   },
 
   applyPriceActive: {
-    backgroundColor: COLORS.green,
+    backgroundColor: COLORS.success,
   },
 
   applyPriceText: {
-    color: COLORS.text,
+    color: COLORS.onSurface,
     fontWeight: "900",
   },
 
   applyPriceTextActive: {
-    color: COLORS.white,
+    // Testo bianco sopra il bottone verde pieno: COLORS.onSuccess.
+    color: COLORS.onSuccess,
   },
 
   resetButton: {
     marginTop: 16,
-    backgroundColor: COLORS.red,
+    backgroundColor: COLORS.error,
     borderRadius: 14,
     paddingVertical: 13,
     alignItems: "center",
   },
 
   resetButtonText: {
-    color: COLORS.white,
+    // Testo bianco sopra il bottone rosso pieno: COLORS.onError.
+    color: COLORS.onError,
     fontWeight: "900",
   },
   brandListExpanded: {
