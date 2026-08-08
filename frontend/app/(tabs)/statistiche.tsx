@@ -13,6 +13,7 @@ import { useFocusEffect } from "expo-router";
 import { router } from "expo-router";
 import { COLORS, FONTS, TESTO, fmtEUR } from "@/src/theme";
 import { api } from "@/src/api";
+import { ScreenHeader } from "@/src/components/ScreenHeader";
 
 import AppButton from '@/src/components/AppButton';
 type StatsData = {
@@ -69,10 +70,7 @@ export default function Stats() {
 
   return (
     <SafeAreaView style={styles.safe} testID="stats-screen">
-      <View style={styles.header}>
-        <Text style={styles.title}>Statistiche</Text>
-        <Text style={styles.subtitle}>Magazzino • Vendite</Text>
-      </View>
+      <ScreenHeader title="Statistiche" subtitle="Magazzino • Vendite" />
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -413,26 +411,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 13,
     color: COLORS.onSuccess,
-  },
-
-  header: {
-    paddingHorizontal: 18,
-    paddingTop: 45,
-    marginBottom: 16,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: "900",
-    color: COLORS.onSurface,
-    letterSpacing: 0.5,
-  },
-
-  subtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    color: COLORS.onSurfaceSecondary,
-    lineHeight: 20,
   },
 
   content: {
