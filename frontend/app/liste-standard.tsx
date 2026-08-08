@@ -17,8 +17,9 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { api } from "@/src/api";
 import { COLORS, FONTS } from "@/src/theme";
+import { Scheda } from '@/src/components/Scheda';
 
-import AppButton from '@/src/components/AppButton';
+import AppButton, { TESTO_BOTTONE } from '@/src/components/AppButton';
 type TipoLista = "categorie" | "fornitori" | "marche";
 
 type ListeState = {
@@ -190,9 +191,9 @@ export default function ListeStandardScreen() {
           <Text style={styles.count}>{items.length} voci</Text>
         </View>
 
-        <AppButton style={styles.addButton} onPress={openAdd}>
+        <AppButton variante="pieno" style={styles.addButton} onPress={openAdd}>
           <Feather name="plus" size={17} color={COLORS.onBrandPrimary} />
-          <Text style={styles.addButtonText}>AGGIUNGI</Text>
+          <Text style={TESTO_BOTTONE.pieno}>AGGIUNGI</Text>
         </AppButton>
       </View>
 
@@ -206,7 +207,7 @@ export default function ListeStandardScreen() {
             <Text style={styles.empty}>Nessuna voce presente.</Text>
           ) : (
             items.map((item) => (
-              <View key={item} style={styles.itemRow}>
+              <Scheda key={item} style={styles.itemRow}>
                 <Text style={styles.itemText}>{item}</Text>
 
                 <View style={styles.itemActions}>
@@ -224,7 +225,7 @@ export default function ListeStandardScreen() {
                     <Feather name="trash-2" size={16} color={COLORS.error} />
                   </AppButton>
                 </View>
-              </View>
+              </Scheda>
             ))
           )}
         </ScrollView>
@@ -260,11 +261,11 @@ export default function ListeStandardScreen() {
             />
 
             <AppButton
-              style={[styles.saveButton, saving && styles.disabled]}
+              variante="pieno"
               disabled={saving}
               onPress={saveItem}
             >
-              <Text style={styles.saveButtonText}>
+              <Text style={TESTO_BOTTONE.pieno}>
                 {saving ? "SALVATAGGIO..." : "SALVA"}
               </Text>
             </AppButton>
@@ -371,19 +372,8 @@ const styles = StyleSheet.create({
   },
 
   addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: COLORS.brand,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 12,
-  },
-
-  addButtonText: {
-    color: COLORS.onBrandPrimary,
-    fontSize: 12,
-    fontWeight: "900",
   },
 
   center: {
@@ -404,12 +394,6 @@ const styles = StyleSheet.create({
   },
 
   itemRow: {
-    backgroundColor: COLORS.surfaceSecondary,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.divider,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
     marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
@@ -447,6 +431,11 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 
+  // Non e' una <Scheda>: il raggio 18 e' l'identita' ricorrente dei
+  // riquadri modali in tutto il gestionale (login, fornitori, catalogo,
+  // statistiche...), sempre lasciata a mano perche' diversa dal raggio
+  // fisso di Scheda (RADIUS.md, 4). Uniformarla qui l'avrebbe resa
+  // l'unico modale dal raggio diverso da tutti gli altri.
   modalBox: {
     backgroundColor: COLORS.surface,
     borderRadius: 18,
@@ -492,22 +481,5 @@ const styles = StyleSheet.create({
     color: COLORS.onSurface,
     fontSize: 15,
     marginBottom: 14,
-  },
-
-  saveButton: {
-    backgroundColor: COLORS.brand,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-
-  saveButtonText: {
-    color: COLORS.onBrandPrimary,
-    fontSize: 13,
-    fontWeight: "900",
-  },
-
-  disabled: {
-    opacity: 0.6,
   },
 });

@@ -24,7 +24,7 @@ import type { Product } from '@/src/store';
 import { FORNITORI_STANDARD } from '@/src/fornitoriStandard';
 import { CATEGORIE_STANDARD } from '@/src/categorieStandard';
 
-import AppButton from '@/src/components/AppButton';
+import AppButton, { TESTO_BOTTONE } from '@/src/components/AppButton';
 type Form = {
   barcode: string;
   codice_prodotto: string;
@@ -410,9 +410,9 @@ useEffect(() => {
         </Modal>
 
       <View style={styles.footer}>
-          <AppButton style={[styles.saveBtn, saving && { opacity: 0.5 }]} onPress={submit} disabled={saving} testID="save-btn">
+          <AppButton variante="pieno" style={styles.saveBtn} onPress={submit} disabled={saving} testID="save-btn">
             <Feather name="check" size={20} color={COLORS.onBrandPrimary} />
-            <Text style={styles.saveTxt}>{saving ? 'SALVATAGGIO...' : (editing ? 'AGGIORNA' : 'SALVA PRODOTTO')}</Text>
+            <Text style={TESTO_BOTTONE.pieno}>{saving ? 'SALVATAGGIO...' : (editing ? 'AGGIORNA' : 'SALVA PRODOTTO')}</Text>
           </AppButton>
         </View>
       </KeyboardAvoidingView>
@@ -451,8 +451,7 @@ const styles = StyleSheet.create({
   input: { fontFamily: FONTS.mono, fontSize: 14, color: COLORS.onSurface, paddingVertical: 6, borderBottomWidth: 2, borderColor: COLORS.borderStrong },
   row2: { flexDirection: 'row', borderBottomWidth: 0 },
   footer: { padding: 12, borderTopWidth: 2, borderColor: COLORS.borderStrong, backgroundColor: COLORS.surface },
-  saveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: COLORS.brand, paddingVertical: 16 },
-  saveTxt: { fontFamily: FONTS.mono, fontSize: 14, fontWeight: '900', color: COLORS.onBrandPrimary, letterSpacing: 1.5 },
+  saveBtn: { paddingVertical: 16 },
   selectInput: {
     justifyContent: "center",
   },
@@ -470,6 +469,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 
+  // Non e' una <Scheda>: il raggio 18 e' l'identita' ricorrente dei
+  // riquadri modali in tutto il gestionale (login, fornitori, catalogo,
+  // liste standard...), sempre lasciata a mano perche' diversa dal raggio
+  // fisso di Scheda (RADIUS.md, 4).
   selectBox: {
     backgroundColor: COLORS.surface,
     borderRadius: 18,
@@ -503,6 +506,10 @@ const styles = StyleSheet.create({
     maxHeight: 420,
   },
 
+  // Non e' una <Scheda>: qui lo stile sta sull'AppButton premibile stesso,
+  // non su una View che lo avvolge. Incastrare Scheda avrebbe richiesto
+  // annidare un livello in piu' senza bisogno (stessa scelta di
+  // (tabs)/catalogo.tsx per la card prodotto).
   selectOption: {
     paddingVertical: 13,
     paddingHorizontal: 12,
