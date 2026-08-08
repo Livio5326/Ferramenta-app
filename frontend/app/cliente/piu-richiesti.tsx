@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: 13,
     lineHeight: 19,
-    color: '#B00020',
+    color: COLORS.error,
     fontWeight: '800',
   },
 

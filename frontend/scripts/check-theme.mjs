@@ -17,10 +17,7 @@ const ESTENSIONI = ['.tsx'];
 const COLORE = /#[0-9a-fA-F]{3,8}\b/g;
 
 // I file non ancora migrati. Togliere una voce quando il file è a posto.
-const DA_MIGRARE = [
-  'app/cliente/piu-richiesti.tsx',
-  'app/scanner.tsx',
-];
+const DA_MIGRARE = [];
 
 function* file(cartella) {
   for (const voce of readdirSync(cartella, { withFileTypes: true })) {

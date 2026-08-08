@@ -111,11 +111,11 @@ export default function Scanner() {
 
 const SIZE = 260;
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' },
-  center: { flex: 1, backgroundColor: '#000' },
+  root: { flex: 1, backgroundColor: COLORS.onSurface },
+  center: { flex: 1, backgroundColor: COLORS.onSurface },
   overlay: { flex: 1, justifyContent: 'space-between' },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: 'rgba(0,0,0,0.55)' },
-  topTitle: { fontFamily: FONTS.mono, fontSize: 13, color: '#fff', fontWeight: '900', letterSpacing: 2 },
+  topTitle: { fontFamily: FONTS.mono, fontSize: 13, color: COLORS.onSurfaceInverse, fontWeight: '900', letterSpacing: 2 },
   closeBtn: { width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
   target: { alignSelf: 'center', width: SIZE, height: SIZE, marginTop: 40 },
   corner: { position: 'absolute', width: 36, height: 36, borderColor: COLORS.brandTertiary },
