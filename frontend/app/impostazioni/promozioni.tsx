@@ -1018,9 +1018,10 @@ promoStatusBadge: {
 },
 
 promoStatusActive: {
-  // Il colore che segnala una promozione in corso è l'ottone del sito:
-  // è il ruolo che COLORS.warning ha ovunque nell'app.
-  backgroundColor: COLORS.warning,
+  // "Attivo" è verde come nel resto dell'app, coerente con la schermata
+  // utenti dove item.attivo usa COLORS.success. L'ottone resta riservato
+  // al ruolo "attenzione", non "attivo".
+  backgroundColor: COLORS.success,
 },
 
 promoStatusInactive: {
@@ -1035,8 +1036,8 @@ promoStatusText: {
 },
 
 promoStatusTextActive: {
-  // Il bianco sull'ottone non si legge: testo scuro, come da tema.
-  color: COLORS.onWarning,
+  // Testo che va sul verde: il bianco onSuccess del tema.
+  color: COLORS.onSuccess,
 },
 
 promoStatusTextInactive: {
