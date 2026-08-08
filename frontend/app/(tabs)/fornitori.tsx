@@ -830,17 +830,16 @@ invoiceProductsEmpty: {
   color: COLORS.onSurfaceSecondary,
 },
 
-// Il bordo resta sul token "tertiary" (family dell'arancio originale,
-// esadecimale D4A373), ma lo sfondo va su COLORS.surface e non su
-// COLORS.brandTertiary:
-// applicando la tabella alla lettera bordo e sfondo diventerebbero lo
-// stesso colore (contrasto 1:1, bordo invisibile), peggio dell'originale
-// (1,87:1). COLORS.surface tiene il riquadro coerente con le altre schede
-// della schermata e mantiene il bordo arancio come unico segnale distintivo.
+// Lo sfondo resta COLORS.surface (carta) e non COLORS.brandTertiary come
+// direbbe la tabella alla lettera: su brandTertiary il testo interno
+// (COLORS.brandPrimary, titolo/importo/badge) scenderebbe a 2,62:1, sotto
+// la soglia 4,5:1. Il bordo usa COLORS.brandSecondary (non brandTertiary,
+// che su sfondo carta darebbe solo 1,73:1) per restare nella stessa
+// famiglia marrone-arancio della tabella con un contrasto solido: 6,63:1.
 secondaryCostsBox: {
   marginTop: 10,
   borderWidth: 1,
-  borderColor: COLORS.brandTertiary,
+  borderColor: COLORS.brandSecondary,
   backgroundColor: COLORS.surface,
   borderRadius: 12,
   padding: 12,
