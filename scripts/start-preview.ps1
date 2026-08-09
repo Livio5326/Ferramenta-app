@@ -106,11 +106,25 @@ if (-not $localIp) {
 # fermo a una percentuale fissa). Via USB il traffico non passa dal WiFi.
 $useUsb = $false
 if (Test-Path -LiteralPath $adbExe) {
-    $adbDevices = & $adbExe devices 2>$null |
-        Select-Object -Skip 1 |
-        Where-Object { $_ -match '\bdevice$' }
-    if ($adbDevices) {
-        $useUsb = $true
+    # adb, quando il daemon non e' ancora attivo, scrive "* daemon not running;
+    # starting now" su stderr: con $ErrorActionPreference='Stop' PowerShell 5.1
+    # lo trasforma in un NativeCommandError che interrompe lo script prima ancora
+    # di avviare Expo. Avviamo prima il daemon e leggiamo i device ignorando
+    # eventuali errori non fatali di adb.
+    try {
+        $prevEap = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
+        & $adbExe start-server 2>&1 | Out-Null
+        $adbDevices = (& $adbExe devices 2>&1) |
+            Select-Object -Skip 1 |
+            Where-Object { $_ -match '\bdevice$' }
+        if ($adbDevices) {
+            $useUsb = $true
+        }
+    } catch {
+        $useUsb = $false
+    } finally {
+        $ErrorActionPreference = $prevEap
     }
 }
 
