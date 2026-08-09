@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from "expo-document-picker";
 import {
   api,
@@ -16,6 +17,7 @@ import {
 } from "../../src/api";
 
 import AppButton from '@/src/components/AppButton';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 import { COLORS } from '@/src/theme';
 
 const INVOICES_PER_PAGE = 10;
@@ -283,14 +285,13 @@ const loadMissingProducts = async (invoice: any) => {
   };  
 
 return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Fornitori</Text>
-        <Text style={styles.subtitle}>
-          Gestione carichi merce e fatture XML fornitori.
-        </Text>
-      </View>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScreenHeader
+        title="Fornitori"
+        subtitle="Gestione carichi merce e fatture XML fornitori."
+      />
 
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Import fattura XML</Text>
         <Text style={styles.cardText}>
@@ -587,10 +588,16 @@ return (
         </Text>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+  },
+
   container: {
     flex: 1,
     backgroundColor: COLORS.surface,
@@ -598,26 +605,8 @@ const styles = StyleSheet.create({
 
   content: {
     paddingHorizontal: 16,
-    paddingTop: 48,
+    paddingTop: 16,
     paddingBottom: 40,
-  },
-
-  header: {
-    marginBottom: 16,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: "900",
-    color: COLORS.onSurface,
-    letterSpacing: 0.5,
-  },
-
-  subtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    color: COLORS.onSurfaceSecondary,
-    lineHeight: 20,
   },
 
   card: {

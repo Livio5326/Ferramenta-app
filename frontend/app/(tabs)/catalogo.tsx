@@ -13,19 +13,20 @@ import {
   Image,
   Modal,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useAppStore } from "../../src/store";
 import { BACKEND_URL } from "../../src/config/backend";
 import { COLORS, PALETTE, TESTO } from "@/src/theme";
 
 import AppButton from '@/src/components/AppButton';
+import { ScreenHeader } from '@/src/components/ScreenHeader';
 const PAGE_SIZE = 30;
 
 // La COLORS locale di questa schermata (surface/card/text/muted/border/
@@ -599,17 +600,16 @@ const loadMore = useCallback(async () => {
   }, [catalogoFiltratoDaPagina, categoriaDaPagina, categoria]);
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Catalogo</Text>
-          <Text style={styles.subtitle}>{headerSubtitle}</Text>
-        </View>
-
-        <AppButton style={styles.filterButton} onPress={() => setFiltersOpen(true)}>
-          <Text style={styles.filterButtonText}>Filtri</Text>
-        </AppButton>
-      </View>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScreenHeader
+        title="Catalogo"
+        subtitle={headerSubtitle}
+        right={
+          <AppButton style={styles.filterButton} onPress={() => setFiltersOpen(true)}>
+            <Text style={styles.filterButtonText}>Filtri</Text>
+          </AppButton>
+        }
+      />
 
       <View style={styles.searchBox}>
         <TextInput
@@ -945,28 +945,6 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: COLORS.surface,
-  },
-
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 44,
-    paddingBottom: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  title: {
-    fontSize: 32,
-    fontWeight: "900",
-    color: COLORS.onSurface,
-  },
-
-  subtitle: {
-    marginTop: 4,
-    fontSize: 14,
-    color: COLORS.onSurfaceSecondary,
-    fontWeight: "700",
   },
 
   filterButton: {
