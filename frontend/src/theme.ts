@@ -122,9 +122,10 @@ export const TESTO = {
     textTransform: 'uppercase',
   },
   // Il numero da inventario: cifre a larghezza fissa, così le colonne di
-  // prezzi non ballano.
+  // prezzi non ballano. Usa Archivo (non il mono IBM Plex, che disegna lo
+  // "zero puntato"): tabular-nums tiene comunque le cifre a larghezza fissa.
   cifra: {
-    fontFamily: FONTS.monoMedio,
+    fontFamily: FONTS.testoForte,
     fontVariant: ['tabular-nums'],
   },
   titolo: {
