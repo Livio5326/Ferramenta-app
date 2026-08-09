@@ -2223,14 +2223,30 @@ async def create_pending_invoice_products(payload: CreatePendingProductsRequest)
 
         if esistente:
             gia_presenti += 1
+            aggiornamenti = {
+                "quantita": int(esistente.get("quantita", 0)) + quantita,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+
+            # Se il prodotto esistente non ha fornitore/marca/categoria (es. creato
+            # da un import iniziale senza questi dati), completali ora con quanto
+            # ricavato dalla fattura, senza sovrascrivere valori gia' presenti.
+            if not str(esistente.get("fornitore", "")).strip() and fornitore_ricavato:
+                aggiornamenti["fornitore"] = fornitore_ricavato
+            if not str(esistente.get("fornitore_originale", "")).strip() and fornitore_originale:
+                aggiornamenti["fornitore_originale"] = fornitore_originale
+            if not str(esistente.get("marca", "")).strip() and marca_ricavata:
+                aggiornamenti["marca"] = marca_ricavata
+            if not str(esistente.get("marca_standard", "")).strip() and marca_ricavata:
+                aggiornamenti["marca_standard"] = marca_ricavata
+            if not str(esistente.get("categoria", "")).strip() and categoria_ricavata:
+                aggiornamenti["categoria"] = categoria_ricavata
+            if not float(esistente.get("prezzo_acquisto", 0) or 0) and prezzo_acquisto:
+                aggiornamenti["prezzo_acquisto"] = prezzo_acquisto
+
             await db.products.update_one(
                 {"_id": esistente["_id"]},
-                {
-                    "$set": {
-                        "quantita": int(esistente.get("quantita", 0)) + quantita,
-                        "updated_at": datetime.now(timezone.utc).isoformat(),
-                    }
-                }
+                {"$set": aggiornamenti}
             )
             continue
 
