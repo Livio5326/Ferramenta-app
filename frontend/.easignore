@@ -1,0 +1,35 @@
+# Dipendenze e cache locali
+node_modules/
+.expo/
+.metro-cache/
+dist/
+dist-preview*/
+web-build/
+
+# Configurazione e credenziali locali
+.env
+.env.*
+!.env.example
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+credentials.json
+
+# Copie, archivi e dati usati solo in locale
+backup/
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.xlsx
+
+# Progetti nativi generati localmente
+android/
+ios/
+
+# File di sistema e log
+.DS_Store
+*.log
+*.tsbuildinfo
