@@ -45,8 +45,8 @@ db = client[os.environ['DB_NAME']]
 
 app = FastAPI()
 
-UPLOAD_DIR = ROOT_DIR / "uploads"
-UPLOAD_DIR.mkdir(exist_ok=True)
+UPLOAD_DIR = Path(os.environ.get("UPLOAD_DIR", str(ROOT_DIR / "uploads")))
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads") 
 from fastapi import UploadFile, File, Form
 import csv
@@ -69,7 +69,7 @@ CORS_ORIGINS = [
 ]
 
 if not JWT_SECRET:
-    raise RuntimeError("JWT_SECRET non configurata nel file backend/.env")
+    raise RuntimeError("JWT_SECRET non configurata nell'ambiente del backend")
 
 
 # ---------- Models ----------

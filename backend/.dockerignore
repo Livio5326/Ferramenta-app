@@ -1,0 +1,11 @@
+.env
+.venv
+__pycache__
+.pytest_cache
+tests
+backups
+_archivio
+import_fatture
+uploads
+*.log
+*.csv
