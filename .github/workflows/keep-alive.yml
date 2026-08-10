@@ -1,0 +1,35 @@
+name: keep-alive
+
+# Tiene sveglio il backend Render (tier free) pingando /api/health.
+# Render addormenta il servizio dopo ~15 min di inattivita: pingando ogni ~10 min
+# la prima apertura dell'app non deve piu attendere il "risveglio" (~30-50s).
+#
+# NOTA: il cron di GitHub Actions puo ritardare di qualche minuto e viene
+# sospeso dopo 60 giorni di inattivita del repo. Se vuoi qualcosa di piu
+# affidabile e a costo zero, usa in alternativa un monitor esterno
+# (cron-job.org oppure UptimeRobot) puntato sullo stesso URL /api/health.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # ogni 10 minuti
+  workflow_dispatch: {}        # permette l'avvio manuale dalla tab Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          URL="https://ferramenta-api-ne2z.onrender.com/api/health"
+          # --max-time alto perche il primo colpo puo risvegliare il servizio
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$URL" || echo "000")
+            echo "Tentativo $i -> HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "Backend sveglio."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "Backend non ha risposto 200 dopo 3 tentativi."
+          exit 1

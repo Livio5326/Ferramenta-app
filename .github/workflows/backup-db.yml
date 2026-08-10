@@ -1,0 +1,52 @@
+name: backup-db
+
+# Backup giornaliero del database Ferramenta su MongoDB Atlas.
+# Esegue scripts/backup_atlas.py (legge la connessione da MONGO_URL) e salva
+# i dump JSON come artifact PRIVATO del repo, scaricabile dalla tab Actions.
+#
+# PREREQUISITI (una tantum):
+#   1) Aggiungi il secret MONGO_URL nel repo:
+#      Settings > Secrets and variables > Actions > New repository secret
+#      Nome:  MONGO_URL
+#      Valore: la stringa di connessione Atlas completa
+#              (mongodb+srv://ferramenta_app:<password>@ferramenta.b5ihzw6.mongodb.net/?retryWrites=true&w=majority&appName=Ferramenta)
+#   2) I workflow schedulati partono SOLO dal branch di default (main/master):
+#      questo file va portato su quel branch per attivarsi.
+
+on:
+  schedule:
+    - cron: "30 21 * * *"   # ogni giorno alle 21:30 UTC (23:30 ora italiana estiva)
+  workflow_dispatch: {}       # avvio manuale dalla tab Actions
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install "pymongo[srv]==4.5.0"
+
+      - name: Esegui backup
+        env:
+          MONGO_URL: ${{ secrets.MONGO_URL }}
+        run: |
+          if [ -z "$MONGO_URL" ]; then
+            echo "ERRORE: secret MONGO_URL non configurato nel repo."
+            exit 1
+          fi
+          python scripts/backup_atlas.py
+
+      - name: Carica dump come artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ferramenta-backup-${{ github.run_id }}
+          path: backups/atlas/**
+          retention-days: 90
+          if-no-files-found: error
