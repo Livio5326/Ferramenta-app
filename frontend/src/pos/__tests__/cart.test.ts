@@ -4,6 +4,7 @@ import {
   cartTotalPos,
   buildSalePayload,
   makeManualLine,
+  sellableLines,
 } from '../cart';
 import type { CartItem, Product } from '@/src/store';
 
@@ -49,4 +50,15 @@ test('makeManualLine crea riga manuale che non tocca il magazzino', () => {
   expect(lineUnitPrice(m)).toBe(1.5);
   expect(lineSubtotal(m)).toBe(6);
   expect(buildSalePayload([m])).toEqual([]);
+});
+
+test('sellableLines include righe manuali e in stock, esclude fuori stock', () => {
+  const manuale = makeManualLine('Chiodi sfusi', 2, 3);
+  const inStock: CartItem = { product: prod({ id: 'IN', quantita: 5 }), quantita: 1 };
+  const fuoriStock: CartItem = { product: prod({ id: 'OUT', quantita: 0 }), quantita: 1 };
+  const result = sellableLines([manuale, inStock, fuoriStock]);
+  expect(result).toContain(manuale);
+  expect(result).toContain(inStock);
+  expect(result).not.toContain(fuoriStock);
+  expect(result).toHaveLength(2);
 });

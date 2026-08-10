@@ -24,3 +24,13 @@ test('addManualLine aggiunge una riga manuale a prezzo libero', () => {
   expect(cart[0].manuale).toBe(true);
   expect(cartTotal(cart)).toBe(6);
 });
+
+test('updateCartQty consente di aumentare la quantita di una riga manuale oltre 1', () => {
+  useAppStore.getState().addManualLine('Chiodi sfusi', 2, 1);
+  const id = useAppStore.getState().cart[0].product.id;
+  useAppStore.getState().updateCartQty(id, 5);
+  const cart = useAppStore.getState().cart;
+  expect(cart).toHaveLength(1);
+  expect(cart[0].quantita).toBe(5);
+  expect(cartTotal(cart)).toBe(10);
+});

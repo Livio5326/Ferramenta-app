@@ -15,6 +15,10 @@ export function cartTotalPos(cart: CartItem[]): number {
   return cart.reduce((acc, item) => acc + lineSubtotal(item), 0);
 }
 
+export function sellableLines(cart: CartItem[]): CartItem[] {
+  return cart.filter((c) => c.manuale || Number(c.product.quantita ?? 0) > 0);
+}
+
 export function buildSalePayload(cart: CartItem[]) {
   return cart
     .filter((item) => !item.manuale)
@@ -43,7 +47,7 @@ export function makeManualLine(
     categoria: '',
     prezzo_acquisto: 0,
     prezzo_vendita: prezzoUnitario,
-    quantita: Number.MAX_SAFE_INTEGER,
+    quantita,
     fornitore: '',
     foto: '',
     note: '',

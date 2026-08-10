@@ -29,3 +29,10 @@ export class ManualReceiptPrinter implements ReceiptPrinter {
     return { printed: false, total: receipt.total };
   }
 }
+
+// Seam per la Fase 2: la vendita ottiene la stampante da qui invece di
+// costruirla inline. Sostituendo questa factory si abilita RCH/Ditron
+// senza toccare la logica di completamento vendita.
+export function getReceiptPrinter(): ReceiptPrinter {
+  return new ManualReceiptPrinter();
+}

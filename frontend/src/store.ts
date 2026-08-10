@@ -124,15 +124,14 @@ export const useAppStore = create<State>((set) => ({
           getProductId(c.product) === id
             ? {
                 ...c,
-                quantita: Math.min(
-                  Number(c.product.quantita ?? 0),
-                  Math.max(0, q)
-                ),
+                quantita: c.manuale
+                  ? Math.min(9999, Math.max(0, q))
+                  : Math.min(Number(c.product.quantita ?? 0), Math.max(0, q)),
               }
             : c
         )
         .filter((c) => c.quantita > 0),
-    })),  
+    })),
 
   clearCart: () => set({ cart: [] }),
 

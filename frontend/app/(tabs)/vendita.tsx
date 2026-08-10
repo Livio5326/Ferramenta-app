@@ -14,9 +14,9 @@ import { Feather } from '@expo/vector-icons';
 
 import { COLORS, FONTS, VELI, fmtEUR } from '@/src/theme';
 import { ScreenHeader } from '@/src/components/ScreenHeader';
-import { useAppStore, cartTotal } from '@/src/store';
-import { lineUnitPrice, lineSubtotal, buildSalePayload } from '@/src/pos/cart';
-import { ManualReceiptPrinter, buildReceipt } from '@/src/pos/receiptPrinter';
+import { useAppStore, cartTotal, type CartItem } from '@/src/store';
+import { lineUnitPrice, lineSubtotal, buildSalePayload, sellableLines } from '@/src/pos/cart';
+import { getReceiptPrinter, buildReceipt } from '@/src/pos/receiptPrinter';
 import { api } from '@/src/api';
 
 import AppButton from '@/src/components/AppButton';
@@ -25,10 +25,38 @@ function haPromoProdotto(p: any): boolean {
   return Boolean(p?.promo_attiva && Number(p?.prezzo_promo || 0) > 0);
 }
 
+function PriceField({
+  item,
+  onCommit,
+}: {
+  item: CartItem;
+  onCommit: (id: string, prezzo: number) => void;
+}) {
+  const [text, setText] = useState(String(lineUnitPrice(item)));
+
+  const handleChange = (t: string) => {
+    setText(t);
+    const v = parseFloat(t.replace(',', '.'));
+    // Su input vuoto/non numerico ricade sul prezzo effettivo corrente,
+    // NON su 0: uno 0 nasce solo se l'operatore lo digita davvero.
+    onCommit(item.product.id, Number.isFinite(v) ? v : lineUnitPrice(item));
+  };
+
+  return (
+    <TextInput
+      style={styles.priceInput}
+      keyboardType="decimal-pad"
+      value={text}
+      onChangeText={handleChange}
+      testID={`price-input-${item.product.id}`}
+    />
+  );
+}
+
 export default function Vendita() {
   const router = useRouter();
   const cart = useAppStore((s) => s.cart);
-  const cartVendibile = cart.filter((c) => Number(c.product.quantita ?? 0) > 0);
+  const cartVendibile = sellableLines(cart);
   const removeFromCart = useAppStore((s) => s.removeFromCart);
   const updateCartQty = useAppStore((s) => s.updateCartQty);
   const clearCart = useAppStore((s) => s.clearCart);
@@ -42,24 +70,28 @@ export default function Vendita() {
 
   const total = cartTotal(cartVendibile);
 
-  const confermaRigaRapida = () => {
-    const desc = quickDesc.trim() || 'Riga rapida';
-    const v = parseFloat(quickPrice.replace(',', '.'));
-    addManualLine(desc, Number.isFinite(v) ? v : 0, 1);
+  const chiudiRigaRapida = () => {
     setQuickDesc('');
     setQuickPrice('');
     setQuickOpen(false);
   };
 
+  const confermaRigaRapida = () => {
+    const desc = quickDesc.trim() || 'Riga rapida';
+    const v = parseFloat(quickPrice.replace(',', '.'));
+    addManualLine(desc, Number.isFinite(v) ? v : 0, 1);
+    chiudiRigaRapida();
+  };
+
   const completa = async () => {
     const payload = buildSalePayload(cartVendibile);
-    if (payload.length === 0 && cartVendibile.length === 0) return;
+    if (cartVendibile.length === 0) return;
     setCompleting(true);
     try {
       if (payload.length > 0) {
         await api.createSale(payload);
       }
-      const printer = new ManualReceiptPrinter();
+      const printer = getReceiptPrinter();
       const { total: stampato } = await printer.printReceipt(buildReceipt(cartVendibile));
       clearCart();
       Alert.alert('Vendita completata', `Totale da battere in cassa: ${fmtEUR(stampato)}`);
@@ -117,19 +149,10 @@ export default function Vendita() {
                 <View style={{ flex: 1, gap: 4 }}>
                   <Text style={styles.rowTitle} numberOfLines={2}>{item.product.descrizione}</Text>
                   <View style={styles.priceRow}>
-                    <TextInput
-                      style={styles.priceInput}
-                      keyboardType="decimal-pad"
-                      defaultValue={String(lineUnitPrice(item))}
-                      onEndEditing={(e) => {
-                        const v = parseFloat(e.nativeEvent.text.replace(',', '.'));
-                        setCartPrice(item.product.id, Number.isFinite(v) ? v : 0);
-                      }}
-                      testID={`price-input-${item.product.id}`}
-                    />
+                    <PriceField item={item} onCommit={setCartPrice} />
                     <Text style={styles.priceInputSuffix}>cad.</Text>
                   </View>
-                  {haPromoProdotto(item.product) ? (
+                  {haPromoProdotto(item.product) && item.prezzoOverride == null ? (
                     <Text style={styles.promoBadge}>PROMO</Text>
                   ) : null}
                 </View>
@@ -171,7 +194,7 @@ export default function Vendita() {
         visible={quickOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => setQuickOpen(false)}
+        onRequestClose={chiudiRigaRapida}
       >
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard} testID="quick-line-modal">
@@ -198,7 +221,7 @@ export default function Vendita() {
             <View style={styles.modalActions}>
               <AppButton
                 style={[styles.modalBtn, { backgroundColor: COLORS.surfaceSecondary }]}
-                onPress={() => setQuickOpen(false)}
+                onPress={chiudiRigaRapida}
                 testID="quick-line-cancel"
               >
                 <Text style={styles.modalBtnTxt}>ANNULLA</Text>
