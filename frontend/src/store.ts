@@ -29,6 +29,8 @@ export type Product = {
 export type CartItem = {
   product: Product;
   quantita: number;
+  prezzoOverride?: number | null;
+  manuale?: boolean;
 };
 
 function getProductId(product: Product): string {
