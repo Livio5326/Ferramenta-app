@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { cartTotalPos, makeManualLine } from '@/src/pos/cart';
 
 export type Mode = 'gestore' | 'cliente';
 
@@ -59,6 +60,8 @@ type State = {
   removeFromCart: (id: string) => void;
   updateCartQty: (id: string, q: number) => void;
   clearCart: () => void;
+  setCartPrice: (id: string, prezzo: number) => void;
+  addManualLine: (descrizione: string, prezzo: number, quantita: number) => void;
 };
 
 export const useAppStore = create<State>((set) => ({
@@ -132,7 +135,16 @@ export const useAppStore = create<State>((set) => ({
     })),  
 
   clearCart: () => set({ cart: [] }),
+
+  setCartPrice: (id, prezzo) =>
+    set((s) => ({
+      cart: s.cart.map((c) =>
+        getProductId(c.product) === id ? { ...c, prezzoOverride: prezzo } : c
+      ),
+    })),
+
+  addManualLine: (descrizione, prezzo, quantita) =>
+    set((s) => ({ cart: [...s.cart, makeManualLine(descrizione, prezzo, quantita)] })),
 }));
 
-export const cartTotal = (cart: CartItem[]) =>
-  cart.reduce((acc, c) => acc + getPrezzoFinale(c.product) * c.quantita, 0);
+export const cartTotal = (cart: CartItem[]) => cartTotalPos(cart);
